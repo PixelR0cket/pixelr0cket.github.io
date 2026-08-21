@@ -3,6 +3,22 @@
   "collections": [],
   "photos": [
     {
+      "src": "photos/the-race.jpg",
+      "title": "The Race",
+      "w": 2000,
+      "h": 1333,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 119.0,
+      "aperture": 5.6,
+      "shutter": 0.0008,
+      "iso": 125,
+      "date": "2026-08-08T12:40:45",
+      "id": "a59fd8ec4aca",
+      "added": "2026-08-21T14:42:16"
+    },
+    {
       "src": "photos/moon-light.jpg",
       "title": "Moon Light",
       "w": 2000,
