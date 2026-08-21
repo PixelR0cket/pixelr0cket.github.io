@@ -408,6 +408,18 @@
         frame.querySelector('.plate').style.aspectRatio = p.w + '/' + p.h;
       }
     });
+    img.addEventListener('error', function(){
+      /* The manifest points at a file that is not there — a photograph removed
+         without a rebuild. Drop the frame rather than hold open a grey hole. */
+      const i = photos.indexOf(p);
+      if (i !== -1) photos.splice(i, 1);
+      frame.remove();
+      if (rendered > 0) rendered--;
+      if (!photos.length){ repaint(); return; }
+      paintTabs();
+      retally();
+      fillViewport();
+    });
     img.src = p.src;
 
     const title = frame.querySelector('.caption-title');
@@ -438,14 +450,19 @@
     return frame;
   }
 
+  function retally(){
+    const n = visible().length;
+    els.tally.textContent = (n === 1 ? '1 frame' : n + ' frames');
+    els.footer.style.display = (rendered > 0 && rendered >= n) ? 'block' : 'none';
+  }
+
   function paintBatch(){
-    const list = visible();
-    const slice = list.slice(rendered, rendered + BATCH);
+    const slice = visible().slice(rendered, rendered + BATCH);
     const frag = document.createDocumentFragment();
     slice.forEach(function(p){ frag.appendChild(buildFrame(p)); });
     els.roll.appendChild(frag);
     rendered += slice.length;
-    els.footer.style.display = (rendered > 0 && rendered >= list.length) ? 'block' : 'none';
+    retally();
   }
 
   /* The observer only fires when the sentinel *crosses* into range. Repainting
@@ -467,8 +484,7 @@
     els.empty.style.display = any ? 'none' : 'flex';
     if (!published) els.fab.style.display = any ? 'flex' : 'none';
     els.fabTarget.textContent = active === 'All' ? 'All' : active;
-    const n = visible().length;
-    els.tally.textContent = (n === 1 ? '1 frame' : n + ' frames');
+    retally();
     paintBatch();
     fillViewport();
   }
