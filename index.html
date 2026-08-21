@@ -207,10 +207,28 @@
     .masthead-top{ gap:16px; }
     .frame-tally{ flex-shrink:0; }
     .frame{ padding-top:56px; }
-    .mark{ flex-direction:column; gap:14px; }
-    .mark-body{ gap:14px; }
-    .caption-title{ font-size:21px; }
     .frame-actions{ opacity:1; }
+
+    /* On a narrow screen the camera mark stacks and grows tall, pushing the
+       title far from its photograph. Put the title back under the picture and
+       let the technical data sit below it, quieter. */
+    .frame{ display:flex; flex-direction:column; }
+    .frame .plate{ order:1; }
+    .frame .caption{ order:2; margin-top:15px; padding-top:0; border-top:none; }
+    .frame .mark{ order:3;
+      margin-top:15px; padding:15px 2px 0 2px;
+      border-top:1px solid var(--hairline);
+      flex-direction:column; gap:11px;
+    }
+
+    .caption-title{ font-size:21px; }
+    .mark-line-1{ font-size:13px; }
+    .mark-line-2{ font-size:12.5px; margin-top:2px; }
+    .mark-body{ gap:12px; }
+    .mark-make{ font-size:12px; letter-spacing:0.16em; }
+    .mark-logo{ height:11px; }
+    .mark-model{ font-size:13px; }
+    .mark-lens{ font-size:12.5px; margin-top:2px; }
   }
   @media (prefers-reduced-motion:reduce){
     *{ transition:none !important; }
