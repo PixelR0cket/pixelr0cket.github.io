@@ -3,6 +3,22 @@
   "collections": [],
   "photos": [
     {
+      "src": "photos/blue-tit-at-dawn.jpg",
+      "title": "Blue Tit At Dawn",
+      "w": 1600,
+      "h": 2000,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.004,
+      "iso": 80,
+      "date": "2025-12-20T11:22:35",
+      "id": "4e6bca550168",
+      "added": "2026-08-21T14:04:28"
+    },
+    {
       "src": "photos/mudeford-quay-sunset.jpg",
       "title": "Mudeford Quay Sunset",
       "w": 2000,
