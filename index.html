@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keith Merkelt Photography</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exifr/7.1.3/full.umd.min.js"></script>
+<style>
+  :root{
+    --paper:#ffffff;
+    --ink:#111111;
+    --graphite:#6b6b6b;
+    --ash:#a6a6a6;
+    --hairline:#e8e6e3;
+    --safelight:#b0392a;
+    --gutter:6vw;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--paper);}
+  body{
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:#f0ecea;}
+
+  /* ---------------- masthead ---------------- */
+  .masthead{
+    position:sticky; top:0; z-index:40;
+    background:rgba(255,255,255,0.94);
+    backdrop-filter:saturate(180%) blur(10px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .masthead-top{
+    display:flex; align-items:baseline; justify-content:space-between;
+    padding:20px var(--gutter) 0 var(--gutter);
+  }
+  .brand{
+    font-family:'Newsreader',serif; font-weight:300;
+    font-size:26px; letter-spacing:-0.01em; line-height:1;
+    outline:none;
+    border-bottom:1px dashed transparent; padding-bottom:2px;
+  }
+  .brand[contenteditable]{cursor:text;}
+  .brand[contenteditable]:hover{border-bottom-color:var(--hairline);}
+  .brand:focus{border-bottom-color:var(--safelight);}
+  .frame-tally{
+    font-size:11px; font-weight:500; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--ash);
+  }
+
+  /* ---------------- collection tabs ---------------- */
+  .tabs{
+    display:flex; align-items:stretch;
+    padding:14px var(--gutter) 0 var(--gutter);
+    overflow-x:auto; scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    appearance:none; background:none; border:none;
+    font-family:'Inter',sans-serif;
+    font-size:12px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--ash); cursor:pointer;
+    padding:0 0 12px 0; margin-right:26px;
+    border-bottom:2px solid transparent;
+    white-space:nowrap;
+    transition:color .15s ease;
+  }
+  .tab:hover{color:var(--graphite);}
+  .tab[aria-selected="true"]{ color:var(--ink); border-bottom-color:var(--safelight); }
+  .tab-count{ color:var(--ash); font-weight:400; margin-left:6px; }
+  .tab-new{ color:var(--ash); font-size:16px; line-height:1; padding-bottom:14px; }
+  .tab-new:hover{ color:var(--safelight); }
+
+  /* ---------------- empty state ---------------- */
+  .empty{
+    min-height:64vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center;
+    padding:40px var(--gutter);
+  }
+  .empty h1{
+    font-family:'Newsreader',serif; font-weight:300; font-style:italic;
+    font-size:clamp(30px,4.2vw,46px); margin:0 0 12px; line-height:1.15;
+  }
+  .empty p{
+    font-size:14px; line-height:1.65; color:var(--graphite);
+    max-width:430px; margin:0 0 30px;
+  }
+  .btn{
+    font-family:'Inter',sans-serif;
+    font-size:11.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase;
+    border:1px solid var(--ink); background:transparent; color:var(--ink);
+    padding:13px 26px; cursor:pointer; border-radius:2px;
+    transition:background .15s ease,color .15s ease;
+  }
+  .btn:hover{ background:var(--ink); color:var(--paper); }
+  input[type=file]{display:none;}
+
+  /* ---------------- the roll ---------------- */
+  .roll{ max-width:1120px; margin:0 auto; padding:0 var(--gutter) 40px; }
+
+  .frame{ padding-top:78px; }
+  .frame:first-child{ padding-top:44px; }
+
+  .plate{
+    position:relative;
+    background:#f7f6f4;
+    line-height:0;
+    user-select:none; -webkit-user-select:none;
+    -webkit-touch-callout:none;
+  }
+  .plate img{
+    display:block; width:100%; height:auto;
+    opacity:0; transition:opacity .5s ease;
+    pointer-events:none;
+  }
+  .plate img.shown{ opacity:1; }
+  /* transparent shield: intercepts right-click and long-press over the image */
+  .shield{ position:absolute; inset:0; }
+
+  /* ---------------- camera mark ---------------- */
+  .mark{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:28px;
+    padding:18px 2px 0 2px;
+  }
+  .mark-exposure{ min-width:0; }
+  .mark-line-1{
+    font-size:15px; font-weight:600; letter-spacing:-0.005em; color:var(--ink);
+  }
+  .mark-line-2{
+    font-size:14px; font-weight:400; color:var(--ash); margin-top:3px;
+  }
+  .mark-body{ display:flex; align-items:center; gap:18px; flex-shrink:0; }
+  .mark-make{
+    font-size:14px; font-weight:700;
+    letter-spacing:0.2em; text-transform:uppercase;
+    color:var(--ink); white-space:nowrap;
+  }
+  .mark-rule{ width:1px; align-self:stretch; background:var(--hairline); }
+  .mark-gear{ text-align:left; min-width:0; }
+  .mark-model{ font-size:15px; font-weight:600; color:var(--ink); }
+  .mark-lens{ font-size:14px; font-weight:400; color:var(--ash); margin-top:3px; }
+
+  /* ---------------- caption ---------------- */
+  .caption{
+    margin-top:20px; padding-top:16px;
+    border-top:1px solid var(--hairline);
+    display:flex; align-items:baseline; justify-content:space-between; gap:20px;
+  }
+  .caption-title{
+    font-family:'Newsreader',serif; font-weight:400;
+    font-size:25px; line-height:1.25; color:var(--ink);
+    outline:none; min-width:100px;
+    border-bottom:1px dashed transparent; padding-bottom:2px;
+  }
+  .caption-title[contenteditable]{cursor:text;}
+  .caption-title[contenteditable]:hover{ border-bottom-color:var(--hairline); }
+  .caption-title:focus{ border-bottom-color:var(--safelight); }
+  .caption-title:empty:before{
+    content:'Untitled'; color:var(--ash); font-style:italic;
+  }
+  .frame-actions{
+    display:flex; gap:14px; flex-shrink:0;
+    opacity:0; transition:opacity .15s ease;
+  }
+  .frame:hover .frame-actions, .frame:focus-within .frame-actions{ opacity:1; }
+  .link-action{
+    appearance:none; background:none; border:none; padding:0; cursor:pointer;
+    font-family:'Inter',sans-serif;
+    font-size:11px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--ash);
+  }
+  .link-action:hover{ color:var(--safelight); }
+
+  /* ---------------- add button ---------------- */
+  .fab{
+    position:fixed; right:var(--gutter); bottom:30px; z-index:40;
+    display:none; align-items:center;
+    background:var(--ink); color:var(--paper);
+    border:none; border-radius:2px; cursor:pointer;
+    font-family:'Inter',sans-serif;
+    font-size:11.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase;
+    padding:14px 20px;
+    box-shadow:0 8px 26px rgba(0,0,0,0.20);
+    transition:background .15s ease,transform .15s ease;
+  }
+  .fab:hover{ background:var(--safelight); transform:translateY(-2px); }
+
+  .sentinel{ height:1px; }
+  footer{
+    text-align:center; font-size:10.5px; font-weight:500;
+    letter-spacing:0.14em; text-transform:uppercase; color:var(--ash);
+    padding:24px 0 80px; display:none;
+  }
+
+  @media (max-width:680px){
+    :root{ --gutter:5vw; }
+    .brand{ font-size:19px; }
+    .masthead-top{ gap:16px; }
+    .frame-tally{ flex-shrink:0; }
+    .frame{ padding-top:56px; }
+    .mark{ flex-direction:column; gap:14px; }
+    .mark-body{ gap:14px; }
+    .caption-title{ font-size:21px; }
+    .frame-actions{ opacity:1; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{ transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-top">
+    <div class="brand" contenteditable="true" spellcheck="false">Keith Merkelt Photography</div>
+    <div class="frame-tally" id="tally">0 frames</div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<div class="empty" id="empty">
+  <h1>An empty roll.</h1>
+  <p>Load in your photographs. Titles come from the filename &mdash; click any title to rewrite it. Exposure and camera data are read from the file itself.</p>
+  <button class="btn" id="emptyAdd">Add photographs</button>
+</div>
+
+<main class="roll" id="roll"></main>
+<div class="sentinel" id="sentinel"></div>
+<footer id="footer">End of roll</footer>
+
+<button class="fab" id="fab">+&nbsp;&nbsp;Add to <span id="fabTarget">All</span></button>
+<input type="file" id="fileInput" accept="image/*" multiple>
+
+<script>
+(function(){
+  'use strict';
+
+  const BATCH = 8;
+
+  const els = {
+    roll: document.getElementById('roll'),
+    tabs: document.getElementById('tabs'),
+    empty: document.getElementById('empty'),
+    tally: document.getElementById('tally'),
+    footer: document.getElementById('footer'),
+    fab: document.getElementById('fab'),
+    fabTarget: document.getElementById('fabTarget'),
+    sentinel: document.getElementById('sentinel'),
+    fileInput: document.getElementById('fileInput'),
+    brand: document.querySelector('.brand')
+  };
+
+  let photos = [];
+  let collections = [];
+  let active = 'All';
+  let rendered = 0;
+  let uid = 0;
+  let published = false;
+
+  /* ---------- formatting ---------- */
+
+  const CAMERA_DEFAULT = /^(dsc|img|dscf|dscn|mg|imgp|gopr|pxl|photo|p)\d+$/i;
+
+  function titleFromFilename(name){
+    let base = name.replace(/\.[^/.]+$/, '').replace(/^_+/,'');
+    const squashed = base.replace(/[\s_-]+/g,'');
+    if (CAMERA_DEFAULT.test(squashed)) return '';
+    if (/^[0-9a-f]{8,}$/i.test(squashed)) return '';
+    return base.replace(/[_-]+/g,' ').trim().replace(/\s+/g,' ')
+               .replace(/\S+/g, w => w[0].toUpperCase() + w.slice(1));
+  }
+
+  function shutter(v){
+    if (v == null) return null;
+    if (v >= 1) return (Math.round(v*10)/10) + 's';
+    return '1/' + Math.round(1/v) + 's';
+  }
+
+  function shotDate(raw){
+    if (!raw) return null;
+    const d = raw instanceof Date ? raw : new Date(raw);
+    if (isNaN(d.getTime())) return null;
+    const mon = d.toLocaleString('en-GB',{month:'short'});
+    const time = d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    return d.getDate() + ' ' + mon + ' ' + d.getFullYear() + ' at ' + time;
+  }
+
+  function tidyMake(make){
+    if (!make) return null;
+    return make.replace(/corporation|corp\.?|co\.,?\s*ltd\.?|imaging/gi,'').trim().split(/\s+/)[0];
+  }
+
+  function tidyModel(model, make){
+    if (!model) return null;
+    const m = tidyMake(make);
+    if (m && model.toUpperCase().indexOf(m.toUpperCase()) === 0){
+      return model.slice(m.length).trim() || model;
+    }
+    return model;
+  }
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"]/g,
+      c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
+
+  /* ---------- rendering ---------- */
+
+  function visible(){
+    return active === 'All' ? photos : photos.filter(p => p.collection === active);
+  }
+
+  function buildMark(x){
+    const exposure = [
+      x.iso != null ? 'ISO' + x.iso : null,
+      x.aperture != null ? '\u0192/' + x.aperture : null,
+      shutter(x.shutter)
+    ].filter(Boolean).join(' ');
+
+    const make = tidyMake(x.make);
+    const model = tidyModel(x.model, x.make);
+    const focal = x.focal ? Math.round(x.focal) + 'mm' : null;
+    const lens = x.lens || focal;
+    const date = shotDate(x.date);
+
+    if (!exposure && !make && !model && !lens && !date) return '';
+
+    const left = (exposure || date)
+      ? '<div class="mark-exposure">' +
+          (exposure ? '<div class="mark-line-1">' + esc(exposure) + '</div>' : '') +
+          (date ? '<div class="mark-line-2">' + esc(date) + '</div>' : '') +
+        '</div>'
+      : '<div></div>';
+
+    const right = (make || model || lens)
+      ? '<div class="mark-body">' +
+          (make ? '<div class="mark-make">' + esc(make) + '</div>' : '') +
+          (make && (model || lens) ? '<div class="mark-rule"></div>' : '') +
+          '<div class="mark-gear">' +
+            (model ? '<div class="mark-model">' + esc(model) + '</div>' : '') +
+            (lens ? '<div class="mark-lens">' + esc(lens) + '</div>' : '') +
+          '</div>' +
+        '</div>'
+      : '';
+
+    return '<div class="mark">' + left + right + '</div>';
+  }
+
+  function buildFrame(p){
+    const frame = document.createElement('article');
+    frame.className = 'frame';
+
+    const ratio = (p.w && p.h) ? 'aspect-ratio:' + p.w + '/' + p.h + ';' : '';
+    const others = collections.filter(c => c !== p.collection);
+    const editable = published ? '' : ' contenteditable="true"';
+
+    frame.innerHTML =
+      '<div class="plate" style="' + ratio + '">' +
+        '<img alt="" draggable="false" loading="lazy" decoding="async">' +
+        '<div class="shield"></div>' +
+      '</div>' +
+      buildMark(p) +
+      '<div class="caption">' +
+        '<div class="caption-title"' + editable + ' spellcheck="false">' + esc(p.title) + '</div>' +
+        (published ? '' :
+          '<div class="frame-actions">' +
+            (others.length ? '<button class="link-action" data-act="move">Move</button>' : '') +
+            '<button class="link-action" data-act="remove">Remove</button>' +
+          '</div>') +
+      '</div>';
+
+    const img = frame.querySelector('img');
+    img.addEventListener('load', function(){
+      img.classList.add('shown');
+      if (!p.w){
+        p.w = img.naturalWidth; p.h = img.naturalHeight;
+        frame.querySelector('.plate').style.aspectRatio = p.w + '/' + p.h;
+      }
+    });
+    img.src = p.src;
+
+    const title = frame.querySelector('.caption-title');
+    if (!published){
+      title.addEventListener('blur', function(){ p.title = title.textContent.trim(); });
+      title.addEventListener('keydown', function(e){
+        if (e.key === 'Enter'){ e.preventDefault(); title.blur(); }
+      });
+    }
+
+    frame.addEventListener('click', function(e){
+      const act = e.target.dataset && e.target.dataset.act;
+      if (act === 'remove'){
+        photos = photos.filter(function(q){ return q !== p; });
+        repaint();
+      } else if (act === 'move'){
+        const choice = prompt('Move to which collection?\n\n' + others.join('\n'), others[0]);
+        if (choice && collections.indexOf(choice.trim()) !== -1){
+          p.collection = choice.trim();
+          repaint();
+        }
+      }
+    });
+
+    return frame;
+  }
+
+  function paintBatch(){
+    const list = visible();
+    const slice = list.slice(rendered, rendered + BATCH);
+    const frag = document.createDocumentFragment();
+    slice.forEach(function(p){ frag.appendChild(buildFrame(p)); });
+    els.roll.appendChild(frag);
+    rendered += slice.length;
+    els.footer.style.display = (rendered > 0 && rendered >= list.length) ? 'block' : 'none';
+  }
+
+  function repaint(){
+    els.roll.innerHTML = '';
+    rendered = 0;
+    paintBatch();
+    paintTabs();
+    const any = photos.length > 0;
+    els.empty.style.display = any ? 'none' : 'flex';
+    if (!published) els.fab.style.display = any ? 'flex' : 'none';
+    els.fabTarget.textContent = active === 'All' ? 'All' : active;
+    const n = visible().length;
+    els.tally.textContent = (n === 1 ? '1 frame' : n + ' frames');
+  }
+
+  function paintTabs(){
+    /* No collections on a published site means no tab bar: just the main scroll. */
+    if (published && !collections.length){ els.tabs.innerHTML = ''; els.tabs.style.display = 'none'; return; }
+    els.tabs.style.display = '';
+    const list = ['All'].concat(collections);
+    let html = list.map(function(c){
+      const n = c === 'All' ? photos.length : photos.filter(function(p){ return p.collection === c; }).length;
+      return '<button class="tab" role="tab" aria-selected="' + (c === active) + '" data-col="' + esc(c) + '">' +
+             esc(c) + '<span class="tab-count">' + n + '</span></button>';
+    }).join('');
+    if (!published) html += '<button class="tab tab-new" id="newCol" title="New collection">+</button>';
+    els.tabs.innerHTML = html;
+
+    els.tabs.querySelectorAll('.tab[data-col]').forEach(function(btn){
+      btn.addEventListener('click', function(){ active = btn.dataset.col; repaint(); });
+    });
+    const nc = document.getElementById('newCol');
+    if (nc) nc.addEventListener('click', function(){
+      const name = prompt('Name this collection');
+      if (name && name.trim() && collections.indexOf(name.trim()) === -1){
+        collections.push(name.trim());
+        active = name.trim();
+        repaint();
+      }
+    });
+  }
+
+  /* ---------- local ingest ---------- */
+
+  function ensureDefault(){
+    if (!collections.length) collections.push('Selected work');
+    return collections[0];
+  }
+
+  async function ingest(fileList){
+    const files = Array.prototype.slice.call(fileList)
+      .filter(function(f){ return f.type.indexOf('image/') === 0; });
+    if (!files.length) return;
+    const target = active === 'All' ? ensureDefault() : active;
+
+    for (const file of files){
+      const p = {
+        src: URL.createObjectURL(file),
+        title: titleFromFilename(file.name),
+        collection: target
+      };
+      try {
+        const x = await exifr.parse(file, { pick:[
+          'Make','Model','LensModel','FocalLength','FNumber','ExposureTime',
+          'ISO','DateTimeOriginal','CreateDate','ExifImageWidth','ExifImageHeight'
+        ]});
+        if (x){
+          p.make = x.Make; p.model = x.Model; p.lens = x.LensModel;
+          p.focal = x.FocalLength; p.aperture = x.FNumber;
+          p.shutter = x.ExposureTime; p.iso = x.ISO;
+          p.date = x.DateTimeOriginal || x.CreateDate;
+          p.w = x.ExifImageWidth; p.h = x.ExifImageHeight;
+        }
+      } catch(err){ /* no EXIF — the caption still works */ }
+      photos.push(p);
+      uid++;
+    }
+    repaint();
+  }
+
+  /* ---------- manifest mode (the deployed site) ---------- */
+
+  async function loadManifest(){
+    try {
+      const res = await fetch('photos.json', {cache:'no-cache'});
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (!data.photos || !data.photos.length) return false;
+      published = true;
+      if (data.title){
+        els.brand.textContent = data.title;
+        document.title = data.title;
+      }
+      els.brand.removeAttribute('contenteditable');
+      collections = data.collections || [];
+      photos = data.photos;
+      els.fab.remove();
+      repaint();
+      return true;
+    } catch(err){ return false; }
+  }
+
+  /* ---------- wiring ---------- */
+
+  els.fileInput.addEventListener('change', function(e){
+    ingest(e.target.files); els.fileInput.value = '';
+  });
+  els.fab.addEventListener('click', function(){ els.fileInput.click(); });
+  document.getElementById('emptyAdd').addEventListener('click', function(){ els.fileInput.click(); });
+
+  document.body.addEventListener('dragover', function(e){ e.preventDefault(); });
+  document.body.addEventListener('drop', function(e){
+    e.preventDefault();
+    if (e.dataTransfer && e.dataTransfer.files.length) ingest(e.dataTransfer.files);
+  });
+
+  // Deterrence only — friction, not protection.
+  document.addEventListener('contextmenu', function(e){
+    if (e.target.closest && e.target.closest('.plate')) e.preventDefault();
+  });
+  document.addEventListener('dragstart', function(e){
+    if (e.target.closest && e.target.closest('.plate')) e.preventDefault();
+  });
+
+  new IntersectionObserver(function(entries){
+    if (entries[0].isIntersecting && rendered < visible().length) paintBatch();
+  }, {rootMargin:'900px'}).observe(els.sentinel);
+
+  loadManifest().then(function(ok){ if (!ok) repaint(); });
+})();
+</script>
+</body>
+</html>

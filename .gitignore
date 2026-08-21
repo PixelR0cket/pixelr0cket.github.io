@@ -1,0 +1,14 @@
+# Full-resolution originals never leave this machine.
+originals/
+
+# macOS
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/

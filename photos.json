@@ -1,0 +1,34 @@
+{
+  "title": "Keith Merkelt Photography",
+  "collections": [],
+  "photos": [
+    {
+      "src": "photos/flamenco-dancer.jpg",
+      "title": "Flamenco Dancer",
+      "w": 1541,
+      "h": 2000,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "17-40mm F1.8 DC | Art 025",
+      "focal": 40.0,
+      "aperture": 1.8,
+      "shutter": 0.002,
+      "iso": 640,
+      "date": "2026-04-08T17:56:36"
+    },
+    {
+      "src": "photos/light.jpg",
+      "title": "Light",
+      "w": 2000,
+      "h": 1333,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "17-40mm F1.8 DC | Art 025",
+      "focal": 17.0,
+      "aperture": 2.5,
+      "shutter": 0.0015625,
+      "iso": 200,
+      "date": "2026-04-11T18:00:11"
+    }
+  ]
+}
