@@ -9,23 +9,35 @@ Published from this repo to https://pixelr0cket.github.io.
 2. `python3 build.py`
 3. Commit and push. The site updates in about a minute.
 
-Everything in `originals/` scrolls down one page, in filename order. That is
-the whole site — nothing below this line is required.
+Everything in `originals/` scrolls down one page, newest addition at the top.
+That is the whole site — nothing below this line is required.
 
 One-time setup: `pip3 install Pillow`
 
 ## Ordering the scroll
 
-Filenames sort the page. Prefix a number to arrange them by hand:
+The page runs newest-first by **the day a photograph joined the site** — not
+the day it was taken. Scan a negative from 1987 this afternoon and it goes to
+the top, where you will actually see it, instead of sinking thirty years down
+the page.
 
-```
-01-swan-at-rest.jpg
-02-harbour-wall.jpg
+Everything added in one `build.py` run counts as one batch and stays together.
+Within a batch the newest photograph comes first, so a morning's shooting reads
+in a sensible order.
+
+Once a photograph has a place it keeps it. Rebuilding changes nothing, and
+renaming a file to fix its caption does not send it back to the top — arrivals
+are matched on the picture itself, not its name.
+
+To move one by hand, edit its `added` stamp in `photos.json` and rebuild:
+
+```json
+"added": "2026-08-21T10:31:24"
 ```
 
-The number sets the position and is left out of the caption — the first reads
-"Swan At Rest". Four digits or more is a year and stays, so `1984-summer.jpg`
-is captioned "1984 Summer".
+A leading number in a filename — `01-swan.jpg` — is left out of the caption, so
+old numbered files read cleanly. It does not affect the order. Four digits or
+more is a year and stays: `1984-summer.jpg` is captioned "1984 Summer".
 
 ## Captions
 

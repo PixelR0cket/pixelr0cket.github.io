@@ -22,6 +22,7 @@ Run:  python3 build.py
 Then deploy index.html, photos.json and photos/ — leave originals/ behind.
 """
 
+import hashlib
 import json
 import os
 import re
@@ -97,6 +98,36 @@ def clean(v):
         return None
     s = str(v).strip().strip("\x00")
     return s or None
+
+
+ARRIVED = datetime.now().isoformat(timespec="seconds")
+
+
+def file_id(path):
+    """Fingerprint of the original, so a rename does not look like a new photo."""
+    digest = hashlib.sha1()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()[:12]
+
+
+def previous_arrivals():
+    """When each photograph first appeared, carried over from the last build.
+
+    The page is ordered by the day a photograph joined the site, not the day it
+    was taken — so a negative scanned today goes to the top where you will see
+    it, instead of sinking to wherever it was shot.
+    """
+    try:
+        with open(MANIFEST, encoding="utf-8") as fh:
+            old = json.load(fh)
+    except (OSError, ValueError):
+        return {}, {}
+    photos = old.get("photos", [])
+    by_id = {p["id"]: p["added"] for p in photos if p.get("id") and p.get("added")}
+    by_src = {p["src"]: p["added"] for p in photos if p.get("src") and p.get("added")}
+    return by_id, by_src
 
 
 def read_note(path, allowed):
@@ -252,6 +283,7 @@ def build():
     if not items:
         raise SystemExit(f"No images found under '{SRC}/'.")
 
+    known_by_id, known_by_src = previous_arrivals()
     collections, photos, used = [], [], set()
 
     for collection, path in items:
@@ -309,11 +341,27 @@ def build():
                          typed(roll, "iso")),
             "date": first(typed(note, "date"), parse_date(exif)),
         }
+
+        # Seen before under either its fingerprint or its filename? Keep the day
+        # it arrived. Otherwise it is new today, and belongs at the top.
+        photo_id = file_id(path)
+        record["id"] = photo_id
+        record["added"] = first(known_by_id.get(photo_id),
+                                known_by_src.get(record["src"]),
+                                ARRIVED)
         photos.append({k: v for k, v in record.items() if v not in (None, "")})
         photos[-1].setdefault("title", "")
 
         label = record["title"] or stem
         print(f"  {(collection or chr(8212)):22} {label[:38]:40} {w}x{h}")
+
+    # Newest arrivals at the top; within a batch, the newest photograph first.
+    # Python's sort is stable, so anything undated keeps its filename order.
+    photos.sort(key=lambda p: (p.get("added", ""), p.get("date") or ""), reverse=True)
+
+    print("\nPage order — most recently added first:")
+    for photo in photos:
+        print(f"  added {photo['added'][:16].replace('T', ' ')}   {photo['title'] or '(untitled)'}")
 
     manifest = {"title": SITE_TITLE, "collections": collections, "photos": photos}
     with open(MANIFEST, "w", encoding="utf-8") as fh:
