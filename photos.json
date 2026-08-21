@@ -3,6 +3,38 @@
   "collections": [],
   "photos": [
     {
+      "src": "photos/the-race.jpg",
+      "title": "The Race",
+      "w": 2000,
+      "h": 1333,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 119.0,
+      "aperture": 5.6,
+      "shutter": 0.0008,
+      "iso": 125,
+      "date": "2026-08-08T12:40:45",
+      "id": "a59fd8ec4aca",
+      "added": "2026-08-21T14:31:04"
+    },
+    {
+      "src": "photos/sunset.jpg",
+      "title": "Sunset",
+      "w": 2000,
+      "h": 1333,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "17-40mm F1.8 DC | Art 025",
+      "focal": 40.0,
+      "aperture": 7.1,
+      "shutter": 0.0025,
+      "iso": 50,
+      "date": "2026-01-02T15:55:40",
+      "id": "a28125dbc43b",
+      "added": "2026-08-21T14:31:04"
+    },
+    {
       "src": "photos/gull-attck.jpg",
       "title": "Gull Attck",
       "w": 2000,
