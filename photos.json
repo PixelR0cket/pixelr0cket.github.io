@@ -3,6 +3,20 @@
   "collections": [],
   "photos": [
     {
+      "src": "photos/dsc02235.jpg",
+      "w": 2000,
+      "h": 1333,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "17-40mm F1.8 DC | Art 025",
+      "focal": 17.0,
+      "aperture": 5.6,
+      "shutter": 0.0025,
+      "iso": 50,
+      "date": "2026-04-09T15:35:35",
+      "title": ""
+    },
+    {
       "src": "photos/flamenco-dancer.jpg",
       "title": "Flamenco Dancer",
       "w": 1541,

@@ -41,9 +41,18 @@ JPEG_QUALITY = 82
 SRC = "originals"
 OUT = "photos"
 MANIFEST = "photos.json"
+CAMERA_FILE = "camera.txt"   # folder-wide camera details, for a roll of film
+
+# Fields you can type by hand. A note beside one photograph may set any of
+# them; camera.txt sets the ones a whole roll shares.
+NOTE_KEYS = ("title", "make", "model", "lens", "focal", "aperture", "shutter", "iso", "date")
+ROLL_KEYS = ("make", "model", "lens", "focal", "iso")
 
 EXTS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp"}
 CAMERA_DEFAULT = re.compile(r"^(dsc|img|dscf|dscn|mg|imgp|gopr|pxl|photo|p)\d+$", re.I)
+# '01-swan.jpg' hangs the photograph in position 1 without captioning it "01 Swan".
+# Four digits or more is a year, and stays.
+ORDER_PREFIX = re.compile(r"^\d{1,3}[-_. ]+(?=\D)")
 
 # ---------------------------------------------------------------- helpers
 
@@ -75,11 +84,109 @@ def as_float(v):
         return None
 
 
+def as_int(v):
+    """ISO arrives as an int, a rational or a tuple depending on the camera."""
+    if isinstance(v, (tuple, list)):
+        v = v[0] if v else None
+    f = as_float(v)
+    return int(round(f)) if f is not None else None
+
+
 def clean(v):
     if v is None:
         return None
     s = str(v).strip().strip("\x00")
     return s or None
+
+
+def read_note(path, allowed):
+    """Parse 'key: value' lines out of a hand-written .txt. Blank if there is none."""
+    fields = {}
+    if not os.path.isfile(path):
+        return fields
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("#") or ":" not in line:
+                continue
+            key, _, value = line.partition(":")
+            key, value = key.strip().lower(), value.strip()
+            if key in allowed and value:
+                fields[key] = value
+            elif value:
+                print(f"  ! {os.path.basename(path)}: no such field '{key}' — ignored")
+    return fields
+
+
+_roll_cache = {}
+
+
+def roll_note(folder):
+    """camera.txt: what every frame in this folder was shot on."""
+    if folder not in _roll_cache:
+        _roll_cache[folder] = read_note(os.path.join(folder, CAMERA_FILE), ROLL_KEYS)
+    return _roll_cache[folder]
+
+
+def typed_number(text):
+    """'2.8', 'f/2.8' and '50mm' all give a number."""
+    match = re.search(r"\d+(?:\.\d+)?", text)
+    return float(match.group()) if match else None
+
+
+def typed_shutter(text):
+    """'1/125' or '1/125s' -> 0.008; '2' or '2s' -> 2.0"""
+    text = text.strip().lower().rstrip("s").strip()
+    if "/" in text:
+        top, _, bottom = text.partition("/")
+        try:
+            return float(top) / float(bottom)
+        except (ValueError, ZeroDivisionError):
+            return None
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+# A day on its own stays a day: the page then shows the date without a
+# meaningless 00:00:00 hanging off it.
+DATE_FORMATS = (("%Y-%m-%d %H:%M:%S", True), ("%Y-%m-%d %H:%M", True),
+                ("%Y:%m:%d %H:%M:%S", True), ("%Y-%m-%d", False),
+                ("%Y/%m/%d", False), ("%d %B %Y", False), ("%d %b %Y", False))
+
+
+def typed_date(text):
+    for fmt, has_time in DATE_FORMATS:
+        try:
+            when = datetime.strptime(text.strip(), fmt)
+        except ValueError:
+            continue
+        return when.isoformat() if has_time else when.date().isoformat()
+    return None
+
+
+TYPED = {
+    "focal": typed_number,
+    "aperture": typed_number,
+    "shutter": typed_shutter,
+    "iso": as_int,
+    "date": typed_date,
+}
+
+
+def typed(fields, key):
+    """One hand-typed field, converted to the shape the manifest wants."""
+    if key not in fields:
+        return None
+    return TYPED.get(key, clean)(fields[key])
+
+
+def first(*values):
+    for value in values:
+        if value is not None and value != "":
+            return value
+    return None
 
 
 def parse_date(exif):
@@ -105,7 +212,7 @@ def title_from(stem):
     squashed = re.sub(r"[\s_-]+", "", stem.lstrip("_"))
     if CAMERA_DEFAULT.match(squashed) or re.fullmatch(r"[0-9a-fA-F]{8,}", squashed):
         return ""
-    words = re.sub(r"[_-]+", " ", stem).strip().split()
+    words = re.sub(r"[_-]+", " ", ORDER_PREFIX.sub("", stem)).strip().split()
     return " ".join(w[0].upper() + w[1:] for w in words if w)
 
 
@@ -173,21 +280,34 @@ def build():
                      optimize=True, progressive=True)
             w, h = img.size
 
-        shutter = as_float(exif.get("ExposureTime"))
+        # What you typed beside the photograph wins, then whatever the file
+        # itself knows, then what the roll declares. Film scans know nothing,
+        # so for those it is simply what you typed.
+        note = read_note(os.path.splitext(path)[0] + ".txt", NOTE_KEYS)
+        roll = roll_note(os.path.dirname(path))
+        for key in note:
+            if typed(note, key) is None:
+                print(f"  ! {stem}.txt: could not read '{key}: {note[key]}' — ignored")
+
         record = {
             "src": f"{OUT}/{slug}.jpg",
-            "title": title_from(stem),
+            "title": first(typed(note, "title"), title_from(stem)),
             "collection": collection,
             "w": w,
             "h": h,
-            "make": clean(exif.get("Make")),
-            "model": clean(exif.get("Model")),
-            "lens": clean(exif.get("LensModel")),
-            "focal": as_float(exif.get("FocalLength")),
-            "aperture": nice_aperture(as_float(exif.get("FNumber"))),
-            "shutter": shutter,
-            "iso": exif.get("ISOSpeedRatings") or exif.get("PhotographicSensitivity"),
-            "date": parse_date(exif),
+            "make": first(typed(note, "make"), clean(exif.get("Make")), typed(roll, "make")),
+            "model": first(typed(note, "model"), clean(exif.get("Model")), typed(roll, "model")),
+            "lens": first(typed(note, "lens"), clean(exif.get("LensModel")), typed(roll, "lens")),
+            "focal": first(typed(note, "focal"), as_float(exif.get("FocalLength")),
+                           typed(roll, "focal")),
+            "aperture": nice_aperture(first(typed(note, "aperture"),
+                                            as_float(exif.get("FNumber")))),
+            "shutter": first(typed(note, "shutter"), as_float(exif.get("ExposureTime"))),
+            "iso": first(typed(note, "iso"),
+                         as_int(exif.get("ISOSpeedRatings")
+                                or exif.get("PhotographicSensitivity")),
+                         typed(roll, "iso")),
+            "date": first(typed(note, "date"), parse_date(exif)),
         }
         photos.append({k: v for k, v in record.items() if v not in (None, "")})
         photos[-1].setdefault("title", "")

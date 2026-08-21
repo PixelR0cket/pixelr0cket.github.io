@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/exifr/7.1.3/full.umd.min.js"></script>
 <style>
   :root{
     --paper:#ffffff;
@@ -51,6 +50,8 @@
     font-size:11px; font-weight:500; letter-spacing:0.1em;
     text-transform:uppercase; color:var(--ash);
   }
+  /* No tab bar to sit under the brand? Put its padding back. */
+  .masthead.no-tabs .masthead-top{ padding-bottom:18px; }
 
   /* ---------------- collection tabs ---------------- */
   .tabs{
@@ -140,6 +141,7 @@
     letter-spacing:0.2em; text-transform:uppercase;
     color:var(--ink); white-space:nowrap;
   }
+  .mark-logo{ height:13px; width:auto; flex-shrink:0; display:block; }
   .mark-rule{ width:1px; align-self:stretch; background:var(--hairline); }
   .mark-gear{ text-align:left; min-width:0; }
   .mark-model{ font-size:15px; font-weight:600; color:var(--ink); }
@@ -220,7 +222,7 @@
     <div class="brand" contenteditable="true" spellcheck="false">Keith Merkelt Photography</div>
     <div class="frame-tally" id="tally">0 frames</div>
   </div>
-  <div class="tabs" id="tabs"></div>
+  <div class="tabs" id="tabs" role="tablist"></div>
 </div>
 
 <div class="empty" id="empty">
@@ -241,6 +243,8 @@
   'use strict';
 
   const BATCH = 8;
+  const LOOKAHEAD = 900;          // px of runway kept painted below the fold
+  const EXIFR = 'https://cdnjs.cloudflare.com/ajax/libs/exifr/7.1.3/full.umd.min.js';
 
   const els = {
     roll: document.getElementById('roll'),
@@ -251,6 +255,7 @@
     fab: document.getElementById('fab'),
     fabTarget: document.getElementById('fabTarget'),
     sentinel: document.getElementById('sentinel'),
+    masthead: document.querySelector('.masthead'),
     fileInput: document.getElementById('fileInput'),
     brand: document.querySelector('.brand')
   };
@@ -259,35 +264,50 @@
   let collections = [];
   let active = 'All';
   let rendered = 0;
-  let uid = 0;
   let published = false;
 
   /* ---------- formatting ---------- */
 
   const CAMERA_DEFAULT = /^(dsc|img|dscf|dscn|mg|imgp|gopr|pxl|photo|p)\d+$/i;
 
+  /* Brand marks, keyed on the tidied EXIF Make. Anything not listed here keeps
+     the plain wordmark, so an unknown camera still identifies itself. */
+  const LOGOS = {
+    sony: 'logos/sony.png',
+    canon: 'logos/canon.png'
+  };
+
   function titleFromFilename(name){
     let base = name.replace(/\.[^/.]+$/, '').replace(/^_+/,'');
     const squashed = base.replace(/[\s_-]+/g,'');
     if (CAMERA_DEFAULT.test(squashed)) return '';
     if (/^[0-9a-f]{8,}$/i.test(squashed)) return '';
-    return base.replace(/[_-]+/g,' ').trim().replace(/\s+/g,' ')
+    return base.replace(/^\d{1,3}[-_. ]+(?=\D)/,'')   // '01-' orders it, silently
+               .replace(/[_-]+/g,' ').trim().replace(/\s+/g,' ')
                .replace(/\S+/g, w => w[0].toUpperCase() + w.slice(1));
   }
 
   function shutter(v){
-    if (v == null) return null;
+    if (v == null || !(v > 0)) return null;
     if (v >= 1) return (Math.round(v*10)/10) + 's';
     return '1/' + Math.round(1/v) + 's';
   }
 
   function shotDate(raw){
     if (!raw) return null;
-    const d = raw instanceof Date ? raw : new Date(raw);
+    /* A day with no clock time was typed by hand: show just the day. Parse it
+       as local too — new Date('2026-04-11') is UTC midnight, which reads as the
+       previous evening anywhere west of Greenwich. */
+    const dayOnly = typeof raw === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw);
+    const d = raw instanceof Date ? raw
+            : dayOnly ? new Date(+raw.slice(0,4), +raw.slice(5,7) - 1, +raw.slice(8,10))
+            : new Date(raw);
     if (isNaN(d.getTime())) return null;
     const mon = d.toLocaleString('en-GB',{month:'short'});
+    const day = d.getDate() + ' ' + mon + ' ' + d.getFullYear();
+    if (dayOnly) return day;
     const time = d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    return d.getDate() + ' ' + mon + ' ' + d.getFullYear() + ' at ' + time;
+    return day + ' at ' + time;
   }
 
   function tidyMake(make){
@@ -337,9 +357,15 @@
         '</div>'
       : '<div></div>';
 
+    const logo = make ? LOGOS[make.toLowerCase()] : null;
+
     const right = (make || model || lens)
       ? '<div class="mark-body">' +
-          (make ? '<div class="mark-make">' + esc(make) + '</div>' : '') +
+          (make
+            ? (logo
+                ? '<img class="mark-logo" src="' + logo + '" alt="' + esc(make) + '">'
+                : '<div class="mark-make">' + esc(make) + '</div>')
+            : '') +
           (make && (model || lens) ? '<div class="mark-rule"></div>' : '') +
           '<div class="mark-gear">' +
             (model ? '<div class="mark-model">' + esc(model) + '</div>' : '') +
@@ -361,7 +387,7 @@
 
     frame.innerHTML =
       '<div class="plate" style="' + ratio + '">' +
-        '<img alt="" draggable="false" loading="lazy" decoding="async">' +
+        '<img alt="' + esc(p.title) + '" draggable="false" loading="lazy" decoding="async">' +
         '<div class="shield"></div>' +
       '</div>' +
       buildMark(p) +
@@ -386,7 +412,10 @@
 
     const title = frame.querySelector('.caption-title');
     if (!published){
-      title.addEventListener('blur', function(){ p.title = title.textContent.trim(); });
+      title.addEventListener('blur', function(){
+        p.title = title.textContent.trim();
+        img.alt = p.title;
+      });
       title.addEventListener('keydown', function(e){
         if (e.key === 'Enter'){ e.preventDefault(); title.blur(); }
       });
@@ -419,10 +448,20 @@
     els.footer.style.display = (rendered > 0 && rendered >= list.length) ? 'block' : 'none';
   }
 
+  /* The observer only fires when the sentinel *crosses* into range. Repainting
+     a shorter roll can leave it already in range and silently stuck, so top the
+     roll up until the sentinel is back below the runway. */
+  function fillViewport(){
+    let guard = 0;
+    while (rendered < visible().length && guard++ < 40){
+      if (els.sentinel.getBoundingClientRect().top > window.innerHeight + LOOKAHEAD) break;
+      paintBatch();
+    }
+  }
+
   function repaint(){
     els.roll.innerHTML = '';
     rendered = 0;
-    paintBatch();
     paintTabs();
     const any = photos.length > 0;
     els.empty.style.display = any ? 'none' : 'flex';
@@ -430,23 +469,36 @@
     els.fabTarget.textContent = active === 'All' ? 'All' : active;
     const n = visible().length;
     els.tally.textContent = (n === 1 ? '1 frame' : n + ' frames');
+    paintBatch();
+    fillViewport();
   }
 
   function paintTabs(){
     /* No collections on a published site means no tab bar: just the main scroll. */
-    if (published && !collections.length){ els.tabs.innerHTML = ''; els.tabs.style.display = 'none'; return; }
+    if (published && !collections.length){
+      els.tabs.innerHTML = '';
+      els.tabs.style.display = 'none';
+      els.masthead.classList.add('no-tabs');
+      return;
+    }
     els.tabs.style.display = '';
+    els.masthead.classList.remove('no-tabs');
     const list = ['All'].concat(collections);
     let html = list.map(function(c){
       const n = c === 'All' ? photos.length : photos.filter(function(p){ return p.collection === c; }).length;
       return '<button class="tab" role="tab" aria-selected="' + (c === active) + '" data-col="' + esc(c) + '">' +
              esc(c) + '<span class="tab-count">' + n + '</span></button>';
     }).join('');
-    if (!published) html += '<button class="tab tab-new" id="newCol" title="New collection">+</button>';
+    if (!published) html += '<button class="tab tab-new" id="newCol" title="New collection" aria-label="New collection">+</button>';
     els.tabs.innerHTML = html;
 
     els.tabs.querySelectorAll('.tab[data-col]').forEach(function(btn){
-      btn.addEventListener('click', function(){ active = btn.dataset.col; repaint(); });
+      btn.addEventListener('click', function(){
+        if (active === btn.dataset.col) return;
+        active = btn.dataset.col;
+        window.scrollTo(0, 0);
+        repaint();
+      });
     });
     const nc = document.getElementById('newCol');
     if (nc) nc.addEventListener('click', function(){
@@ -466,11 +518,30 @@
     return collections[0];
   }
 
+  /* Drafting only, so it is fetched on first use rather than shipped to every
+     visitor of the published site. Resolves to null if the CDN is unreachable:
+     filenames still become captions, the exposure line is simply left off. */
+  let exifrReady = null;
+  function loadExifr(){
+    if (!exifrReady){
+      exifrReady = new Promise(function(resolve){
+        const tag = document.createElement('script');
+        tag.src = EXIFR;
+        tag.onload = function(){ resolve(window.exifr || null); };
+        tag.onerror = function(){ resolve(null); };
+        document.head.appendChild(tag);
+      });
+    }
+    return exifrReady;
+  }
+
   async function ingest(fileList){
+    if (published) return;
     const files = Array.prototype.slice.call(fileList)
       .filter(function(f){ return f.type.indexOf('image/') === 0; });
     if (!files.length) return;
     const target = active === 'All' ? ensureDefault() : active;
+    const reader = await loadExifr();
 
     for (const file of files){
       const p = {
@@ -478,21 +549,22 @@
         title: titleFromFilename(file.name),
         collection: target
       };
-      try {
-        const x = await exifr.parse(file, { pick:[
-          'Make','Model','LensModel','FocalLength','FNumber','ExposureTime',
-          'ISO','DateTimeOriginal','CreateDate','ExifImageWidth','ExifImageHeight'
-        ]});
-        if (x){
-          p.make = x.Make; p.model = x.Model; p.lens = x.LensModel;
-          p.focal = x.FocalLength; p.aperture = x.FNumber;
-          p.shutter = x.ExposureTime; p.iso = x.ISO;
-          p.date = x.DateTimeOriginal || x.CreateDate;
-          p.w = x.ExifImageWidth; p.h = x.ExifImageHeight;
-        }
-      } catch(err){ /* no EXIF — the caption still works */ }
+      if (reader){
+        try {
+          const x = await reader.parse(file, { pick:[
+            'Make','Model','LensModel','FocalLength','FNumber','ExposureTime',
+            'ISO','DateTimeOriginal','CreateDate','ExifImageWidth','ExifImageHeight'
+          ]});
+          if (x){
+            p.make = x.Make; p.model = x.Model; p.lens = x.LensModel;
+            p.focal = x.FocalLength; p.aperture = x.FNumber;
+            p.shutter = x.ExposureTime; p.iso = x.ISO;
+            p.date = x.DateTimeOriginal || x.CreateDate;
+            p.w = x.ExifImageWidth; p.h = x.ExifImageHeight;
+          }
+        } catch(err){ /* no EXIF — the caption still works */ }
+      }
       photos.push(p);
-      uid++;
     }
     repaint();
   }
@@ -527,8 +599,9 @@
   els.fab.addEventListener('click', function(){ els.fileInput.click(); });
   document.getElementById('emptyAdd').addEventListener('click', function(){ els.fileInput.click(); });
 
-  document.body.addEventListener('dragover', function(e){ e.preventDefault(); });
+  document.body.addEventListener('dragover', function(e){ if (!published) e.preventDefault(); });
   document.body.addEventListener('drop', function(e){
+    if (published) return;
     e.preventDefault();
     if (e.dataTransfer && e.dataTransfer.files.length) ingest(e.dataTransfer.files);
   });
@@ -542,8 +615,8 @@
   });
 
   new IntersectionObserver(function(entries){
-    if (entries[0].isIntersecting && rendered < visible().length) paintBatch();
-  }, {rootMargin:'900px'}).observe(els.sentinel);
+    if (entries[0].isIntersecting) fillViewport();
+  }, {rootMargin: LOOKAHEAD + 'px'}).observe(els.sentinel);
 
   loadManifest().then(function(ok){ if (!ok) repaint(); });
 })();

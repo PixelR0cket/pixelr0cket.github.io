@@ -1,6 +1,9 @@
 # Full-resolution originals never leave this machine.
 originals/
 
+# Full-size logo artwork: only the generated logos/*.png are deployed.
+logos/source/
+
 # macOS
 .DS_Store
 ._*
