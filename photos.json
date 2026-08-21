@@ -3,20 +3,20 @@
   "collections": [],
   "photos": [
     {
-      "src": "photos/the-race.jpg",
-      "title": "The Race",
+      "src": "photos/plymouth.jpg",
+      "title": "Plymouth",
       "w": 2000,
-      "h": 1333,
+      "h": 986,
       "make": "SONY",
       "model": "ILCE-6700",
-      "lens": "E 70-350mm F4.5-6.3 G OSS",
-      "focal": 119.0,
+      "lens": "17-40mm F1.8 DC | Art 025",
+      "focal": 17.2,
       "aperture": 5.6,
-      "shutter": 0.0008,
+      "shutter": 0.004,
       "iso": 125,
-      "date": "2026-08-08T12:40:45",
-      "id": "a59fd8ec4aca",
-      "added": "2026-08-21T14:31:04"
+      "date": "2026-08-08T11:09:42",
+      "id": "3abea30e0d9e",
+      "added": "2026-08-21T14:40:49"
     },
     {
       "src": "photos/sunset.jpg",
