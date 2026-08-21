@@ -352,6 +352,10 @@ def build():
         photos.append({k: v for k, v in record.items() if v not in (None, "")})
         photos[-1].setdefault("title", "")
 
+        if not record["make"] and not record["model"]:
+            print(f"  ! {stem}: no camera details. The export kept no EXIF "
+                  f"(Photoshop drops it) — add {stem}.txt to type them in.")
+
         label = record["title"] or stem
         print(f"  {(collection or chr(8212)):22} {label[:38]:40} {w}x{h}")
 
