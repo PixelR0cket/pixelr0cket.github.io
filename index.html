@@ -105,8 +105,11 @@
   /* ---------------- the roll ---------------- */
   .roll{ max-width:1120px; margin:0 auto; padding:0 var(--gutter) 40px; }
 
-  .frame{ padding-top:78px; }
+  .frame{ padding-top:78px; display:flex; flex-direction:column; }
   .frame:first-child{ padding-top:44px; }
+  .frame > .plate{ order:1; }
+  .frame > .caption{ order:2; }
+  .frame > .mark{ order:3; }
 
   .plate{
     position:relative;
@@ -128,7 +131,8 @@
   .mark{
     display:flex; align-items:flex-start; justify-content:space-between;
     gap:28px;
-    padding:18px 2px 0 2px;
+    margin-top:18px; padding:16px 2px 0 2px;
+    border-top:1px solid var(--hairline);
   }
   .mark-exposure{ min-width:0; }
   .mark-line-1{
@@ -151,8 +155,7 @@
 
   /* ---------------- caption ---------------- */
   .caption{
-    margin-top:20px; padding-top:16px;
-    border-top:1px solid var(--hairline);
+    margin-top:18px;
     display:flex; align-items:baseline; justify-content:space-between; gap:20px;
   }
   .caption-title{
@@ -209,17 +212,9 @@
     .frame{ padding-top:56px; }
     .frame-actions{ opacity:1; }
 
-    /* On a narrow screen the camera mark stacks and grows tall, pushing the
-       title far from its photograph. Put the title back under the picture and
-       let the technical data sit below it, quieter. */
-    .frame{ display:flex; flex-direction:column; }
-    .frame .plate{ order:1; }
-    .frame .caption{ order:2; margin-top:15px; padding-top:0; border-top:none; }
-    .frame .mark{ order:3;
-      margin-top:15px; padding:15px 2px 0 2px;
-      border-top:1px solid var(--hairline);
-      flex-direction:column; gap:11px;
-    }
+    /* Narrow screens: the same order, tightened, with the mark stacked. */
+    .frame > .caption{ margin-top:15px; }
+    .frame > .mark{ margin-top:15px; padding-top:15px; flex-direction:column; gap:11px; }
 
     .caption-title{ font-size:21px; }
     .mark-line-1{ font-size:13px; }
