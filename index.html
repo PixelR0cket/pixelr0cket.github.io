@@ -275,9 +275,14 @@
     brand: document.querySelector('.brand')
   };
 
+  /* Two views stand outside the collections: MAIN is the front page — the
+     photographs hung loose, with no collection behind them — and 'All' is
+     everything the site holds, collections included. */
+  const MAIN = 'Selected';
+
   let photos = [];
   let collections = [];
-  let active = 'All';
+  let active = MAIN;
   let rendered = 0;
   let published = false;
 
@@ -347,7 +352,9 @@
   /* ---------- rendering ---------- */
 
   function visible(){
-    return active === 'All' ? photos : photos.filter(p => p.collection === active);
+    if (active === 'All') return photos;
+    if (active === MAIN) return photos.filter(p => !p.collection);
+    return photos.filter(p => p.collection === active);
   }
 
   function buildMark(x){
@@ -498,7 +505,7 @@
     const any = photos.length > 0;
     els.empty.style.display = any ? 'none' : 'flex';
     if (!published) els.fab.style.display = any ? 'flex' : 'none';
-    els.fabTarget.textContent = active === 'All' ? 'All' : active;
+    els.fabTarget.textContent = active;
     retally();
     paintBatch();
     fillViewport();
@@ -514,9 +521,11 @@
     }
     els.tabs.style.display = '';
     els.masthead.classList.remove('no-tabs');
-    const list = ['All'].concat(collections);
+    const list = [MAIN, 'All'].concat(collections);
     let html = list.map(function(c){
-      const n = c === 'All' ? photos.length : photos.filter(function(p){ return p.collection === c; }).length;
+      const n = c === 'All' ? photos.length
+              : c === MAIN ? photos.filter(function(p){ return !p.collection; }).length
+              : photos.filter(function(p){ return p.collection === c; }).length;
       return '<button class="tab" role="tab" aria-selected="' + (c === active) + '" data-col="' + esc(c) + '">' +
              esc(c) + '<span class="tab-count">' + n + '</span></button>';
     }).join('');
@@ -544,11 +553,6 @@
 
   /* ---------- local ingest ---------- */
 
-  function ensureDefault(){
-    if (!collections.length) collections.push('Selected work');
-    return collections[0];
-  }
-
   /* Drafting only, so it is fetched on first use rather than shipped to every
      visitor of the published site. Resolves to null if the CDN is unreachable:
      filenames still become captions, the exposure line is simply left off. */
@@ -571,7 +575,7 @@
     const files = Array.prototype.slice.call(fileList)
       .filter(function(f){ return f.type.indexOf('image/') === 0; });
     if (!files.length) return;
-    const target = active === 'All' ? ensureDefault() : active;
+    const target = (active === 'All' || active === MAIN) ? null : active;
     const reader = await loadExifr();
 
     for (const file of files){
