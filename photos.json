@@ -8,7 +8,8 @@
   ],
   "photos": [
     {
-      "src": "photos/dsc01995.jpg",
+      "src": "photos/flamenco-dancer-2.jpg",
+      "title": "Flamenco Dancer 2",
       "w": 1537,
       "h": 2000,
       "make": "SONY",
@@ -20,11 +21,11 @@
       "iso": 640,
       "date": "2026-04-08T17:56:31",
       "id": "8c05c9d0c1d2",
-      "added": "2026-08-25T09:52:56",
-      "title": ""
+      "added": "2026-08-25T09:52:56"
     },
     {
-      "src": "photos/dsc01918.jpg",
+      "src": "photos/setas-de-sevilla.jpg",
+      "title": "Setas De Sevilla",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -36,8 +37,7 @@
       "iso": 250,
       "date": "2026-04-08T17:12:47",
       "id": "e675a432a0f5",
-      "added": "2026-08-25T09:52:56",
-      "title": ""
+      "added": "2026-08-25T09:52:56"
     },
     {
       "src": "photos/landscape-dsc01344-2.jpg",
@@ -91,41 +91,8 @@
       "title": ""
     },
     {
-      "src": "photos/wildlife-dsc00805-2.jpg",
-      "collection": "Wildlife",
-      "w": 1340,
-      "h": 2000,
-      "make": "SONY",
-      "model": "ILCE-6700",
-      "lens": "E 70-350mm F4.5-6.3 G OSS",
-      "focal": 350.0,
-      "aperture": 6.3,
-      "shutter": 0.005,
-      "iso": 160,
-      "date": "2025-12-20T11:49:27",
-      "id": "884fdc14e63a",
-      "added": "2026-08-25T09:51:17",
-      "title": ""
-    },
-    {
-      "src": "photos/wildlife-dsc00783-2.jpg",
-      "collection": "Wildlife",
-      "w": 1333,
-      "h": 2000,
-      "make": "SONY",
-      "model": "ILCE-6700",
-      "lens": "E 70-350mm F4.5-6.3 G OSS",
-      "focal": 350.0,
-      "aperture": 6.3,
-      "shutter": 0.004,
-      "iso": 125,
-      "date": "2025-12-20T11:27:00",
-      "id": "1293db45c8a7",
-      "added": "2026-08-25T09:51:17",
-      "title": ""
-    },
-    {
-      "src": "photos/wildlife-dsc00748.jpg",
+      "src": "photos/wildlife-early-bird.jpg",
+      "title": "Early Bird",
       "collection": "Wildlife",
       "w": 2000,
       "h": 1333,
@@ -138,11 +105,11 @@
       "iso": 80,
       "date": "2025-12-20T11:22:34",
       "id": "6abeb54a571d",
-      "added": "2026-08-25T09:51:17",
-      "title": ""
+      "added": "2026-08-25T09:51:17"
     },
     {
-      "src": "photos/wildlife-dsc00598.jpg",
+      "src": "photos/wildlife-black-swan.jpg",
+      "title": "Black Swan",
       "collection": "Wildlife",
       "w": 2000,
       "h": 1333,
@@ -155,8 +122,7 @@
       "iso": 160,
       "date": "2025-11-30T14:24:39",
       "id": "2101da847e72",
-      "added": "2026-08-25T09:51:17",
-      "title": ""
+      "added": "2026-08-25T09:51:17"
     },
     {
       "src": "photos/landscape-mudeford-3.jpg",
@@ -176,8 +142,8 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/wildlife-mudeford-1.jpg",
-      "title": "Mudeford 1",
+      "src": "photos/wildlife-angel.jpg",
+      "title": "Angel",
       "collection": "Wildlife",
       "w": 2000,
       "h": 1333,
