@@ -8,6 +8,38 @@
   ],
   "photos": [
     {
+      "src": "photos/dsc01995.jpg",
+      "w": 1537,
+      "h": 2000,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "17-40mm F1.8 DC | Art 025",
+      "focal": 40.0,
+      "aperture": 1.8,
+      "shutter": 0.002,
+      "iso": 640,
+      "date": "2026-04-08T17:56:31",
+      "id": "8c05c9d0c1d2",
+      "added": "2026-08-25T09:52:56",
+      "title": ""
+    },
+    {
+      "src": "photos/dsc01918.jpg",
+      "w": 2000,
+      "h": 1333,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "17-40mm F1.8 DC | Art 025",
+      "focal": 38.2,
+      "aperture": 4,
+      "shutter": 0.005,
+      "iso": 250,
+      "date": "2026-04-08T17:12:47",
+      "id": "e675a432a0f5",
+      "added": "2026-08-25T09:52:56",
+      "title": ""
+    },
+    {
       "src": "photos/landscape-dsc01344-2.jpg",
       "collection": "Landscape",
       "w": 2000,
