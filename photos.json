@@ -1,64 +1,12 @@
 {
   "title": "Keith Merkelt Photography",
   "collections": [
-    "Cars",
-    "Landscape",
-    "Portraits",
-    "Wildlife"
+    "Cars"
   ],
   "photos": [
     {
-      "src": "photos/flamenco-dancer-2.jpg",
-      "title": "Flamenco Dancer 2",
-      "w": 1537,
-      "h": 2000,
-      "make": "SONY",
-      "model": "ILCE-6700",
-      "lens": "17-40mm F1.8 DC | Art 025",
-      "focal": 40.0,
-      "aperture": 1.8,
-      "shutter": 0.002,
-      "iso": 640,
-      "date": "2026-04-08T17:56:31",
-      "id": "8c05c9d0c1d2",
-      "added": "2026-08-25T09:52:56"
-    },
-    {
-      "src": "photos/setas-de-sevilla.jpg",
-      "title": "Setas De Sevilla",
-      "w": 2000,
-      "h": 1333,
-      "make": "SONY",
-      "model": "ILCE-6700",
-      "lens": "17-40mm F1.8 DC | Art 025",
-      "focal": 38.2,
-      "aperture": 4,
-      "shutter": 0.005,
-      "iso": 250,
-      "date": "2026-04-08T17:12:47",
-      "id": "e675a432a0f5",
-      "added": "2026-08-25T09:52:56"
-    },
-    {
-      "src": "photos/landscape-dsc01344-2.jpg",
-      "collection": "Landscape",
-      "w": 2000,
-      "h": 1333,
-      "make": "SONY",
-      "model": "ILCE-6700",
-      "lens": "E 70-350mm F4.5-6.3 G OSS",
-      "focal": 70.0,
-      "aperture": 5.6,
-      "shutter": 0.016666666666666666,
-      "iso": 50,
-      "date": "2026-01-02T15:58:59",
-      "id": "a674043fe042",
-      "added": "2026-08-25T09:51:17",
-      "title": ""
-    },
-    {
-      "src": "photos/landscape-dsc01336.jpg",
-      "collection": "Landscape",
+      "src": "photos/winter-moon.jpg",
+      "title": "Winter Moon",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -69,48 +17,12 @@
       "shutter": 0.016666666666666666,
       "iso": 50,
       "date": "2026-01-02T15:58:04",
-      "id": "73d1c4d1dc8c",
-      "added": "2026-08-25T09:51:17",
-      "title": ""
+      "id": "44862e9479f3",
+      "added": "2026-08-25T13:29:48"
     },
     {
-      "src": "photos/landscape-dsc01310-2.jpg",
-      "collection": "Landscape",
-      "w": 2000,
-      "h": 1333,
-      "make": "SONY",
-      "model": "ILCE-6700",
-      "lens": "E 70-350mm F4.5-6.3 G OSS",
-      "focal": 70.0,
-      "aperture": 7.1,
-      "shutter": 0.0025,
-      "iso": 50,
-      "date": "2026-01-02T15:54:32",
-      "id": "14f2de5b07ce",
-      "added": "2026-08-25T09:51:17",
-      "title": ""
-    },
-    {
-      "src": "photos/wildlife-early-bird.jpg",
-      "title": "Early Bird",
-      "collection": "Wildlife",
-      "w": 2000,
-      "h": 1333,
-      "make": "SONY",
-      "model": "ILCE-6700",
-      "lens": "E 70-350mm F4.5-6.3 G OSS",
-      "focal": 350.0,
-      "aperture": 6.3,
-      "shutter": 0.004,
-      "iso": 80,
-      "date": "2025-12-20T11:22:34",
-      "id": "6abeb54a571d",
-      "added": "2026-08-25T09:51:17"
-    },
-    {
-      "src": "photos/wildlife-black-swan.jpg",
+      "src": "photos/black-swan.jpg",
       "title": "Black Swan",
-      "collection": "Wildlife",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -125,9 +37,8 @@
       "added": "2026-08-25T09:51:17"
     },
     {
-      "src": "photos/landscape-mudeford-3.jpg",
+      "src": "photos/mudeford-3.jpg",
       "title": "Mudeford 3",
-      "collection": "Landscape",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -142,9 +53,8 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/wildlife-angel.jpg",
+      "src": "photos/angel.jpg",
       "title": "Angel",
-      "collection": "Wildlife",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -159,9 +69,8 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/portraits-mudeford-5.jpg",
+      "src": "photos/mudeford-5.jpg",
       "title": "Mudeford 5",
-      "collection": "Portraits",
       "w": 1104,
       "h": 2000,
       "make": "SONY",
@@ -176,9 +85,8 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/landscape-mudeford-4.jpg",
+      "src": "photos/mudeford-4.jpg",
       "title": "Mudeford 4",
-      "collection": "Landscape",
       "w": 2000,
       "h": 1107,
       "make": "SONY",
@@ -193,9 +101,8 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/landscape-mudeford-6.jpg",
+      "src": "photos/mudeford-6.jpg",
       "title": "Mudeford 6",
-      "collection": "Landscape",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -210,9 +117,8 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/landscape-mudeford-2.jpg",
+      "src": "photos/mudeford-2.jpg",
       "title": "Mudeford 2",
-      "collection": "Landscape",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -444,8 +350,9 @@
       "added": "2026-08-21T14:42:00"
     },
     {
-      "src": "photos/plymouth.jpg",
+      "src": "photos/cars-plymouth.jpg",
       "title": "Plymouth",
+      "collection": "Cars",
       "w": 2000,
       "h": 986,
       "make": "SONY",
@@ -524,8 +431,8 @@
       "added": "2026-08-21T14:04:28"
     },
     {
-      "src": "photos/parasol-at-golden-hour.jpg",
-      "title": "Parasol At Golden Hour",
+      "src": "photos/setas-de-sevilla.jpg",
+      "title": "Setas De Sevilla",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -552,7 +459,7 @@
       "shutter": 0.0015625,
       "iso": 200,
       "date": "2026-04-11T18:00:11",
-      "id": "f4daf9bfb6db",
+      "id": "066a336054a2",
       "added": "2026-08-21T09:36:06"
     },
     {
