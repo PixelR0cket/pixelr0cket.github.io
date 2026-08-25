@@ -1,14 +1,135 @@
 {
   "title": "Keith Merkelt Photography",
   "collections": [
-    "Mudeford",
-    "Santa Pod"
+    "Cars",
+    "Landscape",
+    "Portraits",
+    "Wildlife"
   ],
   "photos": [
     {
-      "src": "photos/mudeford-mudeford-3.jpg",
+      "src": "photos/landscape-dsc01344-2.jpg",
+      "collection": "Landscape",
+      "w": 2000,
+      "h": 1333,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 70.0,
+      "aperture": 5.6,
+      "shutter": 0.016666666666666666,
+      "iso": 50,
+      "date": "2026-01-02T15:58:59",
+      "id": "a674043fe042",
+      "added": "2026-08-25T09:51:17",
+      "title": ""
+    },
+    {
+      "src": "photos/landscape-dsc01336.jpg",
+      "collection": "Landscape",
+      "w": 2000,
+      "h": 1333,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 70.0,
+      "aperture": 7.1,
+      "shutter": 0.016666666666666666,
+      "iso": 50,
+      "date": "2026-01-02T15:58:04",
+      "id": "73d1c4d1dc8c",
+      "added": "2026-08-25T09:51:17",
+      "title": ""
+    },
+    {
+      "src": "photos/landscape-dsc01310-2.jpg",
+      "collection": "Landscape",
+      "w": 2000,
+      "h": 1333,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 70.0,
+      "aperture": 7.1,
+      "shutter": 0.0025,
+      "iso": 50,
+      "date": "2026-01-02T15:54:32",
+      "id": "14f2de5b07ce",
+      "added": "2026-08-25T09:51:17",
+      "title": ""
+    },
+    {
+      "src": "photos/wildlife-dsc00805-2.jpg",
+      "collection": "Wildlife",
+      "w": 1340,
+      "h": 2000,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.005,
+      "iso": 160,
+      "date": "2025-12-20T11:49:27",
+      "id": "884fdc14e63a",
+      "added": "2026-08-25T09:51:17",
+      "title": ""
+    },
+    {
+      "src": "photos/wildlife-dsc00783-2.jpg",
+      "collection": "Wildlife",
+      "w": 1333,
+      "h": 2000,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.004,
+      "iso": 125,
+      "date": "2025-12-20T11:27:00",
+      "id": "1293db45c8a7",
+      "added": "2026-08-25T09:51:17",
+      "title": ""
+    },
+    {
+      "src": "photos/wildlife-dsc00748.jpg",
+      "collection": "Wildlife",
+      "w": 2000,
+      "h": 1333,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.004,
+      "iso": 80,
+      "date": "2025-12-20T11:22:34",
+      "id": "6abeb54a571d",
+      "added": "2026-08-25T09:51:17",
+      "title": ""
+    },
+    {
+      "src": "photos/wildlife-dsc00598.jpg",
+      "collection": "Wildlife",
+      "w": 2000,
+      "h": 1333,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.0015625,
+      "iso": 160,
+      "date": "2025-11-30T14:24:39",
+      "id": "2101da847e72",
+      "added": "2026-08-25T09:51:17",
+      "title": ""
+    },
+    {
+      "src": "photos/landscape-mudeford-3.jpg",
       "title": "Mudeford 3",
-      "collection": "Mudeford",
+      "collection": "Landscape",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -23,9 +144,9 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/mudeford-mudeford-1.jpg",
+      "src": "photos/wildlife-mudeford-1.jpg",
       "title": "Mudeford 1",
-      "collection": "Mudeford",
+      "collection": "Wildlife",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -40,9 +161,9 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/mudeford-mudeford-5.jpg",
+      "src": "photos/portraits-mudeford-5.jpg",
       "title": "Mudeford 5",
-      "collection": "Mudeford",
+      "collection": "Portraits",
       "w": 1104,
       "h": 2000,
       "make": "SONY",
@@ -57,9 +178,9 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/mudeford-mudeford-4.jpg",
+      "src": "photos/landscape-mudeford-4.jpg",
       "title": "Mudeford 4",
-      "collection": "Mudeford",
+      "collection": "Landscape",
       "w": 2000,
       "h": 1107,
       "make": "SONY",
@@ -74,9 +195,9 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/mudeford-mudeford-6.jpg",
+      "src": "photos/landscape-mudeford-6.jpg",
       "title": "Mudeford 6",
-      "collection": "Mudeford",
+      "collection": "Landscape",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -91,9 +212,9 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/mudeford-mudeford-2.jpg",
+      "src": "photos/landscape-mudeford-2.jpg",
       "title": "Mudeford 2",
-      "collection": "Mudeford",
+      "collection": "Landscape",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -108,9 +229,9 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/santa-pod-santa-pod-9.jpg",
+      "src": "photos/cars-santa-pod-9.jpg",
       "title": "Santa Pod 9",
-      "collection": "Santa Pod",
+      "collection": "Cars",
       "w": 2000,
       "h": 1334,
       "make": "SONY",
@@ -125,9 +246,9 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/santa-pod-santa-pod-2.jpg",
+      "src": "photos/cars-santa-pod-2.jpg",
       "title": "Santa Pod 2",
-      "collection": "Santa Pod",
+      "collection": "Cars",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -142,9 +263,9 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/santa-pod-santa-pod-6.jpg",
+      "src": "photos/cars-santa-pod-6.jpg",
       "title": "Santa Pod 6",
-      "collection": "Santa Pod",
+      "collection": "Cars",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -159,9 +280,9 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/santa-pod-santa-pod-5.jpg",
+      "src": "photos/cars-santa-pod-5.jpg",
       "title": "Santa Pod 5",
-      "collection": "Santa Pod",
+      "collection": "Cars",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -176,9 +297,9 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/santa-pod-santa-pod-1.jpg",
+      "src": "photos/cars-santa-pod-1.jpg",
       "title": "Santa Pod 1",
-      "collection": "Santa Pod",
+      "collection": "Cars",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -193,9 +314,9 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/santa-pod-santa-pod-3.jpg",
+      "src": "photos/cars-santa-pod-3.jpg",
       "title": "Santa Pod 3",
-      "collection": "Santa Pod",
+      "collection": "Cars",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -210,9 +331,9 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/santa-pod-santa-pod-4.jpg",
+      "src": "photos/cars-santa-pod-4.jpg",
       "title": "Santa Pod 4",
-      "collection": "Santa Pod",
+      "collection": "Cars",
       "w": 2000,
       "h": 974,
       "make": "SONY",
@@ -227,9 +348,9 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/santa-pod-santa-pod-7.jpg",
+      "src": "photos/cars-santa-pod-7.jpg",
       "title": "Santa Pod 7",
-      "collection": "Santa Pod",
+      "collection": "Cars",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
@@ -244,9 +365,9 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/santa-pod-santa-pod-8.jpg",
+      "src": "photos/cars-santa-pod-8.jpg",
       "title": "Santa Pod 8",
-      "collection": "Santa Pod",
+      "collection": "Cars",
       "w": 2000,
       "h": 1333,
       "make": "SONY",
