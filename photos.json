@@ -5,6 +5,22 @@
   ],
   "photos": [
     {
+      "src": "photos/robin.jpg",
+      "title": "Robin",
+      "w": 2000,
+      "h": 1333,
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 14,
+      "shutter": 0.005,
+      "iso": 4000,
+      "date": "2026-07-27T13:24:12",
+      "id": "ba69b8c50d32",
+      "added": "2026-08-25T14:24:04"
+    },
+    {
       "src": "photos/winter-moon.jpg",
       "title": "Winter Moon",
       "w": 2000,
