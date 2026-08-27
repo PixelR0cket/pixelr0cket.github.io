@@ -8,105 +8,90 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#ffffff;
-    --ink:#111111;
-    --graphite:#6b6b6b;
-    --ash:#a6a6a6;
+    --ink:#222222;
+    --graphite:#666666;
+    --ash:#aaaaaa;
     --hairline:#e8e6e3;
     --safelight:#b0392a;
-    --gutter:6vw;
+    /* One column of navigation on the left, one column of pictures beside it. */
+    --side-x:60px;      /* sidebar from the left edge   */
+    --side-w:150px;     /* sidebar width                */
+    --col-x:293px;      /* where the picture column starts */
+    --col-r:78px;       /* breathing room on the right  */
+    --step:93px;        /* vertical gap between frames  */
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--paper);}
   body{
     color:var(--ink);
-    font-family:'Inter',system-ui,sans-serif;
+    font-family:'Karla',system-ui,sans-serif;
+    font-size:14px; line-height:1.5;
     -webkit-font-smoothing:antialiased;
   }
   ::selection{background:#f0ecea;}
 
   /* ---------------- masthead ---------------- */
   .masthead{
-    position:sticky; top:0; z-index:40;
-    background:rgba(255,255,255,0.94);
-    backdrop-filter:saturate(180%) blur(10px);
-    border-bottom:1px solid var(--hairline);
+    position:fixed; top:72px; left:var(--side-x); width:var(--side-w); z-index:40;
+    display:flex; flex-direction:column;
   }
-  .masthead-top{
-    display:flex; align-items:baseline; justify-content:space-between;
-    padding:20px var(--gutter) 0 var(--gutter);
-  }
+  .masthead-top{ display:contents; }
   .brand{
-    font-family:'Newsreader',serif; font-weight:300;
-    font-size:26px; letter-spacing:-0.01em; line-height:1;
+    order:1;
+    font-size:22px; font-weight:700; line-height:1.2;
     outline:none;
     border-bottom:1px dashed transparent; padding-bottom:2px;
   }
   .brand[contenteditable]{cursor:text;}
   .brand[contenteditable]:hover{border-bottom-color:var(--hairline);}
   .brand:focus{border-bottom-color:var(--safelight);}
-  .frame-tally{
-    font-size:11px; font-weight:500; letter-spacing:0.1em;
-    text-transform:uppercase; color:var(--ash);
-  }
-  /* No tab bar to sit under the brand? Put its padding back. */
-  .masthead.no-tabs .masthead-top{ padding-bottom:18px; }
+  .frame-tally{ order:3; margin-top:26px; color:var(--ash); }
+  .masthead.no-tabs .frame-tally{ margin-top:22px; }
 
   /* ---------------- collection tabs ---------------- */
-  .tabs{
-    display:flex; align-items:stretch;
-    padding:14px var(--gutter) 0 var(--gutter);
-    overflow-x:auto; scrollbar-width:none;
-  }
-  .tabs::-webkit-scrollbar{display:none;}
+  .tabs{ order:2; display:block; margin-top:26px; }
   .tab{
     appearance:none; background:none; border:none;
-    font-family:'Inter',sans-serif;
-    font-size:12px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--ash); cursor:pointer;
-    padding:0 0 12px 0; margin-right:26px;
-    border-bottom:2px solid transparent;
-    white-space:nowrap;
+    display:block; width:100%; text-align:left;
+    font:inherit; color:var(--ink); cursor:pointer;
+    padding:0; margin:0 0 2px 0;
+    line-height:1.6;
     transition:color .15s ease;
   }
-  .tab:hover{color:var(--graphite);}
-  .tab[aria-selected="true"]{ color:var(--ink); border-bottom-color:var(--safelight); }
-  .tab-count{ color:var(--ash); font-weight:400; margin-left:6px; }
-  .tab-new{ color:var(--ash); font-size:16px; line-height:1; padding-bottom:14px; }
-  .tab-new:hover{ color:var(--safelight); }
+  .tab:hover{color:var(--ash);}
+  /* The collection you are already looking at is the one you cannot click. */
+  .tab[aria-selected="true"]{ color:var(--ash); cursor:default; }
+  .tab-count{ color:var(--ash); margin-left:7px; }
+  .tab-new{ color:var(--ash); margin-top:8px; }
+  .tab-new:hover{ color:var(--ink); }
 
   /* ---------------- empty state ---------------- */
   .empty{
-    min-height:64vh; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; text-align:center;
-    padding:40px var(--gutter);
+    margin-left:var(--col-x); margin-right:var(--col-r); max-width:541px;
+    padding:80px 0 40px;
   }
   .empty h1{
-    font-family:'Newsreader',serif; font-weight:300; font-style:italic;
-    font-size:clamp(30px,4.2vw,46px); margin:0 0 12px; line-height:1.15;
+    font-size:22px; font-weight:700; line-height:1.2;
+    margin:0 0 12px; letter-spacing:normal;
   }
-  .empty p{
-    font-size:14px; line-height:1.65; color:var(--graphite);
-    max-width:430px; margin:0 0 30px;
-  }
+  .empty p{ color:var(--ink); margin:0 0 22px; }
   .btn{
-    font-family:'Inter',sans-serif;
-    font-size:11.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase;
-    border:1px solid var(--ink); background:transparent; color:var(--ink);
-    padding:13px 26px; cursor:pointer; border-radius:2px;
-    transition:background .15s ease,color .15s ease;
+    font:inherit; color:var(--ink); background:none; border:none; padding:0;
+    cursor:pointer; text-decoration:underline; text-underline-offset:3px;
+    transition:color .15s ease;
   }
-  .btn:hover{ background:var(--ink); color:var(--paper); }
+  .btn:hover{ color:var(--ash); }
   input[type=file]{display:none;}
 
   /* ---------------- the roll ---------------- */
-  .roll{ max-width:1120px; margin:0 auto; padding:0 var(--gutter) 40px; }
+  .roll{ margin-left:var(--col-x); margin-right:var(--col-r); max-width:900px; padding:0 0 40px; }
 
-  .frame{ padding-top:78px; display:flex; flex-direction:column; }
-  .frame:first-child{ padding-top:44px; }
+  .frame{ padding-top:var(--step); display:flex; flex-direction:column; }
+  .frame:first-child{ padding-top:72px; }
   .frame > .plate{ order:1; }
   .frame > .caption{ order:2; }
   .frame > .mark{ order:3; }
@@ -131,36 +116,28 @@
   .mark{
     display:flex; align-items:flex-start; justify-content:space-between;
     gap:28px;
-    margin-top:18px; padding:16px 2px 0 2px;
-    border-top:1px solid var(--hairline);
+    margin-top:2px; padding:0;
   }
   .mark-exposure{ min-width:0; }
-  .mark-line-1{
-    font-size:15px; font-weight:600; letter-spacing:-0.005em; color:var(--ink);
-  }
-  .mark-line-2{
-    font-size:14px; font-weight:400; color:var(--ash); margin-top:3px;
-  }
+  .mark-line-1{ color:var(--ash); }
+  .mark-line-2{ color:var(--ash); }
   .mark-body{ display:flex; align-items:center; gap:18px; flex-shrink:0; }
-  .mark-make{
-    font-size:14px; font-weight:700;
-    letter-spacing:0.2em; text-transform:uppercase;
-    color:var(--ink); white-space:nowrap;
-  }
-  .mark-logo{ height:13px; width:auto; flex-shrink:0; display:block; }
-  .mark-rule{ width:1px; align-self:stretch; background:var(--hairline); }
+  .mark-make{ color:var(--ash); white-space:nowrap; }
+  /* Maker logos ship as solid black artwork. Now that every other piece of
+     metadata is grey, an untouched logo outweighs the photograph's own title. */
+  .mark-logo{ height:13px; width:auto; flex-shrink:0; display:block; opacity:0.34; }
+  .mark-rule{ width:1px; align-self:stretch; background:#ececec; }
   .mark-gear{ text-align:left; min-width:0; }
-  .mark-model{ font-size:15px; font-weight:600; color:var(--ink); }
-  .mark-lens{ font-size:14px; font-weight:400; color:var(--ash); margin-top:3px; }
+  .mark-model{ color:var(--ash); }
+  .mark-lens{ color:var(--ash); }
 
   /* ---------------- caption ---------------- */
   .caption{
-    margin-top:18px;
+    margin-top:14px;
     display:flex; align-items:baseline; justify-content:space-between; gap:20px;
   }
   .caption-title{
-    font-family:'Newsreader',serif; font-weight:400;
-    font-size:25px; line-height:1.25; color:var(--ink);
+    font:inherit; font-style:italic; color:var(--ink);
     outline:none; min-width:100px;
     border-bottom:1px dashed transparent; padding-bottom:2px;
   }
@@ -177,53 +154,61 @@
   .frame:hover .frame-actions, .frame:focus-within .frame-actions{ opacity:1; }
   .link-action{
     appearance:none; background:none; border:none; padding:0; cursor:pointer;
-    font-family:'Inter',sans-serif;
-    font-size:11px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--ash);
+    font:inherit; color:var(--ash);
+    text-decoration:underline; text-underline-offset:3px;
   }
-  .link-action:hover{ color:var(--safelight); }
+  .link-action:hover{ color:var(--ink); }
 
   /* ---------------- add button ---------------- */
   .fab{
-    position:fixed; right:var(--gutter); bottom:30px; z-index:40;
-    display:none; align-items:center;
-    background:var(--ink); color:var(--paper);
-    border:none; border-radius:2px; cursor:pointer;
-    font-family:'Inter',sans-serif;
-    font-size:11.5px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase;
-    padding:14px 20px;
-    box-shadow:0 8px 26px rgba(0,0,0,0.20);
-    transition:background .15s ease,transform .15s ease;
+    position:fixed; left:var(--side-x); bottom:60px; z-index:40;
+    display:none; width:var(--side-w); text-align:left;
+    font:inherit; color:var(--ink); background:none; border:none; padding:0;
+    cursor:pointer; text-decoration:underline; text-underline-offset:3px;
+    transition:color .15s ease;
   }
-  .fab:hover{ background:var(--safelight); transform:translateY(-2px); }
+  .fab:hover{ color:var(--ash); }
 
   .sentinel{ height:1px; }
   footer{
-    text-align:center; font-size:10.5px; font-weight:500;
-    letter-spacing:0.14em; text-transform:uppercase; color:var(--ash);
-    padding:24px 0 80px; display:none;
+    margin-left:var(--col-x); color:var(--ash);
+    padding:26px 0 80px; display:none;
   }
 
-  @media (max-width:680px){
-    :root{ --gutter:5vw; }
-    .brand{ font-size:19px; }
-    .masthead-top{ gap:16px; }
-    .frame-tally{ flex-shrink:0; }
-    .frame{ padding-top:56px; }
+  /* Narrower desktops: pull both columns in before anything has to move. */
+  @media (max-width:1100px){
+    :root{ --side-x:40px; --col-x:230px; --col-r:40px; --step:76px; }
+  }
+
+  /* No room for two columns: the sidebar becomes a header and the pictures run full width. */
+  @media (max-width:780px){
+    :root{ --side-x:0px; --col-x:0px; --col-r:0px; --step:56px; }
+    body{ padding:0 5vw; }
+    .masthead{
+      position:static; width:auto;
+      padding:34px 0 0; margin-bottom:4px;
+    }
+    .tabs{
+      display:flex; margin-top:18px;
+      overflow-x:auto; scrollbar-width:none;
+    }
+    .tabs::-webkit-scrollbar{ display:none; }
+    .tab{ display:inline-block; width:auto; white-space:nowrap; margin:0 20px 0 0; }
+    .tab-new{ margin-top:0; }
+    .frame-tally{ margin-top:14px; }
+    .masthead.no-tabs .frame-tally{ margin-top:14px; }
+    .empty{ max-width:none; padding-top:44px; }
+    .frame:first-child{ padding-top:34px; }
+    .fab{
+      position:static; width:auto; display:none;
+      margin:22px 0 0;
+    }
     .frame-actions{ opacity:1; }
 
-    /* Narrow screens: the same order, tightened, with the mark stacked. */
-    .frame > .caption{ margin-top:15px; }
-    .frame > .mark{ margin-top:15px; padding-top:15px; flex-direction:column; gap:11px; }
-
-    .caption-title{ font-size:21px; }
-    .mark-line-1{ font-size:13px; }
-    .mark-line-2{ font-size:12.5px; margin-top:2px; }
+    /* Stack the camera mark rather than letting it crush the exposure line. */
+    .frame > .mark{ flex-direction:column; gap:6px; }
     .mark-body{ gap:12px; }
-    .mark-make{ font-size:12px; letter-spacing:0.16em; }
     .mark-logo{ height:11px; }
-    .mark-model{ font-size:13px; }
-    .mark-lens{ font-size:12.5px; margin-top:2px; }
   }
   @media (prefers-reduced-motion:reduce){
     *{ transition:none !important; }
@@ -503,8 +488,8 @@
     rendered = 0;
     paintTabs();
     const any = photos.length > 0;
-    els.empty.style.display = any ? 'none' : 'flex';
-    if (!published) els.fab.style.display = any ? 'flex' : 'none';
+    els.empty.style.display = any ? 'none' : 'block';
+    if (!published) els.fab.style.display = any ? 'block' : 'none';
     els.fabTarget.textContent = active;
     retally();
     paintBatch();
@@ -529,7 +514,7 @@
       return '<button class="tab" role="tab" aria-selected="' + (c === active) + '" data-col="' + esc(c) + '">' +
              esc(c) + '<span class="tab-count">' + n + '</span></button>';
     }).join('');
-    if (!published) html += '<button class="tab tab-new" id="newCol" title="New collection" aria-label="New collection">+</button>';
+    if (!published) html += '<button class="tab tab-new" id="newCol" title="New collection" aria-label="New collection">+ New collection</button>';
     els.tabs.innerHTML = html;
 
     els.tabs.querySelectorAll('.tab[data-col]').forEach(function(btn){
