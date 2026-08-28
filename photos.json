@@ -6,6 +6,24 @@
   ],
   "photos": [
     {
+      "src": "photos/dsc01497-2.jpg",
+      "full": "photos/full/dsc01497-2.jpg",
+      "w": 866,
+      "h": 1300,
+      "tone": "#5a595a",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "17-40mm F1.8 DC | Art 025",
+      "focal": 17.0,
+      "aperture": 9,
+      "shutter": 0.002,
+      "iso": 250,
+      "date": "2026-02-14T13:56:38",
+      "id": "5d99b8b8c3a1",
+      "added": "2026-08-28T12:04:56",
+      "title": ""
+    },
+    {
       "src": "photos/reflecting.jpg",
       "full": "photos/full/reflecting.jpg",
       "title": "Reflecting",
