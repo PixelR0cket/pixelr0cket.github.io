@@ -47,10 +47,12 @@ CONTACT_EMAIL = "hello@pixelrocket.studio"
 # contact.jpg (or .png, .tif ...) straight into originals/. It hangs on the
 # contact page only, and never joins the roll.
 CONTACT_IMAGE = "contact"
-LONG_EDGE = 2000          # max pixel dimension served to the web
+LONG_EDGE = 2000          # the copy the viewer opens, full screen
+GRID_EDGE = 1300          # the copy the roll hangs, two columns wide
 JPEG_QUALITY = 82
 
 SRC = "originals"
+FULL = "full"             # inside photos/: the viewer's copies
 # The front page. A folder by this name is not a collection: its photographs
 # are the ones the site opens on, the same as files left loose in originals/.
 FRONT = "Featured Work"
@@ -271,15 +273,19 @@ def average_tone(img):
     return "#%02x%02x%02x" % one.getpixel((0, 0))
 
 
+def save_jpeg(img, path):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    img.save(path, "JPEG", quality=JPEG_QUALITY, optimize=True, progressive=True)
+
+
 def web_copy(path, slug):
     """Resize one file into photos/ and report what the page needs to hang it."""
     with Image.open(path) as img:
         img = ImageOps.exif_transpose(img)
         if img.mode not in ("RGB", "L"):
             img = img.convert("RGB")
-        img.thumbnail((LONG_EDGE, LONG_EDGE), Image.LANCZOS)
-        img.save(os.path.join(OUT, slug + ".jpg"), "JPEG", quality=JPEG_QUALITY,
-                 optimize=True, progressive=True)
+        img.thumbnail((GRID_EDGE, GRID_EDGE), Image.LANCZOS)
+        save_jpeg(img, os.path.join(OUT, slug + ".jpg"))
         w, h = img.size
         return {"src": f"{OUT}/{slug}.jpg", "w": w, "h": h, "tone": average_tone(img)}
 
@@ -358,13 +364,18 @@ def build():
                 slug, n = f"{base}-{n}", n + 1
             used.add(slug)
 
-            outfile = os.path.join(OUT, slug + ".jpg")
             # Saving a fresh image writes no EXIF: location and serial numbers
             # never reach the web copy.
-            img.save(outfile, "JPEG", quality=JPEG_QUALITY,
-                     optimize=True, progressive=True)
-            w, h = img.size
-            tone = average_tone(img)
+            save_jpeg(img, os.path.join(OUT, FULL, slug + ".jpg"))
+
+            # The roll hangs a smaller copy. A photograph 615px wide on screen
+            # has no use for 2000 pixels, and twenty of them have to arrive
+            # before the page is a page.
+            grid = img.copy()
+            grid.thumbnail((GRID_EDGE, GRID_EDGE), Image.LANCZOS)
+            save_jpeg(grid, os.path.join(OUT, slug + ".jpg"))
+            w, h = grid.size
+            tone = average_tone(grid)
 
         # What you typed beside the photograph wins, then whatever the file
         # itself knows, then what the roll declares. Film scans know nothing,
@@ -377,6 +388,7 @@ def build():
 
         record = {
             "src": f"{OUT}/{slug}.jpg",
+            "full": f"{OUT}/{FULL}/{slug}.jpg",
             "title": first(typed(note, "title"), title_from(stem)),
             "collection": collection,
             "w": w,

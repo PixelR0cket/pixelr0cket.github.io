@@ -535,17 +535,66 @@
     return '<div class="mark">' + left + right + '</div>';
   }
 
-  /* Photographs light up one after another rather than in a slab: each waits
-     its turn behind the one before it, however the files happen to arrive. */
-  const REVEAL_STEP = 140;
+  /* Photographs light up in the order they hang, one after another, whatever
+     order the files themselves come back in. A picture that has landed waits
+     for the ones above it — but only so long: a straggler is let out of the
+     queue rather than holding the whole roll behind it. */
+  const REVEAL_STEP = 90;      // between one photograph and the next
+  const REVEAL_HOLD = 900;     // how long the queue waits on a slow file
+  const waiting = [];
   let revealAt = 0;
+  let pumpTimer = null;
 
   function queueReveal(img){
+    const entry = {img: img, ready: false, since: performance.now()};
+    img._turn = entry;
+    waiting.push(entry);
+    pump();
+  }
+
+  /* The file has landed. Whether it shows now is the queue's business. */
+  function imageReady(img){
+    if (!img._turn){ img.classList.add('shown'); return; }
+    img._turn.ready = true;
+    pump();
+  }
+
+  function dropReveal(img){
+    if (img._turn){ img._turn.gone = true; img._turn = null; pump(); }
+  }
+
+  function clearReveals(){
+    waiting.forEach(function(e){ e.img._turn = null; });
+    waiting.length = 0;
+    revealAt = 0;
+    clearTimeout(pumpTimer);
+    pumpTimer = null;
+  }
+
+  function pump(){
+    clearTimeout(pumpTimer);
+    pumpTimer = null;
     const now = performance.now();
-    const at = Math.max(now, revealAt);
-    revealAt = at + REVEAL_STEP;
-    if (at - now < 16) img.classList.add('shown');
-    else setTimeout(function(){ img.classList.add('shown'); }, at - now);
+
+    while (waiting.length){
+      const head = waiting[0];
+      if (head.gone){ waiting.shift(); continue; }
+      if (!head.ready && now - head.since < REVEAL_HOLD) break;
+      if (now < revealAt) break;
+      waiting.shift();
+      head.img._turn = null;
+      if (head.ready){
+        head.img.classList.add('shown');
+        revealAt = now + REVEAL_STEP;
+      }
+    }
+
+    if (waiting.length){
+      const head = waiting[0];
+      const beat = Math.max(0, revealAt - now);
+      const hold = head.ready ? 0 : Math.max(0, REVEAL_HOLD - (now - head.since));
+      pumpTimer = setTimeout(pump, Math.max(16, Math.max(beat, hold)));
+    }
   }
 
   function buildFrame(p){
@@ -575,8 +624,9 @@
       '</div>';
 
     const img = frame.querySelector('img');
+    queueReveal(img);
     img.addEventListener('load', function(){
-      queueReveal(img);
+      imageReady(img);
       if (!p.w){
         p.w = img.naturalWidth; p.h = img.naturalHeight;
         frame.querySelector('.plate').style.aspectRatio = p.w + '/' + p.h;
@@ -587,6 +637,7 @@
          without a rebuild. Drop the frame rather than hold open a grey hole. */
       const i = photos.indexOf(p);
       if (i !== -1) photos.splice(i, 1);
+      dropReveal(img);
       frame.remove();
       if (rendered > 0) rendered--;
       if (!photos.length){ repaint(); return; }
@@ -645,6 +696,7 @@
   const SPLIT = window.matchMedia('(min-width:900px)');
 
   function resetRoll(){
+    clearReveals();
     els.roll.innerHTML = '';
     if (SPLIT.matches){
       els.roll.classList.add('roll-split');
@@ -915,7 +967,16 @@
     if (!p) return;
     viewer.img.classList.remove('shown');
     viewer.img.alt = p.title || '';
+    /* Open on the copy the roll already holds — it is in the cache, so the
+       photograph is there at once — then swap in the full-size one behind it. */
     viewer.img.src = p.src;
+    if (p.full){
+      const full = new Image();
+      full.onload = function(){
+        if (viewer.list[viewer.i] === p) viewer.img.src = p.full;
+      };
+      full.src = p.full;
+    }
     viewer.title.textContent = p.title || '';
     viewer.mark.innerHTML = buildMark(p);
     /* Stepping is only offered when there is somewhere to step to. */
