@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400;0,500;0,700;1,400&family=Cousine:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400;0,500;0,700;1,400&family=Cousine:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#ffffff;
@@ -19,8 +19,8 @@
     --safelight:#b0392a;
     /* One column of navigation on the left, one column of pictures beside it. */
     --side-x:60px;      /* sidebar from the left edge   */
-    --side-w:150px;     /* sidebar width                */
-    --col-x:293px;      /* where the picture column starts */
+    --side-w:196px;     /* sidebar width                */
+    --col-x:336px;      /* where the picture column starts */
     --col-r:78px;       /* breathing room on the right  */
     --step:93px;        /* vertical gap, single column  */
     --split-gap:36px;   /* gap between and below frames, two columns */
@@ -43,34 +43,41 @@
   .masthead-top{ display:contents; }
   .brand{
     order:1;
-    /* Monospaced: the wide, evenly-spaced look is the advance width itself,
-       so this wants no added letter-spacing. */
-    font-family:'Cousine',ui-monospace,monospace; font-weight:400;
-    font-size:16px; line-height:1.45; text-transform:uppercase;
+    /* Hand-lettered, and the only thing on the page not set in type: the
+       wordmark signs the pictures, the rest of the sidebar merely labels them. */
+    font-family:'Permanent Marker',ui-rounded,cursive; font-weight:400;
+    font-size:29px; line-height:1.14; text-transform:uppercase;
+    /* The face has one weight only, so the strokes are thinned by painting a
+       hairline of paper back over them — which needs paper behind the letters. */
+    -webkit-text-stroke:0.55px var(--paper);
     outline:none;
     border-bottom:1px dashed transparent; padding-bottom:2px;
   }
   .brand[contenteditable]{cursor:text;}
   .brand[contenteditable]:hover{border-bottom-color:var(--hairline);}
   .brand:focus{border-bottom-color:var(--safelight);}
-  .frame-tally{ order:3; margin-top:26px; color:var(--ash); }
-  .masthead.no-tabs .frame-tally{ margin-top:22px; }
+  .frame-tally{ order:3; margin-top:16px; color:var(--ash); }
+  .masthead.no-tabs .frame-tally{ margin-top:26px; }
 
   /* ---------------- collection tabs ---------------- */
-  .tabs{ order:2; display:block; margin-top:26px; }
+  .tabs{ order:2; display:block; margin-top:84px; }
   .tab{
     appearance:none; background:none; border:none;
     display:block; width:100%; text-align:left;
-    font:inherit; color:var(--ink); cursor:pointer;
-    padding:0; margin:0 0 2px 0;
-    line-height:1.6;
+    /* Monospaced: the wide, evenly-spaced look is the advance width itself,
+       so this wants no added letter-spacing. */
+    font-family:'Cousine',ui-monospace,monospace; font-weight:400;
+    font-size:15px; color:var(--ink); cursor:pointer;
+    padding:0; margin:0 0 14px 0;
+    line-height:1.35;
     transition:color .15s ease;
   }
   .tab:hover{color:var(--ash);}
   /* The collection you are already looking at is the one you cannot click. */
-  .tab[aria-selected="true"]{ color:var(--ash); cursor:default; }
+  .tab[aria-selected="true"]{ color:var(--safelight); cursor:default; }
   .tab-count{ color:var(--ash); margin-left:7px; }
-  .tab-new{ color:var(--ash); margin-top:8px; }
+  body.published .tab-count{ display:none; }
+  .tab-new{ color:var(--ash); margin-top:2px; }
   .tab-new:hover{ color:var(--ink); }
 
   /* ---------------- empty state ---------------- */
@@ -91,8 +98,28 @@
   .btn:hover{ color:var(--ash); }
   input[type=file]{display:none;}
 
+  /* ---------------- a page of words ---------------- */
+  /* Contact hangs in the same column the pictures use, so switching to it
+     moves nothing but the content. */
+  .page{
+    margin-left:var(--col-x); margin-right:var(--col-r); max-width:541px;
+    padding:72px 0 40px;
+  }
+  .page[hidden]{ display:none; }
+  .page-title{ font-size:22px; font-weight:700; line-height:1.2; margin:0 0 26px; }
+  .page-body{ margin:0; }
+  .page-link{
+    color:var(--ink); text-decoration:underline; text-underline-offset:3px;
+    transition:color .15s ease;
+  }
+  .page-link:hover{ color:var(--ash); }
+
   /* ---------------- the roll ---------------- */
-  .roll{ margin-left:var(--col-x); margin-right:var(--col-r); max-width:900px; padding:72px 0 40px; }
+  /* The cap is only there to stop a very wide monitor blowing the pictures up
+     past the resolution they are served at; short of that the column fills. */
+  .roll{ margin-left:var(--col-x); margin-right:var(--col-r); max-width:1440px; padding:72px 0 40px; }
+  /* .roll-split sets display:flex, which would out-shout the hidden attribute. */
+  .roll[hidden]{ display:none; }
 
   .frame{ margin-bottom:var(--step); display:flex; flex-direction:column; }
   .frame:last-child{ margin-bottom:0; }
@@ -114,7 +141,7 @@
   }
   .plate img{
     display:block; width:100%; height:auto;
-    opacity:0; transition:opacity .5s ease;
+    opacity:0; transition:opacity .7s ease;
     pointer-events:none;
   }
   .plate img.shown{ opacity:1; }
@@ -170,13 +197,21 @@
 
   /* ---------------- add button ---------------- */
   .fab{
-    position:fixed; left:var(--side-x); bottom:60px; z-index:40;
+    position:fixed; left:var(--side-x); bottom:112px; z-index:40;
     display:none; width:var(--side-w); text-align:left;
     font:inherit; color:var(--ink); background:none; border:none; padding:0;
     cursor:pointer; text-decoration:underline; text-underline-offset:3px;
     transition:color .15s ease;
   }
   .fab:hover{ color:var(--ash); }
+
+  /* ---------------- copyright ---------------- */
+  /* Foot of the sidebar rather than foot of the roll: the roll has no foot
+     until you have scrolled the whole of it. */
+  .site-copy{
+    position:fixed; left:var(--side-x); bottom:56px; z-index:40;
+    width:var(--side-w); color:var(--ink); font-size:13px; line-height:1.5;
+  }
 
   .sentinel{ height:1px; }
   footer{
@@ -238,7 +273,7 @@
 
   /* Narrower desktops: pull both columns in before anything has to move. */
   @media (max-width:1100px){
-    :root{ --side-x:40px; --col-x:230px; --col-r:40px; --step:76px; }
+    :root{ --side-x:40px; --col-x:276px; --col-r:40px; --step:76px; }
   }
 
   /* No room for two columns: the sidebar becomes a header and the pictures run full width. */
@@ -259,6 +294,7 @@
     .frame-tally{ margin-top:14px; }
     .masthead.no-tabs .frame-tally{ margin-top:14px; }
     .empty{ max-width:none; padding-top:44px; }
+    .page{ max-width:none; padding-top:34px; }
     .roll{ padding-top:34px; }
     /* Centring the picture left it stranded ~190px below the control row.
        On a phone it hangs from the top instead, just under the controls. */
@@ -276,6 +312,7 @@
       position:static; width:auto; display:none;
       margin:22px 0 0;
     }
+    .site-copy{ position:static; width:auto; margin:8px 0 0; padding-bottom:44px; }
     .frame-actions{ opacity:1; }
 
     /* Stack the camera mark rather than letting it crush the exposure line. */
@@ -306,8 +343,14 @@
 </div>
 
 <main class="roll" id="roll"></main>
+<section class="page" id="contact" hidden></section>
 <div class="sentinel" id="sentinel"></div>
 <footer id="footer">End of roll</footer>
+
+<div class="site-copy">
+  Copyright <span id="copyName">Keith Merkelt</span> <span id="copyYear">2026</span> &copy;<br>
+  All rights reserved.
+</div>
 
 <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Photograph" tabindex="-1" hidden>
   <button class="viewer-close" id="viewerClose" aria-label="Close">&times;</button>
@@ -346,6 +389,7 @@
     fabTarget: document.getElementById('fabTarget'),
     sentinel: document.getElementById('sentinel'),
     masthead: document.querySelector('.masthead'),
+    contact: document.getElementById('contact'),
     fileInput: document.getElementById('fileInput'),
     brand: document.querySelector('.brand')
   };
@@ -353,13 +397,16 @@
   /* Two views stand outside the collections: MAIN is the front page — the
      photographs hung loose, with no collection behind them — and 'All' is
      everything the site holds, collections included. */
-  const MAIN = 'Selected';
+  let MAIN = 'Featured Work';
+  /* A view that holds no photographs at all. */
+  const CONTACT = 'Contact';
 
   let photos = [];
   let collections = [];
   let active = MAIN;
   let rendered = 0;
   let published = false;
+  let contact = null;
 
   /* ---------- formatting ---------- */
 
@@ -428,6 +475,7 @@
 
   function visible(){
     if (active === 'All') return photos;
+    if (active === CONTACT) return [];
     if (active === MAIN) return photos.filter(p => !p.collection);
     return photos.filter(p => p.collection === active);
   }
@@ -479,11 +527,14 @@
     frame.className = 'frame';
 
     const ratio = (p.w && p.h) ? 'aspect-ratio:' + p.w + '/' + p.h + ';' : '';
+    /* The frame is filled with the photograph's own average colour, so a picture
+       resolves out of its own tone instead of appearing against grey. */
+    const tone = /^#[0-9a-f]{6}$/i.test(p.tone || '') ? 'background:' + p.tone + ';' : '';
     const others = collections.filter(c => c !== p.collection);
     const editable = published ? '' : ' contenteditable="true"';
 
     frame.innerHTML =
-      '<div class="plate" style="' + ratio + '">' +
+      '<div class="plate" style="' + ratio + tone + '">' +
         '<img alt="' + esc(p.title) + '" draggable="false" loading="lazy" decoding="async">' +
         '<div class="shield"></div>' +
       '</div>' +
@@ -605,29 +656,40 @@
   }
 
   function repaint(){
+    /* Contact swaps the pictures out rather than scrolling past them: no roll,
+       no tally, no invitation to add photographs to a page of words. */
+    const onContact = !!contact && active === CONTACT;
+    els.contact.hidden = !onContact;
+    els.roll.hidden = onContact;
+    els.tally.hidden = onContact;
     resetRoll();
     rendered = 0;
     paintTabs();
     const any = photos.length > 0;
-    els.empty.style.display = any ? 'none' : 'block';
-    if (!published) els.fab.style.display = any ? 'block' : 'none';
+    els.empty.style.display = (any || onContact) ? 'none' : 'block';
+    if (!published) els.fab.style.display = (any && !onContact) ? 'block' : 'none';
     els.fabTarget.textContent = active;
     retally();
+    if (onContact) return;
     paintBatch();
     fillViewport();
   }
 
+  function paintContact(){
+    if (!contact) return;
+    els.contact.innerHTML =
+      '<h1 class="page-title">' + esc(contact.heading || CONTACT) + '</h1>' +
+      '<p class="page-body">' +
+        '<a class="page-link" href="mailto:' + esc(contact.email) + '">' +
+          esc(contact.email) +
+        '</a>' +
+      '</p>';
+  }
+
   function paintTabs(){
-    /* No collections on a published site means no tab bar: just the main scroll. */
-    if (published && !collections.length){
-      els.tabs.innerHTML = '';
-      els.tabs.style.display = 'none';
-      els.masthead.classList.add('no-tabs');
-      return;
-    }
-    els.tabs.style.display = '';
-    els.masthead.classList.remove('no-tabs');
-    const list = [MAIN, 'All'].concat(collections);
+    /* No collections on a published site means no picture views worth listing:
+       just the main scroll, and whatever pages stand beside it. */
+    const list = (published && !collections.length) ? [] : [MAIN, 'All'].concat(collections);
     let html = list.map(function(c){
       const n = c === 'All' ? photos.length
               : c === MAIN ? photos.filter(function(p){ return !p.collection; }).length
@@ -635,7 +697,13 @@
       return '<button class="tab" role="tab" aria-selected="' + (c === active) + '" data-col="' + esc(c) + '">' +
              esc(c) + '<span class="tab-count">' + n + '</span></button>';
     }).join('');
+    if (contact){
+      html += '<button class="tab" role="tab" aria-selected="' + (active === CONTACT) +
+              '" data-col="' + CONTACT + '">' + CONTACT + '</button>';
+    }
     if (!published) html += '<button class="tab tab-new" id="newCol" title="New collection" aria-label="New collection">+ New collection</button>';
+    els.tabs.style.display = html ? '' : 'none';
+    els.masthead.classList.toggle('no-tabs', !html);
     els.tabs.innerHTML = html;
 
     els.tabs.querySelectorAll('.tab[data-col]').forEach(function(btn){
@@ -724,13 +792,28 @@
         els.brand.textContent = data.title;
         document.title = data.title;
       }
+      /* build.py names the front page after the folder it comes from, so the
+         tab and the folder on disk cannot drift apart. */
+      if (data.front){ MAIN = data.front; active = MAIN; }
+      if (data.contact && data.contact.email){ contact = data.contact; paintContact(); }
       els.brand.removeAttribute('contenteditable');
+      stampCopyright();
       collections = data.collections || [];
       photos = data.photos;
       els.fab.remove();
       repaint();
       return true;
     } catch(err){ return false; }
+  }
+
+  /* ---------- copyright ---------- */
+
+  /* Signed by the photographer, so the wordmark's trailing 'Photography'
+     comes off, and the year is whatever year it is being read in. */
+  function stampCopyright(){
+    const name = (els.brand.textContent || '').replace(/\s*photography\s*$/i,'').trim();
+    if (name) document.getElementById('copyName').textContent = name;
+    document.getElementById('copyYear').textContent = new Date().getFullYear();
   }
 
   /* ---------- wiring ---------- */
@@ -832,6 +915,7 @@
     if (entries[0].isIntersecting) fillViewport();
   }, {rootMargin: LOOKAHEAD + 'px'}).observe(els.sentinel);
 
+  stampCopyright();
   loadManifest().then(function(ok){ if (!ok) repaint(); });
 })();
 </script>

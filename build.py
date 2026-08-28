@@ -8,15 +8,17 @@ Folder layout:
       build.py
       index.html
       originals/            <- your full-res exports (NEVER uploaded)
-        Landscapes/
+        Featured Work/          <- the front page, not a tab
           swan-at-dusk.jpg
+        Landscapes/
         Portraits/
           ...
       photos/               <- generated: resized web copies
       photos.json           <- generated: the manifest index.html reads
 
-Each subfolder of originals/ becomes an optional collection tab. Loose files at
-the top level belong to no collection: they appear in the main scroll only.
+Each subfolder of originals/ becomes an optional collection tab, except the
+one named by FRONT below: that folder is the front page. Loose files at the top
+level belong to no collection either, and join the front page beside it.
 
 Run:  python3 build.py
 Then deploy index.html, photos.json and photos/ — leave originals/ behind.
@@ -36,10 +38,18 @@ from PIL.ExifTags import TAGS
 # ---------------------------------------------------------------- settings
 
 SITE_TITLE = "Keith Merkelt Photography"
+# The contact page: a heading and an address, nothing else. The address here is
+# the forwarding alias on the domain, not the mailbox behind it. Empty the
+# address and the page leaves the site.
+CONTACT_HEADING = "Inquiries"
+CONTACT_EMAIL = "hello@pixelrocket.studio"
 LONG_EDGE = 2000          # max pixel dimension served to the web
 JPEG_QUALITY = 82
 
 SRC = "originals"
+# The front page. A folder by this name is not a collection: its photographs
+# are the ones the site opens on, the same as files left loose in originals/.
+FRONT = "Featured Work"
 OUT = "photos"
 MANIFEST = "photos.json"
 CAMERA_FILE = "camera.txt"   # folder-wide camera details, for a roll of film
@@ -247,6 +257,16 @@ def title_from(stem):
     return " ".join(w[0].upper() + w[1:] for w in words if w)
 
 
+def average_tone(img):
+    """The photograph flattened to a single colour.
+
+    The page paints this into the frame while the picture itself is still on the
+    wire, so a photograph arrives out of its own colour rather than out of grey.
+    """
+    one = img.convert("RGB").resize((1, 1), Image.BOX)
+    return "#%02x%02x%02x" % one.getpixel((0, 0))
+
+
 def slugify(text):
     s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return s or "photo"
@@ -266,9 +286,13 @@ def gather():
         if entry.startswith("."):
             continue
         if os.path.isdir(path):
+            # The front-page folder keeps originals/ tidy without earning a tab:
+            # its photographs are filed exactly as loose ones are.
+            collection = None if entry == FRONT else entry
+            bucket = loose if collection is None else foldered
             for name in sorted(os.listdir(path)):
                 if os.path.splitext(name)[1].lower() in EXTS:
-                    foldered.append((entry, os.path.join(path, name)))
+                    bucket.append((collection, os.path.join(path, name)))
         elif os.path.splitext(entry)[1].lower() in EXTS:
             loose.append((None, path))
     return loose + foldered
@@ -311,6 +335,7 @@ def build():
             img.save(outfile, "JPEG", quality=JPEG_QUALITY,
                      optimize=True, progressive=True)
             w, h = img.size
+            tone = average_tone(img)
 
         # What you typed beside the photograph wins, then whatever the file
         # itself knows, then what the roll declares. Film scans know nothing,
@@ -327,6 +352,7 @@ def build():
             "collection": collection,
             "w": w,
             "h": h,
+            "tone": tone,
             "make": first(typed(note, "make"), clean(exif.get("Make")), typed(roll, "make")),
             "model": first(typed(note, "model"), clean(exif.get("Model")), typed(roll, "model")),
             "lens": first(typed(note, "lens"), clean(exif.get("LensModel")), typed(roll, "lens")),
@@ -367,7 +393,10 @@ def build():
     for photo in photos:
         print(f"  added {photo['added'][:16].replace('T', ' ')}   {photo['title'] or '(untitled)'}")
 
-    manifest = {"title": SITE_TITLE, "collections": collections, "photos": photos}
+    manifest = {"title": SITE_TITLE, "front": FRONT,
+                "collections": collections, "photos": photos}
+    if CONTACT_EMAIL:
+        manifest["contact"] = {"heading": CONTACT_HEADING, "email": CONTACT_EMAIL}
     with open(MANIFEST, "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, indent=2, ensure_ascii=False)
 
