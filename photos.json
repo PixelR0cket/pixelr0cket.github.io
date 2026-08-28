@@ -6,6 +6,24 @@
   ],
   "photos": [
     {
+      "src": "photos/reflecting.jpg",
+      "full": "photos/full/reflecting.jpg",
+      "title": "Reflecting",
+      "w": 1300,
+      "h": 740,
+      "tone": "#232719",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "17-40mm F1.8 DC | Art 025",
+      "focal": 39.3,
+      "aperture": 5.6,
+      "shutter": 0.003125,
+      "iso": 640,
+      "date": "2026-08-11T19:45:22",
+      "id": "40c6e69280dd",
+      "added": "2026-08-28T12:02:16"
+    },
+    {
       "src": "photos/cars-ford-escort.jpg",
       "full": "photos/full/cars-ford-escort.jpg",
       "title": "Ford Escort",
