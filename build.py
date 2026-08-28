@@ -43,6 +43,10 @@ SITE_TITLE = "Keith Merkelt Photography"
 # address and the page leaves the site.
 CONTACT_HEADING = "Inquiries"
 CONTACT_EMAIL = "hello@pixelrocket.studio"
+# A photograph under the address, if you want one: drop a file called
+# contact.jpg (or .png, .tif ...) straight into originals/. It hangs on the
+# contact page only, and never joins the roll.
+CONTACT_IMAGE = "contact"
 LONG_EDGE = 2000          # max pixel dimension served to the web
 JPEG_QUALITY = 82
 
@@ -267,6 +271,29 @@ def average_tone(img):
     return "#%02x%02x%02x" % one.getpixel((0, 0))
 
 
+def web_copy(path, slug):
+    """Resize one file into photos/ and report what the page needs to hang it."""
+    with Image.open(path) as img:
+        img = ImageOps.exif_transpose(img)
+        if img.mode not in ("RGB", "L"):
+            img = img.convert("RGB")
+        img.thumbnail((LONG_EDGE, LONG_EDGE), Image.LANCZOS)
+        img.save(os.path.join(OUT, slug + ".jpg"), "JPEG", quality=JPEG_QUALITY,
+                 optimize=True, progressive=True)
+        w, h = img.size
+        return {"src": f"{OUT}/{slug}.jpg", "w": w, "h": h, "tone": average_tone(img)}
+
+
+def contact_image():
+    """The picture for the contact page, if one has been left in originals/."""
+    for entry in sorted(os.listdir(SRC)):
+        stem, ext = os.path.splitext(entry)
+        if stem.lower() == CONTACT_IMAGE and ext.lower() in EXTS:
+            print(f"\n  contact page: {entry}")
+            return web_copy(os.path.join(SRC, entry), "contact")
+    return None
+
+
 def slugify(text):
     s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return s or "photo"
@@ -294,6 +321,8 @@ def gather():
                 if os.path.splitext(name)[1].lower() in EXTS:
                     bucket.append((collection, os.path.join(path, name)))
         elif os.path.splitext(entry)[1].lower() in EXTS:
+            if os.path.splitext(entry)[0].lower() == CONTACT_IMAGE:
+                continue          # hangs on the contact page instead
             loose.append((None, path))
     return loose + foldered
 
@@ -397,6 +426,9 @@ def build():
                 "collections": collections, "photos": photos}
     if CONTACT_EMAIL:
         manifest["contact"] = {"heading": CONTACT_HEADING, "email": CONTACT_EMAIL}
+        picture = contact_image()
+        if picture:
+            manifest["contact"]["image"] = picture
     with open(MANIFEST, "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, indent=2, ensure_ascii=False)
 
