@@ -535,6 +535,43 @@
     return '<div class="mark">' + left + right + '</div>';
   }
 
+  /* Asking for twenty photographs at once is the slowest way to see one. The
+     connection is shared between every request in flight, so they all finish
+     together and the roll sits empty until they do. A few at a time, in the
+     order they hang, means the top of the page arrives while the bottom is
+     still coming. */
+  const MAX_INFLIGHT = 4;
+  const toLoad = [];
+  let inflight = 0;
+  let generation = 0;
+
+  function queueImage(img, src){
+    img._gen = generation;
+    toLoad.push({img: img, src: src});
+    startLoads();
+  }
+
+  function startLoads(){
+    while (inflight < MAX_INFLIGHT && toLoad.length){
+      const job = toLoad.shift();
+      inflight++;
+      job.img.src = job.src;
+    }
+  }
+
+  /* Loaded, failed, or abandoned by a change of view — the slot is free. */
+  function loadDone(img){
+    if (img._gen !== generation) return;
+    inflight--;
+    startLoads();
+  }
+
+  function clearLoads(){
+    generation++;
+    toLoad.length = 0;
+    inflight = 0;
+  }
+
   /* Photographs light up in the order they hang, one after another, whatever
      order the files themselves come back in. A picture that has landed waits
      for the ones above it — but only so long: a straggler is let out of the
@@ -610,10 +647,10 @@
 
     frame.innerHTML =
       '<div class="plate" style="' + ratio + tone + '">' +
-        '<img alt="' + esc(p.title) + '" draggable="false" loading="lazy" decoding="async">' +
+        '<img alt="' + esc(p.title) + '" draggable="false" decoding="async">' +
         '<div class="shield"></div>' +
       '</div>' +
-      buildMark(p) +
+      (published ? '' : buildMark(p)) +
       '<div class="caption">' +
         '<div class="caption-title"' + editable + ' spellcheck="false">' + esc(p.title) + '</div>' +
         (published ? '' :
@@ -626,6 +663,7 @@
     const img = frame.querySelector('img');
     queueReveal(img);
     img.addEventListener('load', function(){
+      loadDone(img);
       imageReady(img);
       if (!p.w){
         p.w = img.naturalWidth; p.h = img.naturalHeight;
@@ -635,6 +673,7 @@
     img.addEventListener('error', function(){
       /* The manifest points at a file that is not there — a photograph removed
          without a rebuild. Drop the frame rather than hold open a grey hole. */
+      loadDone(img);
       const i = photos.indexOf(p);
       if (i !== -1) photos.splice(i, 1);
       dropReveal(img);
@@ -645,7 +684,7 @@
       retally();
       fillViewport();
     });
-    img.src = p.src;
+    queueImage(img, p.src);
 
     const title = frame.querySelector('.caption-title');
     if (!published){
@@ -696,6 +735,7 @@
   const SPLIT = window.matchMedia('(min-width:900px)');
 
   function resetRoll(){
+    clearLoads();
     clearReveals();
     els.roll.innerHTML = '';
     if (SPLIT.matches){
