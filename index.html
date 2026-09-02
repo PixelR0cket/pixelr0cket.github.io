@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400;0,500;0,700;1,400&family=Cousine:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400;0,500;0,700;1,400&family=Cousine:wght@400;700&family=Reenie+Beanie&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#ffffff;
@@ -16,7 +16,10 @@
     --graphite:#666666;
     --ash:#aaaaaa;
     --hairline:#e8e6e3;
-    --safelight:#b0392a;
+    /* The darkroom lamp, turned down. At full strength it was the loudest
+       thing on a page whose job is showing photographs; muted, it still
+       marks the collection you are in without competing with the pictures. */
+    --safelight:#8a5a4e;
     /* One column of navigation on the left, one column of pictures beside it. */
     --side-x:60px;      /* sidebar from the left edge   */
     --side-w:196px;     /* sidebar width                */
@@ -45,11 +48,11 @@
     order:1;
     /* Hand-lettered, and the only thing on the page not set in type: the
        wordmark signs the pictures, the rest of the sidebar merely labels them. */
-    font-family:'Permanent Marker',ui-rounded,cursive; font-weight:400;
-    font-size:29px; line-height:1.14; text-transform:uppercase;
-    /* The face has one weight only, so the strokes are thinned by painting a
-       hairline of paper back over them — which needs paper behind the letters. */
-    -webkit-text-stroke:0.55px var(--paper);
+    font-family:'Reenie Beanie',ui-rounded,cursive; font-weight:400;
+    /* A thin ballpoint rather than a loaded brush: light enough to sit beside
+       the typeset sidebar without shouting over it. The face draws small for
+       its em, so it needs a large size and no extra leading at all. */
+    font-size:34px; line-height:1.0; text-transform:uppercase;
     outline:none;
     border-bottom:1px dashed transparent; padding-bottom:2px;
   }
@@ -238,7 +241,14 @@
      camera that took it wait until you open it. */
   body.published .frame > .caption,
   body.published .frame > .mark{ display:none; }
-  body.published .roll .plate{ cursor:zoom-in; }
+  /* The pointer over a photograph is an autofocus bracket, drawn in the same
+     hairline as the rest of the page. The stock magnifier promised a zoom that
+     clicking never delivered — this promises attention, which is what a click
+     actually gives you. Falls back to a crosshair where the SVG cannot load,
+     and to nothing at all on touch, which has no pointer to dress. */
+  body.published .roll .plate{
+    cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cg fill='none' stroke='%23222' stroke-width='1.25'%3E%3Cpath d='M2 8V2h6'/%3E%3Cpath d='M20 2h6v6'/%3E%3Cpath d='M26 20v6h-6'/%3E%3Cpath d='M8 26H2v-6'/%3E%3C/g%3E%3C/svg%3E") 14 14, crosshair;
+  }
   body.viewing{ overflow:hidden; }
 
   .viewer{
@@ -297,6 +307,9 @@
       position:static; width:auto;
       padding:34px 0 0; margin-bottom:4px;
     }
+    /* The wordmark has the full width of the page here, so it can be spoken
+       at something nearer its natural size. */
+    .brand{ font-size:44px; }
     .tabs{
       display:flex; margin-top:18px;
       overflow-x:auto; scrollbar-width:none;
