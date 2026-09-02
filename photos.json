@@ -7,6 +7,25 @@
   ],
   "photos": [
     {
+      "src": "photos/birds-dsc00644.jpg",
+      "full": "photos/full/birds-dsc00644.jpg",
+      "collection": "Birds",
+      "w": 1300,
+      "h": 733,
+      "tone": "#787f8a",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.00125,
+      "iso": 320,
+      "date": "2025-11-30T14:35:15",
+      "id": "74d8bae16b78",
+      "added": "2026-09-02T19:53:20",
+      "title": ""
+    },
+    {
       "src": "photos/birds-robin.jpg",
       "full": "photos/full/birds-robin.jpg",
       "title": "Robin",
