@@ -48,8 +48,24 @@ CONTACT_EMAIL = "hello@pixelrocket.studio"
 # contact page only, and never joins the roll.
 CONTACT_IMAGE = "contact"
 LONG_EDGE = 2000          # the copy the viewer opens, full screen
-GRID_EDGE = 1300          # the copy the roll hangs, two columns wide
+
+# The roll's copies are cut to the width they are *displayed* at, not to a long
+# edge. A column is never wider than 702px, so one copy dresses an ordinary
+# screen and one dresses a retina one; the browser takes whichever it needs
+# and ignores the other. Sizing by width rather than long edge also means an
+# upright photograph is no longer served short — under the old long-edge rule a
+# portrait got 1300px of *height* and only ~870px of width, and went soft in
+# the column.
+# 720 clears a 702px column exactly, so an ordinary screen takes the small copy
+# rather than tipping into the large one over two pixels; 1440 clears the same
+# column on a retina screen.
+GRID_WIDTHS = (720, 1440)
+# Newest format first: the browser stops at the first <source> it can read, so
+# nearly everyone gets AVIF, a few get WebP, and JPEG is there for the rest.
+FORMATS = ("avif", "webp", "jpg")
 JPEG_QUALITY = 82
+WEBP_QUALITY = 78
+AVIF_QUALITY = 58         # AVIF's scale is not JPEG's; this matches q82 by eye
 
 SRC = "originals"
 FULL = "full"             # inside photos/: the viewer's copies
@@ -273,9 +289,59 @@ def average_tone(img):
     return "#%02x%02x%02x" % one.getpixel((0, 0))
 
 
-def save_jpeg(img, path):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    img.save(path, "JPEG", quality=JPEG_QUALITY, optimize=True, progressive=True)
+SAVE_ARGS = {
+    "jpg":  ("JPEG", {"quality": JPEG_QUALITY, "optimize": True, "progressive": True}),
+    "webp": ("WEBP", {"quality": WEBP_QUALITY, "method": 6}),
+    "avif": ("AVIF", {"quality": AVIF_QUALITY}),
+}
+
+
+def save_image(img, path, fmt):
+    """One copy, in one format. Writes no EXIF: the web copies carry no location."""
+    kind, opts = SAVE_ARGS[fmt]
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    img.save(path, kind, **opts)
+
+
+def to_width(img, width):
+    """A copy no wider than `width`. Never enlarges: a small original stays small."""
+    if img.width <= width:
+        return img.copy()
+    return img.resize((width, round(img.height * width / img.width)), Image.LANCZOS)
+
+
+def grid_copies(img, slug):
+    """Every copy the roll might hang, and the note the page needs to choose one.
+
+    One photograph leaves here as up to six files — two widths in three formats.
+    The page offers the lot and the browser downloads exactly one.
+    """
+    widths = []
+    largest = None
+    for want in sorted(GRID_WIDTHS):
+        copy = to_width(img, want)
+        if widths and copy.width == widths[-1]:
+            continue          # the original ran out before this size did
+        for fmt in FORMATS:
+            save_image(copy, os.path.join(OUT, f"{slug}-{copy.width}.{fmt}"), fmt)
+        widths.append(copy.width)
+        largest = copy
+    return {
+        # Browsers too old for srcset take this one, and the viewer opens on it.
+        "src": f"{OUT}/{slug}-{widths[0]}.jpg",
+        "base": f"{OUT}/{slug}",
+        "grid": widths,
+        "w": largest.width,
+        "h": largest.height,
+        "tone": average_tone(largest),
+    }
+
+
+def full_copies(img, slug):
+    """The copies the viewer opens, full screen, in every format."""
+    for fmt in FORMATS:
+        save_image(img, os.path.join(OUT, FULL, f"{slug}.{fmt}"), fmt)
+    return f"{OUT}/{FULL}/{slug}"
 
 
 def web_copy(path, slug):
@@ -284,10 +350,7 @@ def web_copy(path, slug):
         img = ImageOps.exif_transpose(img)
         if img.mode not in ("RGB", "L"):
             img = img.convert("RGB")
-        img.thumbnail((GRID_EDGE, GRID_EDGE), Image.LANCZOS)
-        save_jpeg(img, os.path.join(OUT, slug + ".jpg"))
-        w, h = img.size
-        return {"src": f"{OUT}/{slug}.jpg", "w": w, "h": h, "tone": average_tone(img)}
+        return grid_copies(img, slug)
 
 
 def contact_image():
@@ -366,16 +429,13 @@ def build():
 
             # Saving a fresh image writes no EXIF: location and serial numbers
             # never reach the web copy.
-            save_jpeg(img, os.path.join(OUT, FULL, slug + ".jpg"))
+            full_base = full_copies(img, slug)
 
-            # The roll hangs a smaller copy. A photograph 615px wide on screen
+            # The roll hangs smaller copies. A photograph 700px wide on screen
             # has no use for 2000 pixels, and twenty of them have to arrive
             # before the page is a page.
-            grid = img.copy()
-            grid.thumbnail((GRID_EDGE, GRID_EDGE), Image.LANCZOS)
-            save_jpeg(grid, os.path.join(OUT, slug + ".jpg"))
-            w, h = grid.size
-            tone = average_tone(grid)
+            hung = grid_copies(img, slug)
+            w, h = hung["w"], hung["h"]
 
         # What you typed beside the photograph wins, then whatever the file
         # itself knows, then what the roll declares. Film scans know nothing,
@@ -387,13 +447,15 @@ def build():
                 print(f"  ! {stem}.txt: could not read '{key}: {note[key]}' — ignored")
 
         record = {
-            "src": f"{OUT}/{slug}.jpg",
-            "full": f"{OUT}/{FULL}/{slug}.jpg",
+            "src": hung["src"],
+            "base": hung["base"],
+            "grid": hung["grid"],
+            "full": full_base,
             "title": first(typed(note, "title"), title_from(stem)),
             "collection": collection,
             "w": w,
             "h": h,
-            "tone": tone,
+            "tone": hung["tone"],
             "make": first(typed(note, "make"), clean(exif.get("Make")), typed(roll, "make")),
             "model": first(typed(note, "model"), clean(exif.get("Model")), typed(roll, "model")),
             "lens": first(typed(note, "lens"), clean(exif.get("LensModel")), typed(roll, "lens")),
@@ -434,7 +496,7 @@ def build():
     for photo in photos:
         print(f"  added {photo['added'][:16].replace('T', ' ')}   {photo['title'] or '(untitled)'}")
 
-    manifest = {"title": SITE_TITLE, "front": FRONT,
+    manifest = {"title": SITE_TITLE, "front": FRONT, "formats": list(FORMATS),
                 "collections": collections, "photos": photos}
     if CONTACT_EMAIL:
         manifest["contact"] = {"heading": CONTACT_HEADING, "email": CONTACT_EMAIL}

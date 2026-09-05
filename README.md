@@ -131,6 +131,10 @@ photography-portfolio/          <- this is the git repo root
     swan-at-rest.txt            <- optional: details you type yourself
     camera.txt                  <- optional: details a whole roll shares
   photos/                       <- generated: resized web copies
+    swan-at-rest-720.avif       <- the roll's copy, one per width per format
+    swan-at-rest-1440.avif         (.webp and .jpg sit beside each one)
+    full/
+      swan-at-rest.avif         <- the copy the viewer opens
   photos.json                   <- generated: the manifest index.html reads
   logos/                        <- camera brand marks, deployed
     sony.png
@@ -143,7 +147,30 @@ Top of `build.py`:
 
 - `SITE_TITLE` — the masthead
 - `LONG_EDGE` — max served dimension, default 2000px
-- `JPEG_QUALITY` — default 82
+- `GRID_WIDTHS` — the widths the roll is cut to, default 720 and 1440
+- `FORMATS` — default `avif`, `webp`, `jpg`
+- `JPEG_QUALITY` / `WEBP_QUALITY` / `AVIF_QUALITY` — defaults 82 / 78 / 58
+
+### About the roll's copies
+
+Each photograph is cut to the width it is actually *drawn* at, in three
+formats. The page offers the lot and every browser downloads exactly one: AVIF
+if it can, WebP if not, JPEG otherwise — and the small copy unless the screen
+is retina. So a photograph that used to arrive as one 1300px JPEG for everybody
+now arrives as roughly a third of that on an ordinary screen, and sharper than
+before on a retina one.
+
+That is why `photos/` holds several hundred files for a few dozen photographs.
+It is all generated: delete the folder and `build.py` writes it again.
+
+`GRID_WIDTHS` is tied to the stylesheet. A column is never drawn wider than
+702px, so 720 covers an ordinary screen and 1440 a retina one. If you change
+the layout's widths in `index.html`, change these to match — and the `SIZES`
+string in `index.html`, which tells the browser how wide a photograph will be
+before it has seen the page.
+
+Nothing is ever enlarged: an original smaller than 1440px simply keeps its own
+width, and the page is told which widths actually exist.
 
 ## What is and isn't published
 
@@ -151,7 +178,7 @@ Published: `index.html`, `photos.json`, `photos/`, `logos/`
 
 Not published: `originals/` and `logos/source/` — kept out by `.gitignore`.
 
-The generated JPEGs carry no embedded EXIF, so GPS coordinates, camera serial
+The generated copies carry no embedded EXIF, so GPS coordinates, camera serial
 numbers and owner fields never reach the web. The metadata shown on the page
 comes from `photos.json`, which holds only the fields the design displays.
 

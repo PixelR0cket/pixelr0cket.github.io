@@ -7,7 +7,7 @@
       "runtimeArgs": [
         "-u",
         "-c",
-        "import sys\nsys.path.pop(0)                       # startup cwd may be unreadable; keep it off sys.path\nimport os, http.server\nMIRROR = '/private/tmp/photography-portfolio-preview'\nSRC = '/Users/keithmerkelt/Documents/Websites/photography portfolio'\n# This app's preview process is denied reads under ~/Documents by macOS\n# (Privacy > Files and Folders > Documents). Serve the mirror when one exists.\nos.chdir(MIRROR if os.path.isdir(MIRROR) else SRC)\nprint('serving', os.getcwd())\nhttp.server.test(HandlerClass=http.server.SimpleHTTPRequestHandler, port=8765, bind='127.0.0.1')\n"
+        "import sys\nsys.path.pop(0)                       # startup cwd may be unreadable; keep it off sys.path\nimport os, http.server\nimport mimetypes\nmimetypes.add_type('image/avif','.avif')\nmimetypes.add_type('image/webp','.webp')\nMIRROR = '/private/tmp/photography-portfolio-preview'\nSRC = '/Users/keithmerkelt/Documents/Websites/photography portfolio'\n# This app's preview process is denied reads under ~/Documents by macOS\n# (Privacy > Files and Folders > Documents). Serve the mirror when one exists.\nos.chdir(MIRROR if os.path.isdir(MIRROR) else SRC)\nprint('serving', os.getcwd())\nhttp.server.test(HandlerClass=http.server.SimpleHTTPRequestHandler, port=8765, bind='127.0.0.1')\n"
       ],
       "port": 8765
     }

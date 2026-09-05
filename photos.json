@@ -1,17 +1,27 @@
 {
   "title": "Keith Merkelt Photography",
   "front": "Featured Work",
+  "formats": [
+    "avif",
+    "webp",
+    "jpg"
+  ],
   "collections": [
     "Birds",
     "Cars"
   ],
   "photos": [
     {
-      "src": "photos/birds-dsc00644.jpg",
-      "full": "photos/full/birds-dsc00644.jpg",
+      "src": "photos/birds-dsc00644-720.jpg",
+      "base": "photos/birds-dsc00644",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/birds-dsc00644",
       "collection": "Birds",
-      "w": 1300,
-      "h": 733,
+      "w": 1440,
+      "h": 811,
       "tone": "#787f8a",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -26,12 +36,17 @@
       "title": ""
     },
     {
-      "src": "photos/birds-robin.jpg",
-      "full": "photos/full/birds-robin.jpg",
+      "src": "photos/birds-robin-720.jpg",
+      "base": "photos/birds-robin",
+      "grid": [
+        720,
+        1340
+      ],
+      "full": "photos/full/birds-robin",
       "title": "Robin",
       "collection": "Birds",
-      "w": 871,
-      "h": 1300,
+      "w": 1340,
+      "h": 2000,
       "tone": "#767a7b",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -45,12 +60,17 @@
       "added": "2026-09-02T19:00:30"
     },
     {
-      "src": "photos/birds-early-bird.jpg",
-      "full": "photos/full/birds-early-bird.jpg",
+      "src": "photos/birds-early-bird-720.jpg",
+      "base": "photos/birds-early-bird",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/birds-early-bird",
       "title": "Early Bird",
       "collection": "Birds",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#292828",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -64,11 +84,16 @@
       "added": "2026-09-02T19:00:30"
     },
     {
-      "src": "photos/birds-dsc00725.jpg",
-      "full": "photos/full/birds-dsc00725.jpg",
+      "src": "photos/birds-dsc00725-720.jpg",
+      "base": "photos/birds-dsc00725",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/birds-dsc00725",
       "collection": "Birds",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#5e717a",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -83,10 +108,15 @@
       "title": ""
     },
     {
-      "src": "photos/dsc01497-2.jpg",
-      "full": "photos/full/dsc01497-2.jpg",
-      "w": 866,
-      "h": 1300,
+      "src": "photos/dsc01497-2-720.jpg",
+      "base": "photos/dsc01497-2",
+      "grid": [
+        720,
+        1333
+      ],
+      "full": "photos/full/dsc01497-2",
+      "w": 1333,
+      "h": 2000,
       "tone": "#5a595a",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -101,11 +131,16 @@
       "title": ""
     },
     {
-      "src": "photos/reflecting.jpg",
-      "full": "photos/full/reflecting.jpg",
+      "src": "photos/reflecting-720.jpg",
+      "base": "photos/reflecting",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/reflecting",
       "title": "Reflecting",
-      "w": 1300,
-      "h": 740,
+      "w": 1440,
+      "h": 819,
       "tone": "#232719",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -119,12 +154,17 @@
       "added": "2026-08-28T12:02:16"
     },
     {
-      "src": "photos/cars-ford-escort.jpg",
-      "full": "photos/full/cars-ford-escort.jpg",
+      "src": "photos/cars-ford-escort-720.jpg",
+      "base": "photos/cars-ford-escort",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/cars-ford-escort",
       "title": "Ford Escort",
       "collection": "Cars",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#63572f",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -138,12 +178,17 @@
       "added": "2026-08-28T11:30:09"
     },
     {
-      "src": "photos/cars-the-cannonball.jpg",
-      "full": "photos/full/cars-the-cannonball.jpg",
+      "src": "photos/cars-the-cannonball-720.jpg",
+      "base": "photos/cars-the-cannonball",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/cars-the-cannonball",
       "title": "The CANNONBALL",
       "collection": "Cars",
-      "w": 1300,
-      "h": 849,
+      "w": 1440,
+      "h": 940,
       "tone": "#323030",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -157,11 +202,16 @@
       "added": "2026-08-28T11:30:09"
     },
     {
-      "src": "photos/robin.jpg",
-      "full": "photos/full/robin.jpg",
+      "src": "photos/robin-720.jpg",
+      "base": "photos/robin",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/robin",
       "title": "Robin",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#343933",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -175,11 +225,16 @@
       "added": "2026-08-25T14:24:04"
     },
     {
-      "src": "photos/winter-moon.jpg",
-      "full": "photos/full/winter-moon.jpg",
+      "src": "photos/winter-moon-720.jpg",
+      "base": "photos/winter-moon",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/winter-moon",
       "title": "Winter Moon",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#5c4d52",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -193,11 +248,16 @@
       "added": "2026-08-25T13:29:48"
     },
     {
-      "src": "photos/black-swan.jpg",
-      "full": "photos/full/black-swan.jpg",
+      "src": "photos/black-swan-720.jpg",
+      "base": "photos/black-swan",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/black-swan",
       "title": "Black Swan",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#2a2a2a",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -211,11 +271,16 @@
       "added": "2026-08-25T09:51:17"
     },
     {
-      "src": "photos/mudeford-3.jpg",
-      "full": "photos/full/mudeford-3.jpg",
+      "src": "photos/mudeford-3-720.jpg",
+      "base": "photos/mudeford-3",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/mudeford-3",
       "title": "Mudeford 3",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#70848c",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -229,11 +294,16 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/angel.jpg",
-      "full": "photos/full/angel.jpg",
+      "src": "photos/angel-720.jpg",
+      "base": "photos/angel",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/angel",
       "title": "Angel",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#6a8aa0",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -247,11 +317,16 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/mudeford-5.jpg",
-      "full": "photos/full/mudeford-5.jpg",
+      "src": "photos/mudeford-5-720.jpg",
+      "base": "photos/mudeford-5",
+      "grid": [
+        720,
+        1104
+      ],
+      "full": "photos/full/mudeford-5",
       "title": "Mudeford 5",
-      "w": 718,
-      "h": 1300,
+      "w": 1104,
+      "h": 2000,
       "tone": "#56584e",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -265,11 +340,16 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/mudeford-4.jpg",
-      "full": "photos/full/mudeford-4.jpg",
+      "src": "photos/mudeford-4-720.jpg",
+      "base": "photos/mudeford-4",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/mudeford-4",
       "title": "Mudeford 4",
-      "w": 1300,
-      "h": 720,
+      "w": 1440,
+      "h": 797,
       "tone": "#71808b",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -283,11 +363,16 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/mudeford-6.jpg",
-      "full": "photos/full/mudeford-6.jpg",
+      "src": "photos/mudeford-6-720.jpg",
+      "base": "photos/mudeford-6",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/mudeford-6",
       "title": "Mudeford 6",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#7b8489",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -301,11 +386,16 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/mudeford-2.jpg",
-      "full": "photos/full/mudeford-2.jpg",
+      "src": "photos/mudeford-2-720.jpg",
+      "base": "photos/mudeford-2",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/mudeford-2",
       "title": "Mudeford 2",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#808e92",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -319,12 +409,17 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/cars-santa-pod-9.jpg",
-      "full": "photos/full/cars-santa-pod-9.jpg",
+      "src": "photos/cars-santa-pod-9-720.jpg",
+      "base": "photos/cars-santa-pod-9",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/cars-santa-pod-9",
       "title": "Santa Pod 9",
       "collection": "Cars",
-      "w": 1300,
-      "h": 867,
+      "w": 1440,
+      "h": 960,
       "tone": "#78766c",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -338,12 +433,17 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/cars-santa-pod-2.jpg",
-      "full": "photos/full/cars-santa-pod-2.jpg",
+      "src": "photos/cars-santa-pod-2-720.jpg",
+      "base": "photos/cars-santa-pod-2",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/cars-santa-pod-2",
       "title": "Santa Pod 2",
       "collection": "Cars",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#66706d",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -357,12 +457,17 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/cars-santa-pod-6.jpg",
-      "full": "photos/full/cars-santa-pod-6.jpg",
+      "src": "photos/cars-santa-pod-6-720.jpg",
+      "base": "photos/cars-santa-pod-6",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/cars-santa-pod-6",
       "title": "Santa Pod 6",
       "collection": "Cars",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#4a4330",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -376,12 +481,17 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/cars-santa-pod-5.jpg",
-      "full": "photos/full/cars-santa-pod-5.jpg",
+      "src": "photos/cars-santa-pod-5-720.jpg",
+      "base": "photos/cars-santa-pod-5",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/cars-santa-pod-5",
       "title": "Santa Pod 5",
       "collection": "Cars",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#393c3a",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -395,12 +505,17 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/cars-santa-pod-1.jpg",
-      "full": "photos/full/cars-santa-pod-1.jpg",
+      "src": "photos/cars-santa-pod-1-720.jpg",
+      "base": "photos/cars-santa-pod-1",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/cars-santa-pod-1",
       "title": "Santa Pod 1",
       "collection": "Cars",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#818d8f",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -414,12 +529,17 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/cars-santa-pod-3.jpg",
-      "full": "photos/full/cars-santa-pod-3.jpg",
+      "src": "photos/cars-santa-pod-3-720.jpg",
+      "base": "photos/cars-santa-pod-3",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/cars-santa-pod-3",
       "title": "Santa Pod 3",
       "collection": "Cars",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#45464b",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -433,12 +553,17 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/cars-santa-pod-4.jpg",
-      "full": "photos/full/cars-santa-pod-4.jpg",
+      "src": "photos/cars-santa-pod-4-720.jpg",
+      "base": "photos/cars-santa-pod-4",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/cars-santa-pod-4",
       "title": "Santa Pod 4",
       "collection": "Cars",
-      "w": 1300,
-      "h": 633,
+      "w": 1440,
+      "h": 701,
       "tone": "#4b4c50",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -452,12 +577,17 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/cars-santa-pod-7.jpg",
-      "full": "photos/full/cars-santa-pod-7.jpg",
+      "src": "photos/cars-santa-pod-7-720.jpg",
+      "base": "photos/cars-santa-pod-7",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/cars-santa-pod-7",
       "title": "Santa Pod 7",
       "collection": "Cars",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#587379",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -471,12 +601,17 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/cars-santa-pod-8.jpg",
-      "full": "photos/full/cars-santa-pod-8.jpg",
+      "src": "photos/cars-santa-pod-8-720.jpg",
+      "base": "photos/cars-santa-pod-8",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/cars-santa-pod-8",
       "title": "Santa Pod 8",
       "collection": "Cars",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#438289",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -490,11 +625,16 @@
       "added": "2026-08-21T21:03:32"
     },
     {
-      "src": "photos/the-race.jpg",
-      "full": "photos/full/the-race.jpg",
+      "src": "photos/the-race-720.jpg",
+      "base": "photos/the-race",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/the-race",
       "title": "The Race",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#524b4a",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -508,11 +648,16 @@
       "added": "2026-08-21T14:42:16"
     },
     {
-      "src": "photos/moon-light.jpg",
-      "full": "photos/full/moon-light.jpg",
+      "src": "photos/moon-light-720.jpg",
+      "base": "photos/moon-light",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/moon-light",
       "title": "Moon Light",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#34353b",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -526,11 +671,16 @@
       "added": "2026-08-21T14:42:00"
     },
     {
-      "src": "photos/stag.jpg",
-      "full": "photos/full/stag.jpg",
+      "src": "photos/stag-720.jpg",
+      "base": "photos/stag",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/stag",
       "title": "Stag",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#1e1e1e",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -544,11 +694,16 @@
       "added": "2026-08-21T14:42:00"
     },
     {
-      "src": "photos/rest.jpg",
-      "full": "photos/full/rest.jpg",
+      "src": "photos/rest-720.jpg",
+      "base": "photos/rest",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/rest",
       "title": "Rest",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#262222",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -562,12 +717,17 @@
       "added": "2026-08-21T14:42:00"
     },
     {
-      "src": "photos/cars-plymouth.jpg",
-      "full": "photos/full/cars-plymouth.jpg",
+      "src": "photos/cars-plymouth-720.jpg",
+      "base": "photos/cars-plymouth",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/cars-plymouth",
       "title": "Plymouth",
       "collection": "Cars",
-      "w": 1300,
-      "h": 641,
+      "w": 1440,
+      "h": 710,
       "tone": "#6b685f",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -581,11 +741,16 @@
       "added": "2026-08-21T14:40:49"
     },
     {
-      "src": "photos/sunset.jpg",
-      "full": "photos/full/sunset.jpg",
+      "src": "photos/sunset-720.jpg",
+      "base": "photos/sunset",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/sunset",
       "title": "Sunset",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#1d1b18",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -599,11 +764,16 @@
       "added": "2026-08-21T14:31:04"
     },
     {
-      "src": "photos/gull-attack.jpg",
-      "full": "photos/full/gull-attack.jpg",
+      "src": "photos/gull-attack-720.jpg",
+      "base": "photos/gull-attack",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/gull-attack",
       "title": "Gull Attack",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#959294",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -617,11 +787,16 @@
       "added": "2026-08-21T14:25:32"
     },
     {
-      "src": "photos/mudeford-quay-sunset.jpg",
-      "full": "photos/full/mudeford-quay-sunset.jpg",
+      "src": "photos/mudeford-quay-sunset-720.jpg",
+      "base": "photos/mudeford-quay-sunset",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/mudeford-quay-sunset",
       "title": "Mudeford Quay Sunset",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#826e5c",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -635,11 +810,16 @@
       "added": "2026-08-21T14:19:30"
     },
     {
-      "src": "photos/blue-tit-at-dawn.jpg",
-      "full": "photos/full/blue-tit-at-dawn.jpg",
+      "src": "photos/blue-tit-at-dawn-720.jpg",
+      "base": "photos/blue-tit-at-dawn",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/blue-tit-at-dawn",
       "title": "Blue Tit At Dawn",
-      "w": 1040,
-      "h": 1300,
+      "w": 1440,
+      "h": 1800,
       "tone": "#282423",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -653,11 +833,16 @@
       "added": "2026-08-21T14:04:28"
     },
     {
-      "src": "photos/setas-de-sevilla.jpg",
-      "full": "photos/full/setas-de-sevilla.jpg",
+      "src": "photos/setas-de-sevilla-720.jpg",
+      "base": "photos/setas-de-sevilla",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/setas-de-sevilla",
       "title": "Setas De Sevilla",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#595e56",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -671,11 +856,16 @@
       "added": "2026-08-21T10:31:24"
     },
     {
-      "src": "photos/light.jpg",
-      "full": "photos/full/light.jpg",
+      "src": "photos/light-720.jpg",
+      "base": "photos/light",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/light",
       "title": "Light",
-      "w": 1300,
-      "h": 866,
+      "w": 1440,
+      "h": 960,
       "tone": "#131313",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -689,11 +879,16 @@
       "added": "2026-08-21T09:36:06"
     },
     {
-      "src": "photos/flamenco-dancer.jpg",
-      "full": "photos/full/flamenco-dancer.jpg",
+      "src": "photos/flamenco-dancer-720.jpg",
+      "base": "photos/flamenco-dancer",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/flamenco-dancer",
       "title": "Flamenco Dancer",
-      "w": 1002,
-      "h": 1300,
+      "w": 1440,
+      "h": 1869,
       "tone": "#030e15",
       "make": "SONY",
       "model": "ILCE-6700",

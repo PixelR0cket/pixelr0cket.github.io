@@ -155,6 +155,9 @@
     user-select:none; -webkit-user-select:none;
     -webkit-touch-callout:none;
   }
+  /* <picture> is an inline box by default, which would leave a stray baseline
+     gap under every photograph. */
+  .plate picture{ display:block; }
   .plate img{
     display:block; width:100%; height:auto;
     opacity:0; transition:opacity .7s ease;
@@ -402,6 +405,67 @@
   'use strict';
 
   const BATCH = 8;
+
+  /* How wide a photograph is actually drawn, at every width the stylesheet
+     lays out — so the browser can pick the copy it needs instead of the
+     largest one going. These follow the media queries above: two columns from
+     900px, the roll capped at 1440px, and 5vw of air on a phone. Change a
+     breakpoint up there and this has to follow it down here.
+       >=1854  the roll is capped: (1440 - 36 gap) / 2
+       >1100   two columns, 336 + 78 of chrome  (the CSS breakpoint is max-width:1100px)
+       >=900   two columns, 276 + 40 of chrome
+       >=781   one column, 276 + 40 of chrome
+       else    one column, 5vw either side  */
+  const SIZES = '(min-width:1854px) 702px,' +
+                '(min-width:1101px) calc((100vw - 450px) / 2),' +
+                '(min-width:900px) calc((100vw - 352px) / 2),' +
+                '(min-width:781px) calc(100vw - 316px),' +
+                '90vw';
+
+  /* One photograph, offered in every format and both widths. The <source> list
+     is read top down and the browser stops at the first type it knows, so
+     nearly everyone takes AVIF and the <img> is only there for the stragglers.
+     Nothing is fetched yet: the sets wait in data- attributes until the loading
+     queue below hands this frame its turn. */
+  function pictureMarkup(p, alt){
+    const img = '<img alt="' + alt + '" draggable="false" decoding="async"' +
+                ' sizes="' + SIZES + '"';
+    if (!p.base || !p.grid || !p.grid.length) return img + '>';
+    const setFor = function(fmt){
+      return p.grid.map(function(w){
+        return p.base + '-' + w + '.' + fmt + ' ' + w + 'w';
+      }).join(', ');
+    };
+    const sources = formats.filter(function(f){ return f !== 'jpg'; })
+      .map(function(f){
+        return '<source type="image/' + f + '" data-srcset="' + setFor(f) + '">';
+      }).join('');
+    return '<picture>' + sources + img + ' data-srcset="' + setFor('jpg') + '"></picture>';
+  }
+
+  /* The frame's turn has come: hand over the sets and let the browser choose.
+     The sources go first, then the <img> — picking happens once, on the img. */
+  function releaseSources(img, src){
+    const pic = img.parentNode;
+    if (pic && pic.tagName === 'PICTURE'){
+      const list = pic.querySelectorAll('source[data-srcset]');
+      for (let i = 0; i < list.length; i++){
+        list[i].srcset = list[i].getAttribute('data-srcset');
+        list[i].removeAttribute('data-srcset');
+      }
+    }
+    if (img.getAttribute('data-srcset')){
+      img.srcset = img.getAttribute('data-srcset');
+      img.removeAttribute('data-srcset');
+    }
+    img.src = src;
+  }
+
+  /* The extension the browser settled on, off a file it has already taken. */
+  function formatOf(url){
+    const m = /\.(avif|webp|jpg|jpeg|png)(?:[?#]|$)/i.exec(url || '');
+    return m ? m[1].toLowerCase() : '';
+  }
   const LOOKAHEAD = 900;          // px of runway kept painted below the fold
   const EXIFR = 'https://cdnjs.cloudflare.com/ajax/libs/exifr/7.1.3/full.umd.min.js';
 
@@ -428,6 +492,10 @@
   const CONTACT = 'Contact';
 
   let photos = [];
+  let formats = ['jpg'];
+  /* Which format this browser actually chose, learned from the first photograph
+     it loads. The viewer opens in the same one rather than guessing. */
+  let picked = 'jpg';
   let collections = [];
   let active = MAIN;
   let rendered = 0;
@@ -568,7 +636,7 @@
     while (inflight < MAX_INFLIGHT && toLoad.length){
       const job = toLoad.shift();
       inflight++;
-      job.img.src = job.src;
+      releaseSources(job.img, job.src);
     }
   }
 
@@ -660,7 +728,7 @@
 
     frame.innerHTML =
       '<div class="plate" style="' + ratio + tone + '">' +
-        '<img alt="' + esc(p.title) + '" draggable="false" decoding="async">' +
+        pictureMarkup(p, esc(p.title)) +
         '<div class="shield"></div>' +
       '</div>' +
       (published ? '' : buildMark(p)) +
@@ -678,6 +746,7 @@
     img.addEventListener('load', function(){
       loadDone(img);
       imageReady(img);
+      picked = formatOf(img.currentSrc) || picked;
       if (!p.w){
         p.w = img.naturalWidth; p.h = img.naturalHeight;
         frame.querySelector('.plate').style.aspectRatio = p.w + '/' + p.h;
@@ -711,13 +780,13 @@
     }
 
     const plate = frame.querySelector('.plate');
-    plate.addEventListener('click', function(){ showViewer(p); });
+    plate.addEventListener('click', function(){ showViewer(p, img); });
     if (published){
       plate.tabIndex = 0;
       plate.setAttribute('role', 'button');
       plate.setAttribute('aria-label', 'Open ' + (p.title || 'photograph'));
       plate.addEventListener('keydown', function(e){
-        if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); showViewer(p); }
+        if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); showViewer(p, img); }
       });
     }
 
@@ -826,7 +895,7 @@
         (pic
           ? '<div class="page-figure page-row">' +
               '<div class="plate" style="' + box + '">' +
-                '<img alt="" draggable="false" decoding="async">' +
+                pictureMarkup(pic, '') +
                 '<div class="shield"></div>' +
               '</div>' +
             '</div>'
@@ -836,7 +905,7 @@
     if (pic){
       const img = els.contact.querySelector('img');
       img.addEventListener('load', function(){ img.classList.add('shown'); });
-      img.src = pic.src;
+      releaseSources(img, pic.src);
     }
   }
 
@@ -959,6 +1028,7 @@
       if (data.contact && data.contact.email){ contact = data.contact; paintContact(); }
       els.brand.removeAttribute('contenteditable');
       stampCopyright();
+      formats = data.formats || ['jpg'];
       collections = data.collections || [];
       photos = data.photos;
       els.fab.remove();
@@ -1015,20 +1085,32 @@
     i:     -1
   };
 
-  function paintViewer(){
+  /* The roll's copy of a photograph, in the format this browser took. When the
+     viewer was opened by clicking a frame we know the exact file — it is the
+     one already on screen — and opening on it costs nothing at all. */
+  function warmCopy(p, from){
+    if (from && from.currentSrc) return from.currentSrc;
+    if (p.base && p.grid && p.grid.length) return p.base + '-' + p.grid[0] + '.' + picked;
+    return p.src;
+  }
+
+  function paintViewer(from){
     const p = viewer.list[viewer.i];
     if (!p) return;
     viewer.img.classList.remove('shown');
     viewer.img.alt = p.title || '';
     /* Open on the copy the roll already holds — it is in the cache, so the
        photograph is there at once — then swap in the full-size one behind it. */
-    viewer.img.src = p.src;
+    viewer.img.src = warmCopy(p, from);
     if (p.full){
+      /* p.full is a stem: the same photograph sits beside it as .avif, .webp
+         and .jpg. Ask for the one this browser has already proved it reads. */
+      const src = /\.(avif|webp|jpe?g|png)$/i.test(p.full) ? p.full : p.full + '.' + picked;
       const full = new Image();
       full.onload = function(){
-        if (viewer.list[viewer.i] === p) viewer.img.src = p.full;
+        if (viewer.list[viewer.i] === p) viewer.img.src = src;
       };
-      full.src = p.full;
+      full.src = src;
     }
     viewer.title.textContent = p.title || '';
     viewer.mark.innerHTML = buildMark(p);
@@ -1038,13 +1120,13 @@
     viewer.next.hidden = !many;
   }
 
-  function showViewer(p){
+  function showViewer(p, from){
     /* Snapshot the collection on open: the roll only holds the frames painted
        so far, but every photograph in the collection can be stepped through. */
     viewer.list = visible();
     viewer.i = viewer.list.indexOf(p);
     if (viewer.i === -1) return;
-    paintViewer();
+    paintViewer(from);
     viewer.root.hidden = false;
     document.body.classList.add('viewing');
     viewer.root.focus();
