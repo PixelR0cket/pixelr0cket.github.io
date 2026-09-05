@@ -146,10 +146,10 @@ photography-portfolio/          <- this is the git repo root
 Top of `build.py`:
 
 - `SITE_TITLE` — the masthead
-- `LONG_EDGE` — max served dimension, default 2000px
+- `LONG_EDGE` — the viewer's copy, default 3200px
 - `GRID_WIDTHS` — the widths the roll is cut to, default 720 and 1440
-- `FORMATS` — default `avif`, `webp`, `jpg`
-- `JPEG_QUALITY` / `WEBP_QUALITY` / `AVIF_QUALITY` — defaults 82 / 78 / 58
+- `FORMATS` / `FULL_FORMATS` — the roll's formats and the viewer's
+- `QUALITY` — quality per copy: `1x`, `2x` and `full`
 
 ### About the roll's copies
 
@@ -171,6 +171,41 @@ before it has seen the page.
 
 Nothing is ever enlarged: an original smaller than 1440px simply keeps its own
 width, and the page is told which widths actually exist.
+
+### About quality
+
+The three copies do not want the same setting, so `QUALITY` gives each its own.
+The numbers were chosen by measuring SSIM against the untouched originals at
+the size each copy is actually drawn, over the photographs the front page opens
+with — not by eye:
+
+| | the old site | now |
+|---|---|---|
+| ordinary screen | 0.9441 | **0.9754** |
+| retina | 0.9441 | **0.9610** |
+| first screenful, ordinary | 1157 KB | **465 KB** |
+| first screenful, retina | 1157 KB | **1103 KB** |
+
+The retina copy sits lower (`2x`, q54) than the ordinary one (`1x`, q65)
+because it carries twice the pixels into the same square inch, so it can afford
+to be leaner — and because it is the copy that sets how long the page takes to
+arrive. The ordinary copy is a third of the weight either way, so starving it
+would buy nothing.
+
+`full` is the copy the viewer opens. It is fetched one at a time, only when
+someone has clicked a photograph, on top of a frame already on screen — so
+nobody waits on it and it is set high. It runs a median of about 400KB.
+
+`LONG_EDGE` is 3200 because a 27" retina screen draws a photograph roughly
+3100px wide in the viewer. At the old 2000 it was being enlarged by half on any
+large display: the photograph was softest exactly when someone had leaned in
+to look at it.
+
+The viewer keeps no JPEG. This page needs CSS `aspect-ratio` (Safari 15, 2021)
+to lay out at all, which arrived *later* than WebP (Safari 14, 2020) — so any
+browser that can draw the page can read WebP, and a full-size JPEG nothing can
+reach would be the heaviest thing on the site. The roll still keeps one, where
+it is cheap.
 
 ## What is and isn't published
 

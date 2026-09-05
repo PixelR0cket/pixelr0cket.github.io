@@ -47,7 +47,10 @@ CONTACT_EMAIL = "hello@pixelrocket.studio"
 # contact.jpg (or .png, .tif ...) straight into originals/. It hangs on the
 # contact page only, and never joins the roll.
 CONTACT_IMAGE = "contact"
-LONG_EDGE = 2000          # the copy the viewer opens, full screen
+# The copy the viewer opens. A 27" retina screen draws a photograph about
+# 3100px wide there, so 2000 was being enlarged by half on any large display —
+# the photograph was softest exactly when someone had leaned in to look at it.
+LONG_EDGE = 3200
 
 # The roll's copies are cut to the width they are *displayed* at, not to a long
 # edge. A column is never wider than 702px, so one copy dresses an ordinary
@@ -56,16 +59,50 @@ LONG_EDGE = 2000          # the copy the viewer opens, full screen
 # upright photograph is no longer served short — under the old long-edge rule a
 # portrait got 1300px of *height* and only ~870px of width, and went soft in
 # the column.
+#
 # 720 clears a 702px column exactly, so an ordinary screen takes the small copy
 # rather than tipping into the large one over two pixels; 1440 clears the same
 # column on a retina screen.
 GRID_WIDTHS = (720, 1440)
-# Newest format first: the browser stops at the first <source> it can read, so
-# nearly everyone gets AVIF, a few get WebP, and JPEG is there for the rest.
+
+# Newest format first: the browser stops at the first <source> it can read.
+#
+# The roll keeps a JPEG at the end of the chain because it is cheap there and
+# guarantees every frame shows something. The viewer does not: a full-size JPEG
+# is by far the heaviest file the site would hold, and nothing can reach it.
+# This page needs CSS aspect-ratio (Safari 15, 2021) to lay out at all, which
+# is a *later* arrival than WebP (Safari 14, 2020) — so any browser that can
+# draw the page can read WebP. The viewer also only ever opens on top of a
+# frame the roll already loaded, so the format is known good by then.
 FORMATS = ("avif", "webp", "jpg")
-JPEG_QUALITY = 82
-WEBP_QUALITY = 78
-AVIF_QUALITY = 58         # AVIF's scale is not JPEG's; this matches q82 by eye
+FULL_FORMATS = ("avif", "webp")
+
+# AVIF's scale is not JPEG's, and the three copies of a photograph do not want
+# the same number on it. Measured with SSIM against the untouched original,
+# over the eight photographs the front page actually opens with, at the size
+# each copy is really drawn:
+#
+#     old pipeline, JPEG q82 at 1300px    SSIM 0.9465   1157K the screenful
+#     AVIF q54 at 1440px                  SSIM 0.9643   1112K
+#     AVIF q58 at 1440px                  SSIM 0.9694   1269K
+#
+# The retina copy sits at q54: better than the site has ever looked *and*
+# lighter than it has ever been, which q58 gives up for a difference nobody
+# reports seeing. It can afford to be leaner than the small copy because it is
+# carrying twice the pixels into the same square inch of screen.
+#
+# The ordinary copy is a third of the weight at the same quality setting, so
+# there is nothing to buy by starving it — it sits higher, at q65.
+#
+# The viewer's copy is a different case again. It is fetched only when someone
+# has clicked a photograph to look at it properly, one at a time, on top of a
+# frame already on screen — so nobody waits on it, and it is the one place
+# worth spending freely.
+QUALITY = {
+    "1x":   {"avif": 65, "webp": 82, "jpg": 86},   # ordinary screens, drawn 1:1
+    "2x":   {"avif": 54, "webp": 74, "jpg": 78},   # retina screens
+    "full": {"avif": 72, "webp": 86},              # the viewer
+}
 
 SRC = "originals"
 FULL = "full"             # inside photos/: the viewer's copies
@@ -289,18 +326,21 @@ def average_tone(img):
     return "#%02x%02x%02x" % one.getpixel((0, 0))
 
 
-SAVE_ARGS = {
-    "jpg":  ("JPEG", {"quality": JPEG_QUALITY, "optimize": True, "progressive": True}),
-    "webp": ("WEBP", {"quality": WEBP_QUALITY, "method": 6}),
-    "avif": ("AVIF", {"quality": AVIF_QUALITY}),
+ENCODER = {
+    "jpg":  ("JPEG", {"optimize": True, "progressive": True}),
+    "webp": ("WEBP", {"method": 6}),
+    "avif": ("AVIF", {}),
 }
 
 
-def save_image(img, path, fmt):
-    """One copy, in one format. Writes no EXIF: the web copies carry no location."""
-    kind, opts = SAVE_ARGS[fmt]
+def save_image(img, path, fmt, tier):
+    """One copy, in one format, at the quality that tier is worth.
+
+    Writes no EXIF: location and serial numbers never reach the web copies.
+    """
+    kind, opts = ENCODER[fmt]
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    img.save(path, kind, **opts)
+    img.save(path, kind, quality=QUALITY[tier][fmt], **opts)
 
 
 def to_width(img, width):
@@ -318,12 +358,13 @@ def grid_copies(img, slug):
     """
     widths = []
     largest = None
-    for want in sorted(GRID_WIDTHS):
+    for n, want in enumerate(sorted(GRID_WIDTHS)):
         copy = to_width(img, want)
         if widths and copy.width == widths[-1]:
             continue          # the original ran out before this size did
+        tier = "1x" if n == 0 else "2x"
         for fmt in FORMATS:
-            save_image(copy, os.path.join(OUT, f"{slug}-{copy.width}.{fmt}"), fmt)
+            save_image(copy, os.path.join(OUT, f"{slug}-{copy.width}.{fmt}"), fmt, tier)
         widths.append(copy.width)
         largest = copy
     return {
@@ -338,9 +379,9 @@ def grid_copies(img, slug):
 
 
 def full_copies(img, slug):
-    """The copies the viewer opens, full screen, in every format."""
-    for fmt in FORMATS:
-        save_image(img, os.path.join(OUT, FULL, f"{slug}.{fmt}"), fmt)
+    """The copies the viewer opens, full screen."""
+    for fmt in FULL_FORMATS:
+        save_image(img, os.path.join(OUT, FULL, f"{slug}.{fmt}"), fmt, "full")
     return f"{OUT}/{FULL}/{slug}"
 
 
@@ -496,7 +537,8 @@ def build():
     for photo in photos:
         print(f"  added {photo['added'][:16].replace('T', ' ')}   {photo['title'] or '(untitled)'}")
 
-    manifest = {"title": SITE_TITLE, "front": FRONT, "formats": list(FORMATS),
+    manifest = {"title": SITE_TITLE, "front": FRONT,
+                "formats": list(FORMATS), "fullFormats": list(FULL_FORMATS),
                 "collections": collections, "photos": photos}
     if CONTACT_EMAIL:
         manifest["contact"] = {"heading": CONTACT_HEADING, "email": CONTACT_EMAIL}

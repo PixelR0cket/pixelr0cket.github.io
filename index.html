@@ -493,6 +493,9 @@
 
   let photos = [];
   let formats = ['jpg'];
+  /* The viewer's copies exist in fewer formats than the roll's — see FORMATS
+     and FULL_FORMATS in build.py. */
+  let fullFormats = ['jpg'];
   /* Which format this browser actually chose, learned from the first photograph
      it loads. The viewer opens in the same one rather than guessing. */
   let picked = 'jpg';
@@ -1029,6 +1032,7 @@
       els.brand.removeAttribute('contenteditable');
       stampCopyright();
       formats = data.formats || ['jpg'];
+      fullFormats = data.fullFormats || formats;
       collections = data.collections || [];
       photos = data.photos;
       els.fab.remove();
@@ -1103,9 +1107,15 @@
        photograph is there at once — then swap in the full-size one behind it. */
     viewer.img.src = warmCopy(p, from);
     if (p.full){
-      /* p.full is a stem: the same photograph sits beside it as .avif, .webp
-         and .jpg. Ask for the one this browser has already proved it reads. */
-      const src = /\.(avif|webp|jpe?g|png)$/i.test(p.full) ? p.full : p.full + '.' + picked;
+      /* p.full is a stem: the same photograph sits beside it in each of
+         fullFormats. Ask for the one this browser has already proved it reads,
+         and if the roll fell back to a format the viewer does not keep, take
+         the last one offered — which every browser that can draw this page can
+         read. Failing that the viewer simply stays on the roll's copy. */
+      const ext = fullFormats.indexOf(picked) !== -1
+                    ? picked
+                    : fullFormats[fullFormats.length - 1];
+      const src = /\.(avif|webp|jpe?g|png)$/i.test(p.full) ? p.full : p.full + '.' + ext;
       const full = new Image();
       full.onload = function(){
         if (viewer.list[viewer.i] === p) viewer.img.src = src;

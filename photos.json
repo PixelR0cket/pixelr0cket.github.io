@@ -6,6 +6,10 @@
     "webp",
     "jpg"
   ],
+  "fullFormats": [
+    "avif",
+    "webp"
+  ],
   "collections": [
     "Birds",
     "Cars"
@@ -40,13 +44,13 @@
       "base": "photos/birds-robin",
       "grid": [
         720,
-        1340
+        1440
       ],
       "full": "photos/full/birds-robin",
       "title": "Robin",
       "collection": "Birds",
-      "w": 1340,
-      "h": 2000,
+      "w": 1440,
+      "h": 2150,
       "tone": "#767a7b",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -112,11 +116,11 @@
       "base": "photos/dsc01497-2",
       "grid": [
         720,
-        1333
+        1440
       ],
       "full": "photos/full/dsc01497-2",
-      "w": 1333,
-      "h": 2000,
+      "w": 1440,
+      "h": 2159,
       "tone": "#5a595a",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -321,12 +325,12 @@
       "base": "photos/mudeford-5",
       "grid": [
         720,
-        1104
+        1440
       ],
       "full": "photos/full/mudeford-5",
       "title": "Mudeford 5",
-      "w": 1104,
-      "h": 2000,
+      "w": 1440,
+      "h": 2609,
       "tone": "#56584e",
       "make": "SONY",
       "model": "ILCE-6700",
@@ -563,7 +567,7 @@
       "title": "Santa Pod 4",
       "collection": "Cars",
       "w": 1440,
-      "h": 701,
+      "h": 702,
       "tone": "#4b4c50",
       "make": "SONY",
       "model": "ILCE-6700",
