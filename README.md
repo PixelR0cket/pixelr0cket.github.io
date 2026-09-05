@@ -150,6 +150,7 @@ Top of `build.py`:
 - `GRID_WIDTHS` — the widths the roll is cut to, default 720 and 1440
 - `FORMATS` / `FULL_FORMATS` — the roll's formats and the viewer's
 - `QUALITY` — quality per copy: `1x`, `2x` and `full`
+- `SUBSAMPLING` — how much colour detail each copy keeps
 
 ### About the roll's copies
 
@@ -195,6 +196,37 @@ would buy nothing.
 `full` is the copy the viewer opens. It is fetched one at a time, only when
 someone has clicked a photograph, on top of a frame already on screen — so
 nobody waits on it and it is set high. It runs a median of about 400KB.
+
+### About colour
+
+Every original here is sRGB, and the web copies are written without EXIF but
+with the colour profile intact, so nothing shifts on the way out.
+
+`SUBSAMPLING` is the other half of colour. Image formats store colour at half
+width and half height by default (4:2:0), which is why a saturated edge — the
+red flank of a car against sky — goes soft and drifts before anything else in
+the picture does. Full colour (4:4:4) costs about 7% more bytes and removes
+about a third of the colour error.
+
+The copy an ordinary screen draws 1:1 keeps full colour, because there half-
+resolution colour really is one colour sample per two pixels of car.
+
+The retina copy does not, and that is not a compromise: 4:2:0 colour in a
+1440px file is 720 colour samples across a 702px column — already one per CSS
+pixel, exactly what full colour gives an ordinary screen. Paying twice for it
+would buy nothing but weight, on the one copy that decides how fast the page
+arrives. The viewer's copy keeps full colour, because it is the one being
+looked at.
+
+### About the first request
+
+The manifest is fetched by a two-line script in the `<head>`, above the
+stylesheet link, and picked up later by `loadManifest`. This is deliberate.
+Nothing on the page can be asked for until the manifest says what the
+photographs are, and the script that reads it is at the foot of the file — so
+the connection used to sit idle for the whole time the browser spent reading
+the page. It has to stay above the stylesheet: a pending stylesheet blocks
+every script after it from running.
 
 `LONG_EDGE` is 3200 because a 27" retina screen draws a photograph roughly
 3100px wide in the viewer. At the old 2000 it was being enlarged by half on any

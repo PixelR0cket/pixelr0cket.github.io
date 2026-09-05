@@ -6,6 +6,21 @@
 <title>Keith Merkelt Photography</title>
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script>
+  /* Nothing can be asked for until the manifest says what the photographs are,
+     and the script that reads it sits at the foot of this file — so the wire
+     used to stay empty for the whole time the browser spent reading the page.
+     Starting the request here, in the head, costs nothing and means the
+     manifest is already on its way while the rest of this file is still being
+     parsed. The catch only marks the promise handled; loadManifest below does
+     the real error handling.
+
+     This has to sit above the stylesheet link: a pending stylesheet blocks
+     every script after it from running, which would put the request right back
+     where it started. */
+  window.__manifest = fetch('photos.json', {cache: 'no-cache'});
+  window.__manifest.catch(function(){});
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400;0,500;0,700;1,400&family=Cousine:wght@400;700&family=Reenie+Beanie&display=swap" rel="stylesheet">
@@ -1015,7 +1030,9 @@
 
   async function loadManifest(){
     try {
-      const res = await fetch('photos.json', {cache:'no-cache'});
+      /* Started in the head, before this script existed. */
+      const res = await (window.__manifest || fetch('photos.json', {cache:'no-cache'}));
+      window.__manifest = null;
       if (!res.ok) return false;
       const data = await res.json();
       if (!data.photos || !data.photos.length) return false;

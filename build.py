@@ -104,6 +104,23 @@ QUALITY = {
     "full": {"avif": 72, "webp": 86},              # the viewer
 }
 
+# Colour is stored at half width and half height unless you ask otherwise
+# (4:2:0), which is why a saturated edge — the red flank of a car against sky —
+# goes soft and drifts before anything else does. Asking for full colour costs
+# about 7% more bytes and removes about a third of the colour error.
+#
+# It is worth that on the copy an ordinary screen draws 1:1, where half-
+# resolution colour means one colour sample per two pixels of car.
+#
+# It is not worth anything on the retina copy, and this is not a compromise:
+# 4:2:0 colour in a 1440px file is 720 colour samples across a 702px column —
+# already one per CSS pixel, which is exactly what full colour gives an
+# ordinary screen. Paying twice for it would buy nothing but weight, on the
+# one copy that decides how fast the page arrives.
+#
+# The viewer's copy gets full colour because it is the one being looked at.
+SUBSAMPLING = {"1x": "4:4:4", "2x": "4:2:0", "full": "4:4:4"}
+
 SRC = "originals"
 FULL = "full"             # inside photos/: the viewer's copies
 # The front page. A folder by this name is not a collection: its photographs
@@ -331,6 +348,8 @@ ENCODER = {
     "webp": ("WEBP", {"method": 6}),
     "avif": ("AVIF", {}),
 }
+# JPEG spells the same setting with its own numbers; WebP has no say in it.
+JPEG_SUBSAMPLING = {"4:4:4": 0, "4:2:2": 1, "4:2:0": 2}
 
 
 def save_image(img, path, fmt, tier):
@@ -339,6 +358,12 @@ def save_image(img, path, fmt, tier):
     Writes no EXIF: location and serial numbers never reach the web copies.
     """
     kind, opts = ENCODER[fmt]
+    opts = dict(opts)
+    sub = SUBSAMPLING[tier]
+    if fmt == "avif":
+        opts["subsampling"] = sub
+    elif fmt == "jpg":
+        opts["subsampling"] = JPEG_SUBSAMPLING[sub]
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     img.save(path, kind, quality=QUALITY[tier][fmt], **opts)
 
