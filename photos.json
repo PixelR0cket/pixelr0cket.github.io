@@ -12,9 +12,58 @@
   ],
   "collections": [
     "Birds",
-    "Cars"
+    "Cars",
+    "Nightwork"
   ],
   "photos": [
+    {
+      "src": "photos/nightwork-twilight-720.jpg",
+      "base": "photos/nightwork-twilight",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/nightwork-twilight",
+      "title": "Twilight",
+      "collection": "Nightwork",
+      "w": 1440,
+      "h": 1920,
+      "tone": "#320a29",
+      "make": "Apple",
+      "model": "iPhone 13 mini",
+      "lens": "iPhone 13 mini back dual wide camera 5.1mm f/1.6",
+      "focal": 5.1,
+      "aperture": 1.6,
+      "shutter": 2.0,
+      "iso": 4000,
+      "date": "2024-10-10T22:10:37",
+      "id": "27106c978b3f",
+      "added": "2026-09-06T10:32:49"
+    },
+    {
+      "src": "photos/nightwork-dusk-720.jpg",
+      "base": "photos/nightwork-dusk",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/nightwork-dusk",
+      "title": "Dusk",
+      "collection": "Nightwork",
+      "w": 1440,
+      "h": 1920,
+      "tone": "#2d1a27",
+      "make": "Apple",
+      "model": "iPhone 13 mini",
+      "lens": "iPhone 13 mini back dual wide camera 5.1mm f/1.6",
+      "focal": 5.1,
+      "aperture": 1.6,
+      "shutter": 1.0,
+      "iso": 4000,
+      "date": "2024-10-10T22:09:40",
+      "id": "2677842115bf",
+      "added": "2026-09-06T10:32:49"
+    },
     {
       "src": "photos/birds-dsc00644-720.jpg",
       "base": "photos/birds-dsc00644",
