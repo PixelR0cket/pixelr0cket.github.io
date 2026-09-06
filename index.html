@@ -100,6 +100,11 @@
 
   /* ---------------- empty state ---------------- */
   .empty{
+    /* Hidden until the manifest has spoken. On the deployed site this panel is
+       never right, and showing it while photos.json was still in flight met
+       every visitor with 'An empty roll' and an Add photographs button.
+       repaint() sets display itself, so it wins from the first paint onward. */
+    display:none;
     margin-left:var(--col-x); margin-right:var(--col-r); max-width:541px;
     padding:80px 0 40px;
   }
@@ -267,30 +272,55 @@
   body.published .roll .plate{
     cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cg fill='none' stroke='%23222' stroke-width='1.25'%3E%3Cpath d='M2 8V2h6'/%3E%3Cpath d='M20 2h6v6'/%3E%3Cpath d='M26 20v6h-6'/%3E%3Cpath d='M8 26H2v-6'/%3E%3C/g%3E%3C/svg%3E") 14 14, crosshair;
   }
-  body.viewing{ overflow:hidden; }
+  /* A phone scrolls the roll straight through an overflow:hidden body, so the
+     pictures behind the viewer slid about and you came back somewhere else.
+     Pinning the body is the one lock every browser honours; showViewer parks
+     the scroll position in top and hideViewer puts it back. */
+  body.viewing{ position:fixed; width:100%; overflow:hidden; }
 
   .viewer{
     position:fixed; inset:0; z-index:100;
     /* Solid, not a veil: at 97% the roll behind still ghosted through,
        which read as clutter around the photograph. */
     background:var(--paper);
-    display:flex; align-items:center; justify-content:center;
+    /* Centred by the stage's auto margins rather than by align-items, which
+       clips the top of anything taller than the glass instead of letting it
+       scroll. Turn a phone on its side and the caption used to be cut off
+       below the fold with no way to reach it. */
+    display:flex;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
     padding:52px 68px;
   }
   .viewer[hidden]{ display:none; }
   .viewer-stage{
     display:flex; flex-direction:column; align-items:flex-start;
-    max-width:100%; max-height:100%;
+    max-width:100%;
+    margin:auto;
   }
   /* .plate carries the right-click and drag deterrence, so the viewer keeps it. */
   .viewer-plate{ background:none; max-width:100%; }
+  /* pan-y leaves the page its vertical scroll — which is how the caption is
+     reached on a phone held sideways — while taking pinch away from the
+     browser, whose idea of zoom is to blow up the whole fixed overlay. Once
+     the photograph itself is zoomed we want every direction. */
+  .viewer-plate{ touch-action:pan-y; }
+  .viewer-plate.zoomed{ touch-action:none; cursor:grab; }
+  .viewer-plate.zoomed.dragging{ cursor:grabbing; }
+  .viewer-plate img{ transform-origin:center center; }
+  .viewer-plate img.eased{ transition:transform .22s ease, opacity .7s ease; }
   .viewer-plate img{
     width:auto; height:auto;
     max-width:100%; max-height:72vh;
   }
-  .viewer-caption{ margin-top:14px; width:100%; }
+  /* The caption is wider than a portrait photograph, and it was the caption
+     that sized the stage — so the picture sat against the left edge of a box
+     built for the text and read as off-centre. Nothing to contribute to the
+     stage's width, then stretch to whatever the photograph settled on. */
+  .viewer-caption{ margin-top:14px; width:0; min-width:100%; }
   .viewer-title{ font-style:italic; color:var(--ink); }
-  .viewer-caption .mark{ margin-top:2px; }
+  /* Tied now to the picture's width, the mark has to be allowed to fold onto
+     a second line rather than force the stage wider again. */
+  .viewer-caption .mark{ margin-top:2px; flex-wrap:wrap; gap:10px 28px; }
 
   .viewer-close,.viewer-step{
     position:absolute; z-index:1;
@@ -342,16 +372,19 @@
     .roll{ padding-top:34px; }
     /* Centring the picture left it stranded ~190px below the control row.
        On a phone it hangs from the top instead, just under the controls. */
-    .viewer{ align-items:flex-start; padding:70px 5vw 24px; }
+    .viewer{ padding:70px 5vw 24px; }
+    .viewer-stage{ margin:0 auto auto; }
     .viewer-plate img{ max-height:58vh; }
+    /* Three targets 8px apart in the corner a thumb reaches for is a mis-tap
+       waiting to happen. 46px of padding-box on a 58px pitch leaves real gaps. */
     .viewer-close,.viewer-step{
-      top:12px; bottom:auto; transform:none;
-      font-size:22px; padding:10px 13px;
+      top:8px; bottom:auto; transform:none;
+      font-size:22px; padding:12px 16px;
     }
-    .viewer-close{ right:5vw; }
+    .viewer-close{ right:calc(5vw - 6px); }
     .viewer-step{ left:auto; }
-    .viewer-next{ right:calc(5vw + 46px); }
-    .viewer-prev{ right:calc(5vw + 92px); }
+    .viewer-next{ right:calc(5vw + 52px); }
+    .viewer-prev{ right:calc(5vw + 110px); }
     .fab{
       position:static; width:auto; display:none;
       margin:22px 0 0;
@@ -364,6 +397,13 @@
     .viewer-caption .mark{ flex-direction:column; gap:6px; }
     .mark-body{ gap:12px; }
     .mark-logo{ height:11px; }
+  }
+  /* A phone held sideways is 800-odd points wide, so it reads as a desktop to
+     every width query above while having barely 375 points of height. Judge the
+     photograph by the height it actually has. */
+  @media (max-height:520px){
+    .viewer{ padding:44px 5vw 20px; }
+    .viewer-plate img{ max-height:82vh; }
   }
   @media (prefers-reduced-motion:reduce){
     *{ transition:none !important; }
@@ -1095,11 +1135,15 @@
 
   /* ---------- viewer ---------- */
 
+  /* Where the roll was standing when the viewer took over. */
+  let parkedScroll = 0;
+
   const viewer = {
     root:  document.getElementById('viewer'),
     img:   document.getElementById('viewerImg'),
     title: document.getElementById('viewerTitle'),
     mark:  document.getElementById('viewerMark'),
+    plate: document.querySelector('.viewer-plate'),
     close: document.getElementById('viewerClose'),
     prev:  document.getElementById('viewerPrev'),
     next:  document.getElementById('viewerNext'),
@@ -1119,6 +1163,9 @@
   function paintViewer(from){
     const p = viewer.list[viewer.i];
     if (!p) return;
+    /* Every photograph opens at its own full size — zoom never carries over
+       from the one before it. */
+    resetZoom(false);
     viewer.img.classList.remove('shown');
     viewer.img.alt = p.title || '';
     /* Open on the copy the roll already holds — it is in the cache, so the
@@ -1156,6 +1203,11 @@
     if (viewer.i === -1) return;
     paintViewer(from);
     viewer.root.hidden = false;
+    /* Pinning the body is what actually stops a phone scrolling the roll
+       behind the photograph, but a pinned body forgets where it was — so the
+       position rides along in top until hideViewer hands it back. */
+    parkedScroll = window.scrollY || window.pageYOffset || 0;
+    document.body.style.top = (-parkedScroll) + 'px';
     document.body.classList.add('viewing');
     viewer.root.focus();
   }
@@ -1167,12 +1219,189 @@
   }
 
   function hideViewer(){
+    resetZoom(false);
     viewer.root.hidden = true;
     document.body.classList.remove('viewing');
+    document.body.style.top = '';
+    window.scrollTo(0, parkedScroll);
     viewer.img.removeAttribute('src');
     viewer.list = [];
     viewer.i = -1;
   }
+
+
+  /* ---------- zoom, pan, swipe ---------- */
+
+  /* A phone pinching a fixed, full-screen overlay zooms the overlay, not the
+     photograph, and then cannot pan anywhere useful — which is why looking
+     closely at a picture on a phone felt broken. The gesture belongs to the
+     photograph, so the viewer takes it and drives the transform itself. */
+
+  const ZOOM_MAX = 4;      /* the full copy has detail, but not endless detail */
+  const ZOOM_TAP = 2.5;    /* where a double tap lands */
+  const SWIPE_MIN = 48;    /* px before a drag counts as 'next photograph' */
+  const TAP_GAP = 300;     /* ms between taps for a double tap */
+
+  let zoom = {s: 1, x: 0, y: 0};
+  let grip = null;         /* the gesture in progress, if any */
+  let lastTap = 0;
+
+  function pinchSpan(t){
+    return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  }
+
+  /* Held inside its own edges, so a zoomed photograph can never be dragged off
+     into the margin and lost. */
+  function holdInFrame(){
+    const w = viewer.img.offsetWidth, h = viewer.img.offsetHeight;
+    const maxX = Math.max(0, (w * zoom.s - w) / 2);
+    const maxY = Math.max(0, (h * zoom.s - h) / 2);
+    zoom.x = Math.min(maxX, Math.max(-maxX, zoom.x));
+    zoom.y = Math.min(maxY, Math.max(-maxY, zoom.y));
+  }
+
+  function drawZoom(eased){
+    viewer.img.classList.toggle('eased', !!eased);
+    viewer.img.style.transform = zoom.s === 1
+      ? ''
+      : 'translate(' + zoom.x + 'px,' + zoom.y + 'px) scale(' + zoom.s + ')';
+    viewer.plate.classList.toggle('zoomed', zoom.s > 1);
+  }
+
+  function resetZoom(eased){
+    zoom = {s: 1, x: 0, y: 0};
+    drawZoom(eased);
+  }
+
+  /* Scale about the point the fingers are actually over, so the detail under
+     them stays under them. */
+  function zoomAbout(px, py, next){
+    next = Math.min(ZOOM_MAX, Math.max(1, next));
+    const r = viewer.img.getBoundingClientRect();
+    const cx = r.left + r.width / 2 - zoom.x;
+    const cy = r.top + r.height / 2 - zoom.y;
+    const ax = px - cx, ay = py - cy;
+    zoom.x = ax - (ax - zoom.x) * next / zoom.s;
+    zoom.y = ay - (ay - zoom.y) * next / zoom.s;
+    zoom.s = next;
+    holdInFrame();
+  }
+
+  viewer.plate.addEventListener('touchstart', function(e){
+    if (e.touches.length === 2){
+      const t = [e.touches[0], e.touches[1]];
+      grip = {kind:'pinch', span:pinchSpan(t), from:zoom.s,
+              px:(t[0].clientX + t[1].clientX) / 2,
+              py:(t[0].clientY + t[1].clientY) / 2};
+      e.preventDefault();
+    } else if (e.touches.length === 1){
+      grip = {kind: zoom.s > 1 ? 'pan' : 'swipe',
+              x:e.touches[0].clientX, y:e.touches[0].clientY,
+              fromX:zoom.x, fromY:zoom.y, slid:false};
+    }
+  }, {passive:false});
+
+  viewer.plate.addEventListener('touchmove', function(e){
+    if (!grip) return;
+    if (grip.kind === 'pinch' && e.touches.length === 2){
+      e.preventDefault();
+      const span = pinchSpan([e.touches[0], e.touches[1]]);
+      zoomAbout(grip.px, grip.py, grip.from * span / grip.span);
+      drawZoom(false);
+    } else if (grip.kind === 'pan' && e.touches.length === 1){
+      e.preventDefault();
+      zoom.x = grip.fromX + (e.touches[0].clientX - grip.x);
+      zoom.y = grip.fromY + (e.touches[0].clientY - grip.y);
+      holdInFrame();
+      drawZoom(false);
+    } else if (grip.kind === 'swipe' && e.touches.length === 1){
+      const dx = e.touches[0].clientX - grip.x;
+      const dy = e.touches[0].clientY - grip.y;
+      /* Only claim the gesture once it is clearly sideways: up and down still
+         belongs to the page, which is how the caption is reached in landscape. */
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 12){
+        grip.slid = true;
+        e.preventDefault();
+      }
+    }
+  }, {passive:false});
+
+  viewer.plate.addEventListener('touchend', function(e){
+    if (!grip) return;
+
+    if (grip.kind === 'swipe'){
+      const dx = e.changedTouches[0].clientX - grip.x;
+      if (grip.slid && Math.abs(dx) > SWIPE_MIN){
+        stepViewer(dx < 0 ? 1 : -1);
+        grip = null;
+        return;
+      }
+      if (!grip.slid){
+        /* A second tap in the same breath means 'closer' — or, if we are
+           already in, 'back out'. */
+        const now = Date.now();
+        if (now - lastTap < TAP_GAP){
+          lastTap = 0;
+          zoomAbout(e.changedTouches[0].clientX, e.changedTouches[0].clientY, ZOOM_TAP);
+          drawZoom(true);
+          grip = null;
+          return;
+        }
+        lastTap = now;
+      }
+    }
+
+    if (grip.kind === 'pan' && !grip.slid){
+      const now = Date.now();
+      if (now - lastTap < TAP_GAP){ lastTap = 0; resetZoom(true); grip = null; return; }
+      lastTap = now;
+    }
+
+    /* Pinched back to nothing: settle rather than leave it fractionally off. */
+    if (zoom.s <= 1.02 && zoom.s !== 1) resetZoom(true);
+    else if (zoom.s > 1){ holdInFrame(); drawZoom(true); }
+
+    if (e.touches.length === 1){
+      /* One finger lifted out of a pinch — carry on as a pan. */
+      grip = {kind: zoom.s > 1 ? 'pan' : 'swipe',
+              x:e.touches[0].clientX, y:e.touches[0].clientY,
+              fromX:zoom.x, fromY:zoom.y, slid:false};
+    } else if (e.touches.length === 0){
+      grip = null;
+    }
+  }, {passive:false});
+
+  /* Safari zooms the page on its own gesture events regardless of touch-action. */
+  ['gesturestart','gesturechange','gestureend'].forEach(function(name){
+    viewer.root.addEventListener(name, function(e){ e.preventDefault(); });
+  });
+
+  /* A mouse gets the same idea, without the fingers: double click to go in,
+     drag to move about, double click to come back out. */
+  viewer.img.addEventListener('dblclick', function(e){
+    if (zoom.s > 1) resetZoom(true);
+    else { zoomAbout(e.clientX, e.clientY, ZOOM_TAP); drawZoom(true); }
+  });
+
+  viewer.plate.addEventListener('mousedown', function(e){
+    if (zoom.s === 1) return;
+    e.preventDefault();
+    const from = {x:e.clientX, y:e.clientY, tx:zoom.x, ty:zoom.y};
+    viewer.plate.classList.add('dragging');
+    function move(ev){
+      zoom.x = from.tx + (ev.clientX - from.x);
+      zoom.y = from.ty + (ev.clientY - from.y);
+      holdInFrame();
+      drawZoom(false);
+    }
+    function up(){
+      viewer.plate.classList.remove('dragging');
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+    }
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  });
 
   viewer.img.addEventListener('load', function(){ viewer.img.classList.add('shown'); });
   viewer.close.addEventListener('click', hideViewer);
