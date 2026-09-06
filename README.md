@@ -117,7 +117,8 @@ Each frame is signed with the camera that took it. If the make has a logo in
 so an unrecognised camera still identifies itself.
 
 Logos are matched by make, lowercased: an EXIF `Make` of `SONY` — or a
-`make: Canon` you typed — looks for `logos/sony.png`, `logos/canon.png`. To add
+`make: Canon` you typed — looks for `logos/sony.png`, `logos/canon.png`. Photographs
+off an iPhone carry a `Make` of `Apple` and are signed with `logos/apple.png`. To add
 a brand, drop in a transparent PNG about 40px tall named for the make.
 
 ## Folder layout
