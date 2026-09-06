@@ -133,7 +133,20 @@ Canon's is set `ink: false` and only lifted, because inverting red gives cyan.
 
 ## Light and dark
 
-The site follows whatever the reader's system is set to — there is no switch.
+The switch sits under the frame count and cycles **Auto → Light → Dark**. Auto
+follows the reader's system and keeps following it if they change it while the
+page is open; a choice is remembered in `localStorage` and outranks the system
+until they set it back to Auto. Three settings rather than two, because a plain
+toggle can only ever disagree with the system — it can never go back to
+following it.
+
+The theme is resolved by a small script in `<head>`, before the stylesheet, so
+the page never paints one wall and blinks to the other. That also means the
+stylesheet keys off a single `data-theme` attribute and carries one copy of the
+palette rather than two — one for the media query and one for the override,
+which is exactly the sort of pair that drifts. Nothing is lost by leaning on
+script for this: with script off there are no photographs on the page at all.
+
 Only the palette changes: every rule is written against the variables at the
 top of the stylesheet, so the layout, type and spacing are identical either
 way. The greys are not the light ones inverted, since the same nominal

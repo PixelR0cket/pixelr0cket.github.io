@@ -38,6 +38,25 @@
      where it started. */
   window.__manifest = fetch('photos.json', {cache: 'no-cache'});
   window.__manifest.catch(function(){});
+
+  /* Which wall the photographs hang on, settled here rather than in the
+     stylesheet, and before the first paint so the page never shows one theme
+     and then blinks to the other.
+
+     Resolving it in script means the sheet keys off a single attribute and
+     carries one copy of the palette instead of two — one for the system
+     preference and one for the chosen override, which is exactly the sort of
+     pair that drifts. Nothing is lost by leaning on script here: with it off
+     there are no photographs on this page at all. */
+  (function(){
+    var pref = null;
+    try { pref = localStorage.getItem('theme'); } catch(e){}
+    if (pref !== 'light' && pref !== 'dark') pref = 'auto';
+    var dark = pref === 'dark' || (pref === 'auto' && window.matchMedia &&
+               window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    window.__themePref = pref;
+  })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -78,22 +97,23 @@
      being dragged up to white, and the paper is #121212 rather than black:
      pure black behind a photograph crushes its own shadows and haloes the
      edges. */
-  @media (prefers-color-scheme:dark){
-    :root{
-      --paper:#121212;
-      --ink:#ededed;
-      --graphite:#9a9a9a;
-      --ash:#8a8a8a;
-      --hairline:#2c2a28;
-      --plate:#1c1c1c;
-      --rule:#333333;
-      --select:#3a2f2b;
-      /* The safelight, lifted to carry on a dark wall: same hue, same
-         restraint, enough lightness to still read as the lamp. */
-      --safelight:#c08a7c;
-    }
+  :root[data-theme="dark"]{
+    --paper:#121212;
+    --ink:#ededed;
+    --graphite:#9a9a9a;
+    --ash:#8a8a8a;
+    --hairline:#2c2a28;
+    --plate:#1c1c1c;
+    --rule:#333333;
+    --select:#3a2f2b;
+    /* The safelight, lifted to carry on a dark wall: same hue, same
+       restraint, enough lightness to still read as the lamp. */
+    --safelight:#c08a7c;
   }
-  html{ color-scheme:light dark; }
+  /* So the scrollbars and form furniture match the wall that was chosen, not
+     the one the system happens to prefer. */
+  :root[data-theme="light"]{ color-scheme:light; }
+  :root[data-theme="dark"]{ color-scheme:dark; }
 
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--paper);}
@@ -128,6 +148,20 @@
   .brand:focus{border-bottom-color:var(--safelight);}
   .frame-tally{ order:3; margin-top:16px; color:var(--ash); }
   .masthead.no-tabs .frame-tally{ margin-top:26px; }
+  /* Set as quietly as the frame count beneath it: on a page about looking at
+     photographs, the lamp switch should be findable, not prominent. */
+  .wall{
+    order:4; align-self:flex-start;
+    appearance:none; background:none; border:none;
+    /* Padded for a thumb and pulled back by the same amount, so the word sits
+       exactly where it looks like it sits while the target is worth aiming at. */
+    padding:7px 10px; margin:-1px 0 0 -10px;
+    font:inherit; color:var(--ash);
+    cursor:pointer; transition:color .15s ease;
+  }
+  .wall:hover{ color:var(--ink); }
+  .wall:focus{ outline:none; }
+  .wall:focus-visible{ outline:1px solid var(--safelight); outline-offset:3px; }
 
   /* ---------------- collection tabs ---------------- */
   .tabs{ order:2; display:block; margin-top:84px; }
@@ -422,6 +456,7 @@
     .tab-new{ margin-top:0; }
     .frame-tally{ margin-top:14px; }
     .masthead.no-tabs .frame-tally{ margin-top:14px; }
+    .wall{ margin:-1px 0 0 -10px; }
     .empty{ max-width:none; padding-top:44px; }
     .page{ padding-top:34px; }
     .roll{ padding-top:34px; }
@@ -460,16 +495,14 @@
     .viewer{ padding:44px 5vw 20px; }
     .viewer-plate img{ max-height:82vh; }
   }
-  @media (prefers-color-scheme:dark){
-    /* Solid black artwork has nothing to say on a dark ground, so the ink
-       marks are turned to light. Both kinds carry a little more presence than
-       they do on paper, where 0.34 was already enough to read. */
-    .mark-logo{ opacity:0.5; }
-    .mark-logo-ink{ filter:invert(1); }
-    /* The zoom cursor is drawn in dark ink for a white wall. */
-    body.published .roll .plate{
-      cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cg fill='none' stroke='%23ddd' stroke-width='1.25'%3E%3Cpath d='M2 8V2h6'/%3E%3Cpath d='M20 2h6v6'/%3E%3Cpath d='M26 20v6h-6'/%3E%3Cpath d='M8 26H2v-6'/%3E%3C/g%3E%3C/svg%3E") 14 14, crosshair;
-    }
+  /* Solid black artwork has nothing to say on a dark ground, so the ink marks
+     are turned to light. Both kinds carry a little more presence than they do
+     on paper, where 0.34 was already enough to read. */
+  :root[data-theme="dark"] .mark-logo{ opacity:0.5; }
+  :root[data-theme="dark"] .mark-logo-ink{ filter:invert(1); }
+  /* The zoom cursor is drawn in dark ink for a white wall. */
+  :root[data-theme="dark"] body.published .roll .plate{
+    cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cg fill='none' stroke='%23ddd' stroke-width='1.25'%3E%3Cpath d='M2 8V2h6'/%3E%3Cpath d='M20 2h6v6'/%3E%3Cpath d='M26 20v6h-6'/%3E%3Cpath d='M8 26H2v-6'/%3E%3C/g%3E%3C/svg%3E") 14 14, crosshair;
   }
 
   @media (prefers-reduced-motion:reduce){
@@ -483,6 +516,7 @@
   <div class="masthead-top">
     <div class="brand" contenteditable="true" spellcheck="false">Keith Merkelt Photography</div>
     <div class="frame-tally" id="tally">0 frames</div>
+    <button class="wall" id="wall" type="button">Auto</button>
   </div>
   <div class="tabs" id="tabs" role="tablist"></div>
 </div>
@@ -595,6 +629,7 @@
     roll: document.getElementById('roll'),
     tabs: document.getElementById('tabs'),
     empty: document.getElementById('empty'),
+    wall:  document.getElementById('wall'),
     tally: document.getElementById('tally'),
     footer: document.getElementById('footer'),
     fab: document.getElementById('fab'),
@@ -1171,6 +1206,56 @@
       return true;
     } catch(err){ return false; }
   }
+
+  /* ---------- which wall ---------- */
+
+  /* Three settings rather than two: a plain toggle can only disagree with the
+     system, never go back to following it. The head script has already put the
+     resolved theme on the page — this only keeps the label honest, remembers
+     the choice, and listens for the system changing underneath while the
+     setting is still Auto. */
+
+  const WALLS = ['auto', 'light', 'dark'];
+  const SYSTEM_DARK = window.matchMedia
+    ? window.matchMedia('(prefers-color-scheme: dark)')
+    : null;
+
+  let wallPref = window.__themePref || 'auto';
+
+  function wallResolved(){
+    if (wallPref !== 'auto') return wallPref;
+    return (SYSTEM_DARK && SYSTEM_DARK.matches) ? 'dark' : 'light';
+  }
+
+  function paintWall(){
+    const now = wallResolved();
+    document.documentElement.setAttribute('data-theme', now);
+    const next = WALLS[(WALLS.indexOf(wallPref) + 1) % WALLS.length];
+    els.wall.textContent = wallPref.charAt(0).toUpperCase() + wallPref.slice(1);
+    /* The button says what the setting is, so the label a screen reader hears
+       has to say what pressing it would do. */
+    els.wall.setAttribute('aria-label',
+      'Theme: ' + wallPref + (wallPref === 'auto' ? ' (' + now + ')' : '') +
+      '. Switch to ' + next + '.');
+    els.wall.title = 'Switch to ' + next;
+  }
+
+  els.wall.addEventListener('click', function(){
+    wallPref = WALLS[(WALLS.indexOf(wallPref) + 1) % WALLS.length];
+    try {
+      if (wallPref === 'auto') localStorage.removeItem('theme');
+      else localStorage.setItem('theme', wallPref);
+    } catch(e){}
+    paintWall();
+  });
+
+  if (SYSTEM_DARK){
+    const follow = function(){ if (wallPref === 'auto') paintWall(); };
+    if (SYSTEM_DARK.addEventListener) SYSTEM_DARK.addEventListener('change', follow);
+    else if (SYSTEM_DARK.addListener) SYSTEM_DARK.addListener(follow);
+  }
+
+  paintWall();
 
   /* ---------- copyright ---------- */
 
