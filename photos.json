@@ -17,6 +17,75 @@
   ],
   "photos": [
     {
+      "src": "photos/dsc04136-2-720.jpg",
+      "base": "photos/dsc04136-2",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/dsc04136-2",
+      "w": 1440,
+      "h": 960,
+      "tone": "#91807d",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 306.0,
+      "aperture": 6.3,
+      "shutter": 0.00125,
+      "iso": 100,
+      "date": "2026-08-15T18:10:32",
+      "id": "9853dff4c989",
+      "added": "2026-09-06T10:39:22",
+      "title": ""
+    },
+    {
+      "src": "photos/dsc04074-720.jpg",
+      "base": "photos/dsc04074",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/dsc04074",
+      "w": 1440,
+      "h": 960,
+      "tone": "#858585",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.002,
+      "iso": 250,
+      "date": "2026-08-15T18:03:24",
+      "id": "299cf3b0ae79",
+      "added": "2026-09-06T10:39:22",
+      "title": ""
+    },
+    {
+      "src": "photos/dsc00573-720.jpg",
+      "base": "photos/dsc00573",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/dsc00573",
+      "w": 1440,
+      "h": 960,
+      "tone": "#101213",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "17-40mm F1.8 DC | Art 025",
+      "focal": 40.0,
+      "aperture": 2,
+      "shutter": 0.0015625,
+      "iso": 160,
+      "date": "2025-11-23T14:10:10",
+      "id": "b8a9c1b03372",
+      "added": "2026-09-06T10:39:22",
+      "title": ""
+    },
+    {
       "src": "photos/nightwork-twilight-720.jpg",
       "base": "photos/nightwork-twilight",
       "grid": [
