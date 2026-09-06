@@ -303,7 +303,10 @@
      reached on a phone held sideways — while taking pinch away from the
      browser, whose idea of zoom is to blow up the whole fixed overlay. Once
      the photograph itself is zoomed we want every direction. */
-  .viewer-plate{ touch-action:pan-y; }
+  /* A zoomed photograph is larger than the frame it is held in, and without
+     this it spilled straight over the caption and out of the viewer, which
+     then scrolled sideways under the drag. Zoom happens inside the frame. */
+  .viewer-plate{ touch-action:pan-y; overflow:hidden; }
   .viewer-plate.zoomed{ touch-action:none; cursor:grab; }
   .viewer-plate.zoomed.dragging{ cursor:grabbing; }
   .viewer-plate img{ transform-origin:center center; }
@@ -1370,6 +1373,15 @@
       grip = null;
     }
   }, {passive:false});
+
+  /* Turning the phone changes the size of the frame the photograph is held in,
+     and a picture zoomed in portrait was left stranded outside its own edges by
+     the rotation — hanging off the side with no way to drag it back. */
+  window.addEventListener('resize', function(){
+    if (viewer.root.hidden || zoom.s === 1) return;
+    holdInFrame();
+    drawZoom(false);
+  });
 
   /* Safari zooms the page on its own gesture events regardless of touch-action. */
   ['gesturestart','gesturechange','gestureend'].forEach(function(name){
