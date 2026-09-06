@@ -118,8 +118,27 @@ so an unrecognised camera still identifies itself.
 
 Logos are matched by make, lowercased: an EXIF `Make` of `SONY` — or a
 `make: Canon` you typed — looks for `logos/sony.png`, `logos/canon.png`. Photographs
-off an iPhone carry a `Make` of `Apple` and are signed with `logos/apple.png`. To add
-a brand, drop in a transparent PNG about 40px tall named for the make.
+off an iPhone carry a `Make` of `Apple` and are signed with `logos/apple.png`.
+
+To add a brand, drop a transparent PNG about 40px tall into `logos/` and add a
+line to the `LOGOS` map in `index.html`:
+
+```js
+nikon: {src:'logos/nikon.png', ink:true},
+```
+
+`ink: true` means the artwork is solid black. On the dark theme a black mark
+would be invisible, so an ink mark is turned to light; a coloured one like
+Canon's is set `ink: false` and only lifted, because inverting red gives cyan.
+
+## Light and dark
+
+The site follows whatever the reader's system is set to — there is no switch.
+Only the palette changes: every rule is written against the variables at the
+top of the stylesheet, so the layout, type and spacing are identical either
+way. The greys are not the light ones inverted, since the same nominal
+contrast reads louder on a dark ground, and the dark paper is `#121212` rather
+than black — pure black behind a photograph crushes its own shadows.
 
 ## Folder layout
 

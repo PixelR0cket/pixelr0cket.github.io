@@ -53,6 +53,9 @@
        its quiet without asking to be squinted at. */
     --ash:#767676;
     --hairline:#e8e6e3;
+    --plate:#f7f6f4;        /* the ground a photograph is printed on while it loads */
+    --rule:#ececec;         /* the hair between the mark and the gear */
+    --select:#f0ecea;
     /* The darkroom lamp, turned down. At full strength it was the loudest
        thing on a page whose job is showing photographs; muted, it still
        marks the collection you are in without competing with the pictures. */
@@ -65,6 +68,33 @@
     --step:93px;        /* vertical gap, single column  */
     --split-gap:36px;   /* gap between and below frames, two columns */
   }
+
+  /* A gallery lit for the room it is being read in. Only the palette changes —
+     every rule above is written against these names, so the layout, the type
+     and the spacing are the same wall either way.
+
+     The greys are not the light ones inverted. On a dark ground the same
+     nominal contrast reads louder, so the metadata sits at 5.4:1 rather than
+     being dragged up to white, and the paper is #121212 rather than black:
+     pure black behind a photograph crushes its own shadows and haloes the
+     edges. */
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#121212;
+      --ink:#ededed;
+      --graphite:#9a9a9a;
+      --ash:#8a8a8a;
+      --hairline:#2c2a28;
+      --plate:#1c1c1c;
+      --rule:#333333;
+      --select:#3a2f2b;
+      /* The safelight, lifted to carry on a dark wall: same hue, same
+         restraint, enough lightness to still read as the lamp. */
+      --safelight:#c08a7c;
+    }
+  }
+  html{ color-scheme:light dark; }
+
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--paper);}
   body{
@@ -73,7 +103,7 @@
     font-size:14px; line-height:1.5;
     -webkit-font-smoothing:antialiased;
   }
-  ::selection{background:#f0ecea;}
+  ::selection{background:var(--select);}
 
   /* ---------------- masthead ---------------- */
   .masthead{
@@ -192,7 +222,7 @@
 
   .plate{
     position:relative;
-    background:#f7f6f4;
+    background:var(--plate);
     line-height:0;
     user-select:none; -webkit-user-select:none;
     -webkit-touch-callout:none;
@@ -223,7 +253,7 @@
   /* Maker logos ship as solid black artwork. Now that every other piece of
      metadata is grey, an untouched logo outweighs the photograph's own title. */
   .mark-logo{ height:13px; width:auto; flex-shrink:0; display:block; opacity:0.34; }
-  .mark-rule{ width:1px; align-self:stretch; background:#ececec; }
+  .mark-rule{ width:1px; align-self:stretch; background:var(--rule); }
   .mark-gear{ text-align:left; min-width:0; }
   .mark-model{ color:var(--ash); }
   .mark-lens{ color:var(--ash); }
@@ -430,6 +460,18 @@
     .viewer{ padding:44px 5vw 20px; }
     .viewer-plate img{ max-height:82vh; }
   }
+  @media (prefers-color-scheme:dark){
+    /* Solid black artwork has nothing to say on a dark ground, so the ink
+       marks are turned to light. Both kinds carry a little more presence than
+       they do on paper, where 0.34 was already enough to read. */
+    .mark-logo{ opacity:0.5; }
+    .mark-logo-ink{ filter:invert(1); }
+    /* The zoom cursor is drawn in dark ink for a white wall. */
+    body.published .roll .plate{
+      cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cg fill='none' stroke='%23ddd' stroke-width='1.25'%3E%3Cpath d='M2 8V2h6'/%3E%3Cpath d='M20 2h6v6'/%3E%3Cpath d='M26 20v6h-6'/%3E%3Cpath d='M8 26H2v-6'/%3E%3C/g%3E%3C/svg%3E") 14 14, crosshair;
+    }
+  }
+
   @media (prefers-reduced-motion:reduce){
     *{ transition:none !important; }
   }
@@ -590,11 +632,16 @@
   const CAMERA_DEFAULT = /^(dsc|img|dscf|dscn|mg|imgp|gopr|pxl|photo|p)\d+$/i;
 
   /* Brand marks, keyed on the tidied EXIF Make. Anything not listed here keeps
-     the plain wordmark, so an unknown camera still identifies itself. */
+     the plain wordmark, so an unknown camera still identifies itself.
+
+     `ink` says the artwork is solid black. That matters on a dark wall, where
+     a black mark is simply not there: an ink mark is turned to light, while a
+     coloured one like Canon's is only lifted — inverting red would hand back
+     cyan and sign the photograph with the wrong brand. */
   const LOGOS = {
-    sony: 'logos/sony.png',
-    canon: 'logos/canon.png',
-    apple: 'logos/apple.png'
+    sony:  {src:'logos/sony.png',  ink:true},
+    canon: {src:'logos/canon.png', ink:false},
+    apple: {src:'logos/apple.png', ink:true}
   };
 
   function titleFromFilename(name){
@@ -686,7 +733,8 @@
       ? '<div class="mark-body">' +
           (make
             ? (logo
-                ? '<img class="mark-logo" src="' + logo + '" alt="' + esc(make) + '">'
+                ? '<img class="mark-logo' + (logo.ink ? ' mark-logo-ink' : '') +
+                  '" src="' + logo.src + '" alt="' + esc(make) + '">'
                 : '<div class="mark-make">' + esc(make) + '</div>')
             : '') +
           (make && (model || lens) ? '<div class="mark-rule"></div>' : '') +
