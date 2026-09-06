@@ -4,6 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Keith Merkelt Photography</title>
+<meta name="description" content="Photographs by Keith Merkelt — birds, cars and night work, shown full frame with the camera and exposure that made them.">
+<link rel="canonical" href="https://photography.pixelrocket.studio/">
+<!-- Pasted into a message, a portfolio with no card is just a blue link. The
+     image is pinned to one deployed photograph rather than guessed at, so it
+     is a real file that will still be there; point it somewhere else when the
+     picture you want leading changes. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Keith Merkelt Photography">
+<meta property="og:title" content="Keith Merkelt Photography">
+<meta property="og:description" content="Photographs by Keith Merkelt — birds, cars and night work, shown full frame with the camera and exposure that made them.">
+<meta property="og:url" content="https://photography.pixelrocket.studio/">
+<meta property="og:image" content="https://photography.pixelrocket.studio/photos/dsc04136-2-1440.jpg">
+<meta property="og:image:width" content="1440">
+<meta property="og:image:height" content="960">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Keith Merkelt Photography">
+<meta name="twitter:description" content="Photographs by Keith Merkelt — birds, cars and night work, shown full frame with the camera and exposure that made them.">
+<meta name="twitter:image" content="https://photography.pixelrocket.studio/photos/dsc04136-2-1440.jpg">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script>
@@ -29,7 +47,11 @@
     --paper:#ffffff;
     --ink:#222222;
     --graphite:#666666;
-    --ash:#aaaaaa;
+    /* Was #aaa, which is 2.3:1 on white — under the 4.5:1 a reader is owed,
+       and every exposure line, camera and lens on the site is set in it.
+       #767676 is the lightest grey that clears the bar, so the metadata keeps
+       its quiet without asking to be squinted at. */
+    --ash:#767676;
     --hairline:#e8e6e3;
     /* The darkroom lamp, turned down. At full strength it was the loudest
        thing on a page whose job is showing photographs; muted, it still
@@ -1141,6 +1163,19 @@
   /* Where the roll was standing when the viewer took over. */
   let parkedScroll = 0;
 
+  /* Whether the open photograph put an entry in the history — a deep link
+     replaces rather than pushes, so Back from one leaves the site properly
+     instead of closing a viewer that was never opened from anywhere. */
+  let viewerPushed = false;
+  let closingFromHistory = false;
+
+  /* The full-size stem is already unique and already slugged by build.py, so
+     it names the photograph in the address bar without inventing anything. */
+  function photoId(p){
+    if (p.full) return p.full.split('/').pop().replace(/\.[^.]+$/, '');
+    return (p.src || '').split('/').pop().replace(/\.[^.]+$/, '').replace(/-\d+$/, '');
+  }
+
   const viewer = {
     root:  document.getElementById('viewer'),
     img:   document.getElementById('viewerImg'),
@@ -1151,7 +1186,8 @@
     prev:  document.getElementById('viewerPrev'),
     next:  document.getElementById('viewerNext'),
     list:  [],
-    i:     -1
+    i:     -1,
+    opener: null
   };
 
   /* The roll's copy of a photograph, in the format this browser took. When the
@@ -1198,7 +1234,26 @@
     viewer.next.hidden = !many;
   }
 
-  function showViewer(p, from){
+  /* aria-modal says nothing else on the page exists; Tab did not agree, and
+     walked straight out into the roll behind. Keep the ring inside. */
+  function trapTab(e){
+    if (e.key !== 'Tab' || viewer.root.hidden) return;
+    const ring = [viewer.close, viewer.prev, viewer.next].filter(function(el){
+      return el && !el.hidden && el.offsetParent !== null;
+    });
+    if (!ring.length) return;
+    const first = ring[0], last = ring[ring.length - 1];
+    const on = ring.indexOf(document.activeElement);
+    if (e.shiftKey && (document.activeElement === first || on === -1)){
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && document.activeElement === last){
+      e.preventDefault(); first.focus();
+    } else if (on === -1){
+      e.preventDefault(); first.focus();
+    }
+  }
+
+  function showViewer(p, from, deep){
     /* Snapshot the collection on open: the roll only holds the frames painted
        so far, but every photograph in the collection can be stepped through. */
     viewer.list = visible();
@@ -1212,6 +1267,17 @@
     parkedScroll = window.scrollY || window.pageYOffset || 0;
     document.body.style.top = (-parkedScroll) + 'px';
     document.body.classList.add('viewing');
+    viewer.opener = (from && from.closest) ? from.closest('.plate') : null;
+    document.addEventListener('keydown', trapTab, true);
+    /* One entry for the viewer, not one per photograph: stepping replaces it,
+       so Back always means 'shut the picture', never 'the one before'. */
+    if (deep){
+      viewerPushed = false;
+      history.replaceState({photo: photoId(p)}, '', '#' + photoId(p));
+    } else {
+      viewerPushed = true;
+      history.pushState({photo: photoId(p)}, '', '#' + photoId(p));
+    }
     viewer.root.focus();
   }
 
@@ -1219,9 +1285,21 @@
     if (viewer.list.length < 2) return;
     viewer.i = (viewer.i + d + viewer.list.length) % viewer.list.length;
     paintViewer();
+    const p = viewer.list[viewer.i];
+    if (p) history.replaceState({photo: photoId(p)}, '', '#' + photoId(p));
   }
 
+  /* Closing is a history move, so the phone's Back button and the close button
+     are the same gesture and the address bar never keeps a photograph that is
+     no longer on screen. popstate does the actual shutting. */
   function hideViewer(){
+    if (viewer.root.hidden) return;
+    if (viewerPushed && !closingFromHistory){ history.back(); return; }
+    if (!closingFromHistory) history.replaceState(null, '', location.pathname + location.search);
+    closeViewer();
+  }
+
+  function closeViewer(){
     resetZoom(false);
     viewer.root.hidden = true;
     document.body.classList.remove('viewing');
@@ -1230,6 +1308,39 @@
     viewer.img.removeAttribute('src');
     viewer.list = [];
     viewer.i = -1;
+    viewerPushed = false;
+    document.removeEventListener('keydown', trapTab, true);
+    /* Back to the frame that opened it, so the keyboard does not start over. */
+    if (viewer.opener && document.body.contains(viewer.opener)) viewer.opener.focus();
+    viewer.opener = null;
+  }
+
+  window.addEventListener('popstate', function(e){
+    const id = e.state && e.state.photo;
+    if (id){
+      if (viewer.root.hidden) openById(id, true);
+      return;
+    }
+    if (!viewer.root.hidden){
+      closingFromHistory = true;
+      closeViewer();
+      closingFromHistory = false;
+    }
+  });
+
+  /* A photograph named in the address bar opens straight onto it, switching to
+     a tab that actually holds it if the one showing does not. */
+  function openById(id, deep){
+    const p = photos.filter(function(x){ return photoId(x) === id; })[0];
+    if (!p) return false;
+    if (visible().indexOf(p) === -1){
+      active = p.collection || MAIN;
+      repaint();
+      if (visible().indexOf(p) === -1){ active = 'All'; repaint(); }
+      if (visible().indexOf(p) === -1) return false;
+    }
+    showViewer(p, null, deep);
+    return true;
   }
 
 
@@ -1437,7 +1548,11 @@
   }, {rootMargin: LOOKAHEAD + 'px'}).observe(els.sentinel);
 
   stampCopyright();
-  loadManifest().then(function(ok){ if (!ok) repaint(); });
+  loadManifest().then(function(ok){
+    if (!ok){ repaint(); return; }
+    const id = decodeURIComponent((location.hash || '').replace(/^#/, ''));
+    if (id) openById(id, true);
+  });
 })();
 </script>
 </body>
