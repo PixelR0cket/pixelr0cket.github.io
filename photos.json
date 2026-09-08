@@ -17,6 +17,30 @@
   ],
   "photos": [
     {
+      "src": "photos/nightwork-dsc00658-720.jpg",
+      "base": "photos/nightwork-dsc00658",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/nightwork-dsc00658",
+      "collection": "Nightwork",
+      "w": 1440,
+      "h": 960,
+      "tone": "#020202",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.0003125,
+      "iso": 320,
+      "date": "2025-11-30T14:38:00",
+      "id": "2e61dd59c3c5",
+      "added": "2026-09-08T20:38:47",
+      "title": ""
+    },
+    {
       "src": "photos/dsc04136-2-720.jpg",
       "base": "photos/dsc04136-2",
       "grid": [
