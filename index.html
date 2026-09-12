@@ -389,12 +389,16 @@
      reached on a phone held sideways — while taking pinch away from the
      browser, whose idea of zoom is to blow up the whole fixed overlay. Once
      the photograph itself is zoomed we want every direction. */
-  /* A zoomed photograph is larger than the frame it is held in, and without
-     this it spilled straight over the caption and out of the viewer, which
-     then scrolled sideways under the drag. Zoom happens inside the frame. */
-  .viewer-plate{ touch-action:pan-y; overflow:hidden; }
-  .viewer-plate.zoomed{ touch-action:none; cursor:grab; }
-  .viewer-plate.zoomed.dragging{ cursor:grabbing; }
+  .viewer{ touch-action:pan-y; }
+  /* Zoomed, the photograph is let out of its frame: the whole glass is its
+     frame now, edge to edge, and the viewer clips it there rather than the
+     plate clipping it to the size it opened at — which made a pinch feel like
+     peering through a letterbox. The caption steps out of the way; the
+     viewer stops scrolling so a drag moves the picture and nothing else. */
+  .viewer.zoomed{ touch-action:none; overflow:hidden; cursor:grab; }
+  .viewer.zoomed.dragging{ cursor:grabbing; }
+  .viewer-caption{ transition:opacity .22s ease; }
+  .viewer.zoomed .viewer-caption{ opacity:0; }
   .viewer-plate img{ transform-origin:center center; }
   .viewer-plate img.eased{ transition:transform .22s ease, opacity .7s ease; }
   .viewer-plate img{
@@ -1482,7 +1486,10 @@
   /* A phone pinching a fixed, full-screen overlay zooms the overlay, not the
      photograph, and then cannot pan anywhere useful — which is why looking
      closely at a picture on a phone felt broken. The gesture belongs to the
-     photograph, so the viewer takes it and drives the transform itself. */
+     photograph, so the viewer takes it and drives the transform itself.
+     The gestures are listened for on the whole glass rather than the plate:
+     zoomed, the photograph is bigger than the frame it opened in, and a
+     finger on the part that has spilled out of it still wants to drag. */
 
   const ZOOM_MAX = 4;      /* the full copy has detail, but not endless detail */
   const ZOOM_TAP = 2.5;    /* where a double tap lands */
@@ -1497,14 +1504,35 @@
     return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
   }
 
-  /* Held inside its own edges, so a zoomed photograph can never be dragged off
-     into the margin and lost. */
-  function holdInFrame(){
-    const w = viewer.img.offsetWidth, h = viewer.img.offsetHeight;
-    const maxX = Math.max(0, (w * zoom.s - w) / 2);
-    const maxY = Math.max(0, (h * zoom.s - h) / 2);
-    zoom.x = Math.min(maxX, Math.max(-maxX, zoom.x));
-    zoom.y = Math.min(maxY, Math.max(-maxY, zoom.y));
+  /* Where the photograph sits as laid out, before any transform is applied —
+     read from the plate rather than the picture, whose own box is mid-flight
+     while an eased zoom is still landing. */
+  function laidCentre(){
+    const p = viewer.plate.getBoundingClientRect();
+    return {x: p.left + viewer.img.offsetLeft + viewer.img.offsetWidth / 2,
+            y: p.top + viewer.img.offsetTop + viewer.img.offsetHeight / 2};
+  }
+
+  /* One axis of the hold below. c is the photograph's laid-out centre, size
+     its zoomed extent, lo..hi the glass. Larger than the glass it must cover
+     it; smaller it must stay within it — and, on settling, drift home to its
+     own centre rather than stay wherever the fingers left it. */
+  function holdAxis(v, c, size, lo, hi, settle){
+    const a = lo + size / 2 - c;   /* v that puts the near edge on lo */
+    const b = hi - size / 2 - c;   /* v that puts the far edge on hi */
+    if (size >= hi - lo) return Math.min(a, Math.max(b, v));
+    if (settle) v = 0;
+    return Math.max(a, Math.min(b, v));
+  }
+
+  /* Held inside the glass, so a zoomed photograph can never be dragged off
+     into the margin and lost, and never shows the paper behind an edge it
+     is big enough to cover. */
+  function holdInFrame(settle){
+    const g = viewer.root.getBoundingClientRect();
+    const c = laidCentre();
+    zoom.x = holdAxis(zoom.x, c.x, viewer.img.offsetWidth * zoom.s, g.left, g.right, settle);
+    zoom.y = holdAxis(zoom.y, c.y, viewer.img.offsetHeight * zoom.s, g.top, g.bottom, settle);
   }
 
   function drawZoom(eased){
@@ -1512,7 +1540,7 @@
     viewer.img.style.transform = zoom.s === 1
       ? ''
       : 'translate(' + zoom.x + 'px,' + zoom.y + 'px) scale(' + zoom.s + ')';
-    viewer.plate.classList.toggle('zoomed', zoom.s > 1);
+    viewer.root.classList.toggle('zoomed', zoom.s > 1);
   }
 
   function resetZoom(eased){
@@ -1520,21 +1548,40 @@
     drawZoom(eased);
   }
 
+  /* Fingers lifted, pinch finished: pinched back to nothing, settle rather
+     than leave it fractionally off; otherwise ease it home within the glass. */
+  function settleZoom(){
+    if (zoom.s <= 1.02){ if (zoom.s !== 1) resetZoom(true); return; }
+    holdInFrame(true);
+    drawZoom(true);
+  }
+
   /* Scale about the point the fingers are actually over, so the detail under
      them stays under them. */
   function zoomAbout(px, py, next){
     next = Math.min(ZOOM_MAX, Math.max(1, next));
-    const r = viewer.img.getBoundingClientRect();
-    const cx = r.left + r.width / 2 - zoom.x;
-    const cy = r.top + r.height / 2 - zoom.y;
-    const ax = px - cx, ay = py - cy;
+    const c = laidCentre();
+    const ax = px - c.x, ay = py - c.y;
     zoom.x = ax - (ax - zoom.x) * next / zoom.s;
     zoom.y = ay - (ay - zoom.y) * next / zoom.s;
     zoom.s = next;
-    holdInFrame();
+    holdInFrame(false);
   }
 
-  viewer.plate.addEventListener('touchstart', function(e){
+  /* A double tap or click goes in on the photograph — only the photograph,
+     the glass around it is for closing — and, once in, anywhere comes out. */
+  let tappedAt = 0;   /* the click a double tap leaves behind is not a click */
+  function tapZoom(px, py, target){
+    if (zoom.s > 1){ resetZoom(true); tappedAt = Date.now(); return true; }
+    if (!target.closest('.viewer-plate')) return false;
+    zoomAbout(px, py, ZOOM_TAP);
+    drawZoom(true);
+    tappedAt = Date.now();
+    return true;
+  }
+
+  viewer.root.addEventListener('touchstart', function(e){
+    if (e.target.closest('.viewer-close, .viewer-step')) return;
     if (e.touches.length === 2){
       const t = [e.touches[0], e.touches[1]];
       grip = {kind:'pinch', span:pinchSpan(t), from:zoom.s,
@@ -1548,7 +1595,7 @@
     }
   }, {passive:false});
 
-  viewer.plate.addEventListener('touchmove', function(e){
+  viewer.root.addEventListener('touchmove', function(e){
     if (!grip) return;
     if (grip.kind === 'pinch' && e.touches.length === 2){
       e.preventDefault();
@@ -1557,9 +1604,11 @@
       drawZoom(false);
     } else if (grip.kind === 'pan' && e.touches.length === 1){
       e.preventDefault();
-      zoom.x = grip.fromX + (e.touches[0].clientX - grip.x);
-      zoom.y = grip.fromY + (e.touches[0].clientY - grip.y);
-      holdInFrame();
+      const dx = e.touches[0].clientX - grip.x, dy = e.touches[0].clientY - grip.y;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) grip.slid = true;
+      zoom.x = grip.fromX + dx;
+      zoom.y = grip.fromY + dy;
+      holdInFrame(false);
       drawZoom(false);
     } else if (grip.kind === 'swipe' && e.touches.length === 1){
       const dx = e.touches[0].clientX - grip.x;
@@ -1573,7 +1622,7 @@
     }
   }, {passive:false});
 
-  viewer.plate.addEventListener('touchend', function(e){
+  viewer.root.addEventListener('touchend', function(e){
     if (!grip) return;
 
     if (grip.kind === 'swipe'){
@@ -1583,77 +1632,122 @@
         grip = null;
         return;
       }
-      if (!grip.slid){
-        /* A second tap in the same breath means 'closer' — or, if we are
-           already in, 'back out'. */
-        const now = Date.now();
-        if (now - lastTap < TAP_GAP){
-          lastTap = 0;
-          zoomAbout(e.changedTouches[0].clientX, e.changedTouches[0].clientY, ZOOM_TAP);
-          drawZoom(true);
-          grip = null;
-          return;
-        }
-        lastTap = now;
-      }
     }
 
-    if (grip.kind === 'pan' && !grip.slid){
+    /* A second tap in the same breath means 'closer' — or, if we are
+       already in, 'back out'. */
+    if ((grip.kind === 'swipe' || grip.kind === 'pan') && !grip.slid){
       const now = Date.now();
-      if (now - lastTap < TAP_GAP){ lastTap = 0; resetZoom(true); grip = null; return; }
+      const t = e.changedTouches[0];
+      if (now - lastTap < TAP_GAP && tapZoom(t.clientX, t.clientY, e.target)){
+        lastTap = 0;
+        grip = null;
+        return;
+      }
       lastTap = now;
     }
 
-    /* Pinched back to nothing: settle rather than leave it fractionally off. */
-    if (zoom.s <= 1.02 && zoom.s !== 1) resetZoom(true);
-    else if (zoom.s > 1){ holdInFrame(); drawZoom(true); }
-
     if (e.touches.length === 1){
       /* One finger lifted out of a pinch — carry on as a pan. */
+      holdInFrame(false);
+      drawZoom(false);
       grip = {kind: zoom.s > 1 ? 'pan' : 'swipe',
               x:e.touches[0].clientX, y:e.touches[0].clientY,
               fromX:zoom.x, fromY:zoom.y, slid:false};
     } else if (e.touches.length === 0){
       grip = null;
+      settleZoom();
     }
   }, {passive:false});
+
+  /* The system taking the touches back — a notification, a palm — is the
+     same as fingers lifting. */
+  viewer.root.addEventListener('touchcancel', function(){
+    if (!grip) return;
+    grip = null;
+    settleZoom();
+  });
 
   /* Turning the phone changes the size of the frame the photograph is held in,
      and a picture zoomed in portrait was left stranded outside its own edges by
      the rotation — hanging off the side with no way to drag it back. */
   window.addEventListener('resize', function(){
     if (viewer.root.hidden || zoom.s === 1) return;
-    holdInFrame();
+    holdInFrame(false);
     drawZoom(false);
   });
 
-  /* Safari zooms the page on its own gesture events regardless of touch-action. */
-  ['gesturestart','gesturechange','gestureend'].forEach(function(name){
-    viewer.root.addEventListener(name, function(e){ e.preventDefault(); });
+  /* A trackpad pinch on a Mac reaches the page as a wheel with ctrl held
+     (Chrome, Firefox) or as Safari's own gesture events, and either way the
+     browser's answer is to blow up the whole page — which the viewer refuses,
+     and then must answer itself. The pinch drives the photograph, as it does
+     on a phone. There is no 'fingers lifted' for a wheel, so it settles a
+     beat after the last tick. Without ctrl a wheel scrolls the glass while
+     the photograph fits it, and moves the photograph about once it does not. */
+  let wheelSettle = null;
+  viewer.root.addEventListener('wheel', function(e){
+    if (e.ctrlKey){
+      e.preventDefault();
+      const dy = Math.max(-40, Math.min(40, e.deltaY));
+      zoomAbout(e.clientX, e.clientY, zoom.s * Math.exp(-dy / 100));
+    } else if (zoom.s > 1){
+      e.preventDefault();
+      zoom.x -= e.deltaX;
+      zoom.y -= e.deltaY;
+      holdInFrame(false);
+    } else return;
+    drawZoom(false);
+    clearTimeout(wheelSettle);
+    wheelSettle = setTimeout(settleZoom, 160);
+  }, {passive:false});
+
+  /* Safari zooms the page on its own gesture events regardless of touch-action.
+     On a Mac they are the trackpad pinch, and carry its scale; on an iPhone
+     they shadow touches the handlers above are already reading, so they are
+     only swallowed there. */
+  let gestureFrom = 1;
+  viewer.root.addEventListener('gesturestart', function(e){
+    e.preventDefault();
+    if (!grip) gestureFrom = zoom.s;
+  });
+  viewer.root.addEventListener('gesturechange', function(e){
+    e.preventDefault();
+    if (grip) return;
+    zoomAbout(e.clientX, e.clientY, gestureFrom * e.scale);
+    drawZoom(false);
+  });
+  viewer.root.addEventListener('gestureend', function(e){
+    e.preventDefault();
+    if (!grip) settleZoom();
   });
 
   /* A mouse gets the same idea, without the fingers: double click to go in,
      drag to move about, double click to come back out. */
-  viewer.img.addEventListener('dblclick', function(e){
-    if (zoom.s > 1) resetZoom(true);
-    else { zoomAbout(e.clientX, e.clientY, ZOOM_TAP); drawZoom(true); }
+  viewer.root.addEventListener('dblclick', function(e){
+    if (e.target.closest('.viewer-close, .viewer-step')) return;
+    tapZoom(e.clientX, e.clientY, e.target);
   });
 
-  viewer.plate.addEventListener('mousedown', function(e){
-    if (zoom.s === 1) return;
+  let dragged = false;   /* a drag's mouseup is not a click on the glass */
+  viewer.root.addEventListener('mousedown', function(e){
+    if (zoom.s === 1 || e.button !== 0) return;
+    if (e.target.closest('.viewer-close, .viewer-step')) return;
     e.preventDefault();
     const from = {x:e.clientX, y:e.clientY, tx:zoom.x, ty:zoom.y};
-    viewer.plate.classList.add('dragging');
+    dragged = false;
+    viewer.root.classList.add('dragging');
     function move(ev){
+      dragged = true;
       zoom.x = from.tx + (ev.clientX - from.x);
       zoom.y = from.ty + (ev.clientY - from.y);
-      holdInFrame();
+      holdInFrame(false);
       drawZoom(false);
     }
     function up(){
-      viewer.plate.classList.remove('dragging');
+      viewer.root.classList.remove('dragging');
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseup', up);
+      settleZoom();
     }
     document.addEventListener('mousemove', move);
     document.addEventListener('mouseup', up);
@@ -1663,8 +1757,11 @@
   viewer.close.addEventListener('click', hideViewer);
   viewer.prev.addEventListener('click', function(){ stepViewer(-1); });
   viewer.next.addEventListener('click', function(){ stepViewer(1); });
-  /* Anywhere off the photograph and its caption closes it. */
+  /* Anywhere off the photograph and its caption closes it — unless the
+     photograph is zoomed, when the whole glass is the photograph's, or the
+     click is the tail of a double tap that has just brought it back out. */
   viewer.root.addEventListener('click', function(e){
+    if (zoom.s > 1 || dragged || Date.now() - tappedAt < 500) return;
     if (!e.target.closest('.viewer-stage, .viewer-close, .viewer-step')) hideViewer();
   });
   document.addEventListener('keydown', function(e){
