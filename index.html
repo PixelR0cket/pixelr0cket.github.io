@@ -399,7 +399,9 @@
   .viewer.zoomed.dragging{ cursor:grabbing; }
   .viewer-caption{ transition:opacity .22s ease; }
   .viewer.zoomed .viewer-caption{ opacity:0; }
-  .viewer-plate img{ transform-origin:center center; }
+  /* will-change lifts the photograph onto its own layer, so a pinch scales a
+     texture on the GPU rather than repainting a 2000px picture every tick. */
+  .viewer-plate img{ transform-origin:center center; will-change:transform; }
   .viewer-plate img.eased{ transition:transform .22s ease, opacity .7s ease; }
   .viewer-plate img{
     width:auto; height:auto;
@@ -1681,24 +1683,31 @@
      (Chrome, Firefox) or as Safari's own gesture events, and either way the
      browser's answer is to blow up the whole page — which the viewer refuses,
      and then must answer itself. The pinch drives the photograph, as it does
-     on a phone. There is no 'fingers lifted' for a wheel, so it settles a
-     beat after the last tick. Without ctrl a wheel scrolls the glass while
-     the photograph fits it, and moves the photograph about once it does not. */
-  let wheelSettle = null;
+     on a phone. Without ctrl a wheel scrolls the glass while the photograph
+     fits it, and moves the photograph about once it does not.
+     A wheel has no 'fingers lifted', and guessing one from a pause in the
+     ticks sprang the picture home in the middle of a pinch — so it is never
+     guessed: the picture stays where the pinch leaves it, held within the
+     glass, and only a pinch that reaches 1x settles, at once. The ticks come
+     faster than frames, so they are gathered and drawn once per frame. */
+  let wheelFrame = 0;
   viewer.root.addEventListener('wheel', function(e){
     if (e.ctrlKey){
       e.preventDefault();
       const dy = Math.max(-40, Math.min(40, e.deltaY));
-      zoomAbout(e.clientX, e.clientY, zoom.s * Math.exp(-dy / 100));
+      const next = zoom.s * Math.exp(-dy / 100);
+      if (next <= 1){ if (zoom.s !== 1) resetZoom(false); return; }
+      zoomAbout(e.clientX, e.clientY, next);
     } else if (zoom.s > 1){
       e.preventDefault();
       zoom.x -= e.deltaX;
       zoom.y -= e.deltaY;
       holdInFrame(false);
     } else return;
-    drawZoom(false);
-    clearTimeout(wheelSettle);
-    wheelSettle = setTimeout(settleZoom, 160);
+    if (!wheelFrame) wheelFrame = requestAnimationFrame(function(){
+      wheelFrame = 0;
+      drawZoom(false);
+    });
   }, {passive:false});
 
   /* Safari zooms the page on its own gesture events regardless of touch-action.
