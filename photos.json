@@ -17,6 +17,29 @@
   ],
   "photos": [
     {
+      "src": "photos/caminito-del-rey-720.jpg",
+      "base": "photos/caminito-del-rey",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/caminito-del-rey",
+      "title": "Caminito Del Rey",
+      "w": 1440,
+      "h": 981,
+      "tone": "#3c403e",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "17-40mm F1.8 DC | Art 025",
+      "focal": 34.2,
+      "aperture": 5.6,
+      "shutter": 0.0008,
+      "iso": 200,
+      "date": "2026-04-10T14:45:29",
+      "id": "28d031d10174",
+      "added": "2026-09-17T18:52:46"
+    },
+    {
       "src": "photos/nightwork-dsc00658-720.jpg",
       "base": "photos/nightwork-dsc00658",
       "grid": [
