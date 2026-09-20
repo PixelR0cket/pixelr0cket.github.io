@@ -11,11 +11,59 @@
     "webp"
   ],
   "collections": [
-    "Birds",
     "Cars",
-    "Nightwork"
+    "Nightwork",
+    "Wildlife"
   ],
   "photos": [
+    {
+      "src": "photos/wildlife-dsc04796-720.jpg",
+      "base": "photos/wildlife-dsc04796",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/wildlife-dsc04796",
+      "collection": "Wildlife",
+      "w": 1440,
+      "h": 1059,
+      "tone": "#505050",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 10,
+      "shutter": 0.0125,
+      "iso": 500,
+      "date": "2026-09-20T15:38:42",
+      "id": "9159e0d68de6",
+      "added": "2026-09-20T20:06:19",
+      "title": ""
+    },
+    {
+      "src": "photos/wildlife-dsc04585-2-720.jpg",
+      "base": "photos/wildlife-dsc04585-2",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/wildlife-dsc04585-2",
+      "collection": "Wildlife",
+      "w": 1440,
+      "h": 818,
+      "tone": "#41412c",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 153.0,
+      "aperture": 8,
+      "shutter": 0.01,
+      "iso": 80,
+      "date": "2026-09-20T15:02:43",
+      "id": "85dadca946ce",
+      "added": "2026-09-20T20:06:19",
+      "title": ""
+    },
     {
       "src": "photos/caminito-del-rey-720.jpg",
       "base": "photos/caminito-del-rey",
@@ -181,14 +229,14 @@
       "added": "2026-09-06T10:32:49"
     },
     {
-      "src": "photos/birds-dsc00644-720.jpg",
-      "base": "photos/birds-dsc00644",
+      "src": "photos/wildlife-dsc00644-720.jpg",
+      "base": "photos/wildlife-dsc00644",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/birds-dsc00644",
-      "collection": "Birds",
+      "full": "photos/full/wildlife-dsc00644",
+      "collection": "Wildlife",
       "w": 1440,
       "h": 811,
       "tone": "#787f8a",
@@ -205,15 +253,15 @@
       "title": ""
     },
     {
-      "src": "photos/birds-robin-720.jpg",
-      "base": "photos/birds-robin",
+      "src": "photos/wildlife-robin-720.jpg",
+      "base": "photos/wildlife-robin",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/birds-robin",
+      "full": "photos/full/wildlife-robin",
       "title": "Robin",
-      "collection": "Birds",
+      "collection": "Wildlife",
       "w": 1440,
       "h": 2150,
       "tone": "#767a7b",
@@ -229,15 +277,15 @@
       "added": "2026-09-02T19:00:30"
     },
     {
-      "src": "photos/birds-early-bird-720.jpg",
-      "base": "photos/birds-early-bird",
+      "src": "photos/wildlife-early-bird-720.jpg",
+      "base": "photos/wildlife-early-bird",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/birds-early-bird",
+      "full": "photos/full/wildlife-early-bird",
       "title": "Early Bird",
-      "collection": "Birds",
+      "collection": "Wildlife",
       "w": 1440,
       "h": 960,
       "tone": "#292828",
@@ -253,14 +301,14 @@
       "added": "2026-09-02T19:00:30"
     },
     {
-      "src": "photos/birds-dsc00725-720.jpg",
-      "base": "photos/birds-dsc00725",
+      "src": "photos/wildlife-dsc00725-720.jpg",
+      "base": "photos/wildlife-dsc00725",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/birds-dsc00725",
-      "collection": "Birds",
+      "full": "photos/full/wildlife-dsc00725",
+      "collection": "Wildlife",
       "w": 1440,
       "h": 960,
       "tone": "#5e717a",
