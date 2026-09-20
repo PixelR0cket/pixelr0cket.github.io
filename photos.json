@@ -17,6 +17,30 @@
   ],
   "photos": [
     {
+      "src": "photos/wildlife-dsc04882-720.jpg",
+      "base": "photos/wildlife-dsc04882",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/wildlife-dsc04882",
+      "collection": "Wildlife",
+      "w": 1440,
+      "h": 870,
+      "tone": "#5c544d",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 149.0,
+      "aperture": 10,
+      "shutter": 0.0125,
+      "iso": 800,
+      "date": "2026-09-20T15:40:47",
+      "id": "146fa452ec2b",
+      "added": "2026-09-20T20:24:03",
+      "title": ""
+    },
+    {
       "src": "photos/wildlife-dsc04796-720.jpg",
       "base": "photos/wildlife-dsc04796",
       "grid": [
