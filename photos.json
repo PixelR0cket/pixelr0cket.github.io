@@ -17,6 +17,30 @@
   ],
   "photos": [
     {
+      "src": "photos/nightwork-waxing-gibbous-moon-720.jpg",
+      "base": "photos/nightwork-waxing-gibbous-moon",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/nightwork-waxing-gibbous-moon",
+      "title": "Waxing Gibbous Moon",
+      "collection": "Nightwork",
+      "w": 1440,
+      "h": 960,
+      "tone": "#060607",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.0015625,
+      "iso": 250,
+      "date": "2026-09-21T19:01:45",
+      "id": "6f78ee0a7e97",
+      "added": "2026-09-26T20:30:35"
+    },
+    {
       "src": "photos/wildlife-dsc05233-720.jpg",
       "base": "photos/wildlife-dsc05233",
       "grid": [
