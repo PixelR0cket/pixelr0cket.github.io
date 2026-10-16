@@ -270,6 +270,9 @@
     pointer-events:none;
   }
   .plate img.shown{ opacity:1; }
+  /* Held off for a frame, so a photograph that is already in hand can be put
+     up outright instead of washing in from an empty plate. */
+  .plate img.at-once{ transition:none; }
   /* transparent shield: intercepts right-click and long-press over the image */
   .shield{ position:absolute; inset:0; }
 
@@ -660,8 +663,28 @@
      and FULL_FORMATS in build.py. */
   let fullFormats = ['jpg'];
   /* Which format this browser actually chose, learned from the first photograph
-     it loads. The viewer opens in the same one rather than guessing. */
+     it loads. The viewer opens in the same one rather than guessing. Until the
+     roll has taken one the answer is jpg, which every browser reads and none
+     would have picked: a viewer that acts on it sends for the heaviest copy of
+     the lot. So it is a guess until it is not, and whoever cares can wait. */
   let picked = 'jpg';
+  let pickedKnown = false;
+  const awaitingPick = [];
+
+  function namePicked(fmt){
+    if (pickedKnown) return;
+    if (fmt) picked = fmt;
+    pickedKnown = true;
+    while (awaitingPick.length) awaitingPick.shift()();
+  }
+
+  /* The roll may never say — an empty collection, or every file gone — so the
+     wait is bounded and the guess is allowed to stand. */
+  function whenPicked(done){
+    if (pickedKnown){ done(); return; }
+    awaitingPick.push(done);
+    if (awaitingPick.length === 1) setTimeout(function(){ namePicked(''); }, 1500);
+  }
   let collections = [];
   let active = MAIN;
   let rendered = 0;
@@ -937,13 +960,17 @@
       '</div>';
 
     const img = frame.querySelector('img');
+    /* The frame keeps hold of its photograph, and the photograph of its frame:
+       stepping through the viewer then knows which copy the roll is already
+       showing rather than sending for another one. */
+    p.held = img;
     queueReveal(img);
     img.addEventListener('load', function(){
       /* The connection is free as soon as the bytes are here; the queue waits
          on the decode, which costs nothing on the wire. */
       loadDone(img);
       whenDrawn(img, function(){ imageReady(img); });
-      picked = formatOf(img.currentSrc) || picked;
+      namePicked(formatOf(img.currentSrc));
       if (!p.w){
         p.w = img.naturalWidth; p.h = img.naturalHeight;
         frame.querySelector('.plate').style.aspectRatio = p.w + '/' + p.h;
@@ -1359,6 +1386,10 @@
      one already on screen — and opening on it costs nothing at all. */
   function warmCopy(p, from){
     if (from && from.currentSrc) return from.currentSrc;
+    /* Stepped to rather than clicked, but the roll may be holding it all the
+       same — and its copy is decoded and on screen, where the small one this
+       used to send for is neither. */
+    if (p.held && p.held.currentSrc) return p.held.currentSrc;
     if (p.base && p.grid && p.grid.length) return p.base + '-' + p.grid[0] + '.' + picked;
     return p.src;
   }
@@ -1370,10 +1401,27 @@
      Come back to the same photograph and it is decoded already, so the fade
      starts with something in it and reads the way it was meant to. decode()
      waits for pixels, so every visit is the second one. */
+  /* Back inside a frame or two and the photograph was never away: it is the
+     copy the roll is holding, decoded, on screen behind the overlay. Fading
+     that up from an empty plate is its own kind of pop — the picture you
+     clicked disappears and washes back in over most of a second. The fade is
+     for a photograph that is genuinely still on its way. */
+  const IN_HAND = 80;
+
   function revealViewer(p, src){
+    const asked = performance.now();
     const lit = function(){
       if (viewer.list[viewer.i] !== p) return;            // stepped on since
       if (viewer.img.getAttribute('src') !== src) return; // or already swapped
+      if (performance.now() - asked < IN_HAND){
+        /* Straight to full, with the transition held off while it happens and
+           handed back after, so the next photograph can still fade if it has
+           to wait for anything. */
+        viewer.img.classList.add('at-once', 'shown');
+        void viewer.img.offsetWidth;
+        viewer.img.classList.remove('at-once');
+        return;
+      }
       /* A frame at opacity 0 has to be painted before the transition has
          anywhere to start from. */
       requestAnimationFrame(function(){
@@ -1401,13 +1449,24 @@
        from the one before it. */
     resetZoom(false);
     viewer.img.classList.remove('shown');
+    /* A photograph still on its way leaves the plate as the only thing on the
+       glass. The roll fills its frames with the picture's own average colour
+       rather than let them sit there white; the viewer has no reason to do
+       otherwise. */
+    viewer.plate.style.background =
+      /^#[0-9a-f]{6}$/i.test(p.tone || '') ? p.tone : '';
     viewer.img.alt = p.title || '';
     /* Open on the copy the roll already holds — it is in the cache, so the
        photograph is there at once — then swap in the full-size one behind it. */
     const warm = warmCopy(p, from);
     viewer.img.src = warm;
     revealViewer(p, warm);
-    if (p.full){
+    if (p.full) whenPicked(function(){
+      /* The heaviest file on the page, so it is worth not having sent for it
+         twice: by the time the roll has named a format the photograph above is
+         already on the glass, and a step taken while we waited means this one
+         is no longer wanted at all. */
+      if (viewer.list[viewer.i] !== p) return;
       /* p.full is a stem: the same photograph sits beside it in each of
          fullFormats. Ask for the one this browser has already proved it reads,
          and if the roll fell back to a format the viewer does not keep, take
@@ -1434,7 +1493,7 @@
       } else {
         full.onload = swap;
       }
-    }
+    });
     viewer.title.textContent = p.title || '';
     viewer.mark.innerHTML = buildMark(p);
     /* Stepping is only offered when there is somewhere to step to. */
