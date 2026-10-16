@@ -270,9 +270,10 @@
     pointer-events:none;
   }
   .plate img.shown{ opacity:1; }
-  /* Held off for a frame, so a photograph that is already in hand can be put
-     up outright instead of washing in from an empty plate. */
-  .plate img.at-once{ transition:none; }
+  /* Clearing the glass between photographs is not something to watch happen:
+     the plate drops to its own tone at once, and the fade is kept for the
+     picture arriving. */
+  .plate img.no-fade{ transition:none; }
   /* transparent shield: intercepts right-click and long-press over the image */
   .shield{ position:absolute; inset:0; }
 
@@ -821,6 +822,17 @@
   const toLoad = [];
   let inflight = 0;
   let generation = 0;
+  /* The roll keeps loading behind the viewer, and on a slow line it was the
+     roll that got the bandwidth: twenty frames nobody is looking at, queued
+     ahead of the one photograph on the glass, which then took its time
+     arriving on an empty plate. The rest of the roll can wait — it is behind
+     a full-screen overlay, and the moment that closes it carries on. */
+  let rollHeld = false;
+
+  function holdRoll(hold){
+    rollHeld = hold;
+    if (!hold) startLoads();
+  }
 
   function queueImage(img, src){
     img._gen = generation;
@@ -829,7 +841,7 @@
   }
 
   function startLoads(){
-    while (inflight < MAX_INFLIGHT && toLoad.length){
+    while (!rollHeld && inflight < MAX_INFLIGHT && toLoad.length){
       const job = toLoad.shift();
       inflight++;
       releaseSources(job.img, job.src);
@@ -852,21 +864,31 @@
   /* load means the bytes have arrived, not that the photograph can be drawn:
      the frame still has to be decoded, and the fade spends its opening on an
      empty plate while that happens — which is the pop. decode() waits for
-     pixels instead, so a fade starts with something in it. The viewer makes
-     the same argument at more length down in revealViewer. */
+     pixels instead, so a fade starts with something in it.
+
+     It is not a promise to wait on for ever, though. A decode that never
+     settles — and browsers do leave them pending — would take the photograph
+     down with it, and a page of frames that never light is a worse failure
+     than a fade that starts a shade early. So the wait is capped at the point
+     where there is a picture to show regardless. */
+  const DECODE_WAIT = 400;   // ms past the bytes before we stop waiting
+
   function whenDrawn(img, done){
-    if (img.decode){
-      /* decode() also rejects when the src moves on under it, and for a file
-         that never arrives at all — lighting a frame with nothing in it helps
-         nobody, so the fallback asks whether there is a picture there. */
-      img.decode().then(done, function(){
-        if (img.complete && img.naturalWidth) done();
-      });
-    } else if (img.complete){
-      done();
-    } else {
-      img.addEventListener('load', done, {once: true});
+    let went = false;
+    const show = function(){ if (went) return; went = true; done(); };
+    const drawable = function(){ return img.complete && img.naturalWidth > 0; };
+    /* decode() also rejects when the src moves on under it, and for a file
+       that never arrives at all — lighting a frame with nothing in it helps
+       nobody, so every way out of here asks whether there is a picture. */
+    const settle = function(){ if (drawable()) show(); };
+    if (!img.decode){
+      if (drawable()) show();
+      else img.addEventListener('load', settle, {once: true});
+      return;
     }
+    img.decode().then(show, settle);
+    if (drawable()) setTimeout(settle, DECODE_WAIT);
+    else img.addEventListener('load', function(){ setTimeout(settle, DECODE_WAIT); }, {once: true});
   }
 
   /* Photographs light up in the order they hang, one after another, whatever
@@ -1384,12 +1406,35 @@
   /* The roll's copy of a photograph, in the format this browser took. When the
      viewer was opened by clicking a frame we know the exact file — it is the
      one already on screen — and opening on it costs nothing at all. */
+  /* In hand means on screen: the file is here and the browser has its size.
+     A copy that is merely on its way is worth nothing to the viewer — it
+     would sit on an empty plate waiting for a download the roll is already
+     queueing behind three others. */
+  function inHand(img){
+    return !!(img && img.currentSrc && img.complete && img.naturalWidth);
+  }
+
+  /* The full-size copy is the heaviest file on the site. Step through a
+     collection faster than they arrive and the browser is left carrying a
+     download and a 3200px decode for every photograph passed — which is how
+     a viewer that felt quick comes to feel stuck. Only the one on the glass
+     is worth having; the one before it is let go. */
+  let fullPending = null;
+
+  function dropPendingFull(){
+    if (!fullPending) return;
+    fullPending.removeAttribute('src');
+    fullPending = null;
+  }
+
   function warmCopy(p, from){
-    if (from && from.currentSrc) return from.currentSrc;
+    if (inHand(from)) return from.currentSrc;
     /* Stepped to rather than clicked, but the roll may be holding it all the
-       same — and its copy is decoded and on screen, where the small one this
-       used to send for is neither. */
-    if (p.held && p.held.currentSrc) return p.held.currentSrc;
+       same — and its copy is decoded and on screen, where the small one below
+       is neither. */
+    if (inHand(p.held)) return p.held.currentSrc;
+    /* Nothing here yet, so the quickest thing to the glass: the smallest copy
+       there is, which the full-size one takes over from when it lands. */
     if (p.base && p.grid && p.grid.length) return p.base + '-' + p.grid[0] + '.' + picked;
     return p.src;
   }
@@ -1401,45 +1446,16 @@
      Come back to the same photograph and it is decoded already, so the fade
      starts with something in it and reads the way it was meant to. decode()
      waits for pixels, so every visit is the second one. */
-  /* Back inside a frame or two and the photograph was never away: it is the
-     copy the roll is holding, decoded, on screen behind the overlay. Fading
-     that up from an empty plate is its own kind of pop — the picture you
-     clicked disappears and washes back in over most of a second. The fade is
-     for a photograph that is genuinely still on its way. */
-  const IN_HAND = 80;
-
   function revealViewer(p, src){
-    const asked = performance.now();
-    const lit = function(){
+    whenDrawn(viewer.img, function(){
       if (viewer.list[viewer.i] !== p) return;            // stepped on since
       if (viewer.img.getAttribute('src') !== src) return; // or already swapped
-      if (performance.now() - asked < IN_HAND){
-        /* Straight to full, with the transition held off while it happens and
-           handed back after, so the next photograph can still fade if it has
-           to wait for anything. */
-        viewer.img.classList.add('at-once', 'shown');
-        void viewer.img.offsetWidth;
-        viewer.img.classList.remove('at-once');
-        return;
-      }
       /* A frame at opacity 0 has to be painted before the transition has
          anywhere to start from. */
       requestAnimationFrame(function(){
         if (viewer.list[viewer.i] === p) viewer.img.classList.add('shown');
       });
-    };
-    if (viewer.img.decode){
-      /* decode() also rejects when the src moves on under it, and for a file
-         that never arrives at all — lighting a frame with nothing in it helps
-         nobody, so the fallback asks whether there is a picture there. */
-      viewer.img.decode().then(lit, function(){
-        if (viewer.img.complete && viewer.img.naturalWidth) lit();
-      });
-    } else if (viewer.img.complete){
-      lit();
-    } else {
-      viewer.img.addEventListener('load', lit, {once: true});
-    }
+    });
   }
 
   function paintViewer(from){
@@ -1448,7 +1464,17 @@
     /* Every photograph opens at its own full size — zoom never carries over
        from the one before it. */
     resetZoom(false);
+    dropPendingFull();
+    /* A fade needs somewhere to start from, and nought has to be a settled
+       fact before the next photograph is hung — otherwise the browser folds
+       the two changes together and draws no fade at all, or spends it on the
+       picture leaving rather than the one arriving. So the glass is cleared
+       outright, with the transition off and the width read to make it so,
+       and the fade that follows is the new photograph's own. */
+    viewer.img.classList.add('no-fade');
     viewer.img.classList.remove('shown');
+    void viewer.img.offsetWidth;
+    viewer.img.classList.remove('no-fade');
     /* A photograph still on its way leaves the plate as the only thing on the
        glass. The roll fills its frames with the picture's own average colour
        rather than let them sit there white; the viewer has no reason to do
@@ -1477,10 +1503,12 @@
                     : fullFormats[fullFormats.length - 1];
       const src = /\.(avif|webp|jpe?g|png)$/i.test(p.full) ? p.full : p.full + '.' + ext;
       const full = new Image();
+      fullPending = full;
       /* Decoded before it is hung, so the swap is one frame to the next with
          no blank between them — the roll's copy holds the frame until the
          full-size one can take it over outright. */
       const swap = function(){
+        if (fullPending === full) fullPending = null;
         if (viewer.list[viewer.i] !== p) return;
         viewer.img.src = src;
         /* If the roll's copy never arrived this is the first picture the
@@ -1529,6 +1557,7 @@
     if (viewer.i === -1) return;
     paintViewer(from);
     viewer.root.hidden = false;
+    holdRoll(true);
     /* Pinning the body is what actually stops a phone scrolling the roll
        behind the photograph, but a pinned body forgets where it was — so the
        position rides along in top until hideViewer hands it back. */
@@ -1569,6 +1598,8 @@
 
   function closeViewer(){
     resetZoom(false);
+    dropPendingFull();
+    holdRoll(false);
     viewer.root.hidden = true;
     document.body.classList.remove('viewing');
     document.body.style.top = '';
