@@ -1338,6 +1338,37 @@
     return p.src;
   }
 
+  /* load means the bytes have arrived, not that the photograph can be drawn:
+     a 3200px frame still has to be decoded, and on a first visit that decode
+     outlasts the first part of the fade. The fade then spends its opening on
+     an empty frame and the photograph lands halfway up it — which is the pop.
+     Come back to the same photograph and it is decoded already, so the fade
+     starts with something in it and reads the way it was meant to. decode()
+     waits for pixels, so every visit is the second one. */
+  function revealViewer(p, src){
+    const lit = function(){
+      if (viewer.list[viewer.i] !== p) return;            // stepped on since
+      if (viewer.img.getAttribute('src') !== src) return; // or already swapped
+      /* A frame at opacity 0 has to be painted before the transition has
+         anywhere to start from. */
+      requestAnimationFrame(function(){
+        if (viewer.list[viewer.i] === p) viewer.img.classList.add('shown');
+      });
+    };
+    if (viewer.img.decode){
+      /* decode() also rejects when the src moves on under it, and for a file
+         that never arrives at all — lighting a frame with nothing in it helps
+         nobody, so the fallback asks whether there is a picture there. */
+      viewer.img.decode().then(lit, function(){
+        if (viewer.img.complete && viewer.img.naturalWidth) lit();
+      });
+    } else if (viewer.img.complete){
+      lit();
+    } else {
+      viewer.img.addEventListener('load', lit, {once: true});
+    }
+  }
+
   function paintViewer(from){
     const p = viewer.list[viewer.i];
     if (!p) return;
@@ -1348,7 +1379,9 @@
     viewer.img.alt = p.title || '';
     /* Open on the copy the roll already holds — it is in the cache, so the
        photograph is there at once — then swap in the full-size one behind it. */
-    viewer.img.src = warmCopy(p, from);
+    const warm = warmCopy(p, from);
+    viewer.img.src = warm;
+    revealViewer(p, warm);
     if (p.full){
       /* p.full is a stem: the same photograph sits beside it in each of
          fullFormats. Ask for the one this browser has already proved it reads,
@@ -1360,10 +1393,22 @@
                     : fullFormats[fullFormats.length - 1];
       const src = /\.(avif|webp|jpe?g|png)$/i.test(p.full) ? p.full : p.full + '.' + ext;
       const full = new Image();
-      full.onload = function(){
-        if (viewer.list[viewer.i] === p) viewer.img.src = src;
+      /* Decoded before it is hung, so the swap is one frame to the next with
+         no blank between them — the roll's copy holds the frame until the
+         full-size one can take it over outright. */
+      const swap = function(){
+        if (viewer.list[viewer.i] !== p) return;
+        viewer.img.src = src;
+        /* If the roll's copy never arrived this is the first picture the
+           viewer has: fade it in rather than leaving it at nothing. */
+        revealViewer(p, src);
       };
       full.src = src;
+      if (full.decode){
+        full.decode().then(swap, function(){ if (full.complete && full.naturalWidth) swap(); });
+      } else {
+        full.onload = swap;
+      }
     }
     viewer.title.textContent = p.title || '';
     viewer.mark.innerHTML = buildMark(p);
@@ -1762,7 +1807,8 @@
     document.addEventListener('mouseup', up);
   });
 
-  viewer.img.addEventListener('load', function(){ viewer.img.classList.add('shown'); });
+  /* Showing the photograph is revealViewer's business now: a load listener
+     here would light it the moment the bytes landed and undo the wait. */
   viewer.close.addEventListener('click', hideViewer);
   viewer.prev.addEventListener('click', function(){ stepViewer(-1); });
   viewer.next.addEventListener('click', function(){ stepViewer(1); });
