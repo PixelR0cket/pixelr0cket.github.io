@@ -677,6 +677,9 @@
     if (fmt) picked = fmt;
     pickedKnown = true;
     while (awaitingPick.length) awaitingPick.shift()();
+    /* A viewer opened before the roll had an answer: now it has one, the rest
+       of the roll can stand down and let the photograph through. */
+    if (!viewer.root.hidden) holdRoll(true);
   }
 
   /* The roll may never say — an empty collection, or every file gone — so the
@@ -1427,15 +1430,58 @@
     fullPending = null;
   }
 
-  function warmCopy(p, from){
+  /* How many real pixels across the photograph is about to be drawn at. The
+     glass is the window less its padding, or the height cap times the shape
+     of the picture, whichever runs out first — both read back off the
+     stylesheet rather than written down twice, because the cap changes with
+     the breakpoints and this would quietly stop agreeing with them. */
+  function drawnWidth(p){
+    const glass = getComputedStyle(viewer.root);
+    const wide = viewer.root.clientWidth
+               - parseFloat(glass.paddingLeft) - parseFloat(glass.paddingRight);
+    const tall = parseFloat(getComputedStyle(viewer.img).maxHeight);
+    const shape = (p.w && p.h) ? p.w / p.h : 3 / 2;
+    const drawn = (tall > 0) ? Math.min(wide, tall * shape) : wide;
+    return Math.round(drawn * (window.devicePixelRatio || 1));
+  }
+
+  function fullCopy(p){
+    /* p.full is a stem: the same photograph sits beside it in each of
+       fullFormats. Ask for the one this browser has already proved it reads,
+       and if the roll fell back to a format the viewer does not keep, take the
+       last one offered — which every browser that can draw this page can read. */
+    const ext = fullFormats.indexOf(picked) !== -1
+                  ? picked
+                  : fullFormats[fullFormats.length - 1];
+    return /\.(avif|webp|jpe?g|png)$/i.test(p.full) ? p.full : p.full + '.' + ext;
+  }
+
+  /* Stretching a photograph by an eighth is invisible; stretching it by half
+     is the soft picture nobody wants. The line sits where it saves sending for
+     a file eight times the weight over eighteen pixels of width. */
+  const ENOUGH = 0.87;
+
+  /* One copy, and the right one: the smallest that still covers the glass.
+     The viewer used to hang the smallest copy there was and then swap the
+     full-size one over it a second later, which is why a photograph arrived
+     soft and then snapped sharp while you were looking at it. Nothing is
+     swapped now — what goes up is what stays up, until a pinch asks for more
+     than it holds. */
+  function viewCopy(p, from){
+    const need = drawnWidth(p) * ENOUGH;
+    /* Something already decoded and big enough costs nothing at all, so it
+       wins outright over a better-fitting file that would have to be fetched. */
+    if (inHand(from) && from.naturalWidth >= need) return from.currentSrc;
+    if (inHand(p.held) && p.held.naturalWidth >= need) return p.held.currentSrc;
+    const grid = (p.grid || []).slice().sort(function(a, b){ return a - b; });
+    for (let i = 0; i < grid.length; i++){
+      if (grid[i] >= need) return p.base + '-' + grid[i] + '.' + picked;
+    }
+    /* Nothing the roll keeps is big enough — this is a retina screen with the
+       photograph filling it, which is what the full-size copy is for. */
+    if (p.full) return fullCopy(p);
     if (inHand(from)) return from.currentSrc;
-    /* Stepped to rather than clicked, but the roll may be holding it all the
-       same — and its copy is decoded and on screen, where the small one below
-       is neither. */
-    if (inHand(p.held)) return p.held.currentSrc;
-    /* Nothing here yet, so the quickest thing to the glass: the smallest copy
-       there is, which the full-size one takes over from when it lands. */
-    if (p.base && p.grid && p.grid.length) return p.base + '-' + p.grid[0] + '.' + picked;
+    if (p.base && grid.length) return p.base + '-' + grid[grid.length - 1] + '.' + picked;
     return p.src;
   }
 
@@ -1482,45 +1528,14 @@
     viewer.plate.style.background =
       /^#[0-9a-f]{6}$/i.test(p.tone || '') ? p.tone : '';
     viewer.img.alt = p.title || '';
-    /* Open on the copy the roll already holds — it is in the cache, so the
-       photograph is there at once — then swap in the full-size one behind it. */
-    const warm = warmCopy(p, from);
-    viewer.img.src = warm;
-    revealViewer(p, warm);
-    if (p.full) whenPicked(function(){
-      /* The heaviest file on the page, so it is worth not having sent for it
-         twice: by the time the roll has named a format the photograph above is
-         already on the glass, and a step taken while we waited means this one
-         is no longer wanted at all. */
+    /* Which copy is a question about the screen, and the answer depends on the
+       format the roll settled on — so on a cold open it waits the moment it
+       takes the roll to say, rather than guessing and fetching twice. */
+    whenPicked(function(){
       if (viewer.list[viewer.i] !== p) return;
-      /* p.full is a stem: the same photograph sits beside it in each of
-         fullFormats. Ask for the one this browser has already proved it reads,
-         and if the roll fell back to a format the viewer does not keep, take
-         the last one offered — which every browser that can draw this page can
-         read. Failing that the viewer simply stays on the roll's copy. */
-      const ext = fullFormats.indexOf(picked) !== -1
-                    ? picked
-                    : fullFormats[fullFormats.length - 1];
-      const src = /\.(avif|webp|jpe?g|png)$/i.test(p.full) ? p.full : p.full + '.' + ext;
-      const full = new Image();
-      fullPending = full;
-      /* Decoded before it is hung, so the swap is one frame to the next with
-         no blank between them — the roll's copy holds the frame until the
-         full-size one can take it over outright. */
-      const swap = function(){
-        if (fullPending === full) fullPending = null;
-        if (viewer.list[viewer.i] !== p) return;
-        viewer.img.src = src;
-        /* If the roll's copy never arrived this is the first picture the
-           viewer has: fade it in rather than leaving it at nothing. */
-        revealViewer(p, src);
-      };
-      full.src = src;
-      if (full.decode){
-        full.decode().then(swap, function(){ if (full.complete && full.naturalWidth) swap(); });
-      } else {
-        full.onload = swap;
-      }
+      const src = viewCopy(p, from);
+      viewer.img.src = src;
+      revealViewer(p, src);
     });
     viewer.title.textContent = p.title || '';
     viewer.mark.innerHTML = buildMark(p);
@@ -1555,9 +1570,15 @@
     viewer.list = visible();
     viewer.i = viewer.list.indexOf(p);
     if (viewer.i === -1) return;
-    paintViewer(from);
+    /* On the glass before it is painted: a hidden element has no width, and
+       the width is how the viewer knows which copy of the photograph the
+       screen is actually going to draw. */
     viewer.root.hidden = false;
-    holdRoll(true);
+    paintViewer(from);
+    /* Held only once the roll has named a format — until then the viewer is
+       waiting on the roll for the answer, and holding it would be waiting on
+       itself. namePicked picks the hold up from there. */
+    if (pickedKnown) holdRoll(true);
     /* Pinning the body is what actually stops a phone scrolling the roll
        behind the photograph, but a pinned body forgets where it was — so the
        position rides along in top until hideViewer hands it back. */
@@ -1718,10 +1739,39 @@
     drawZoom(true);
   }
 
+  /* Leaning in is the one time more pixels are worth waiting for: the copy on
+     the glass was cut to the size the glass draws it at, so a pinch past 1:1
+     is asking for detail it does not hold. The full-size one is fetched then,
+     decoded out of sight, and takes over without the picture flinching —
+     nobody is watching the file, they are watching the thing they zoomed in
+     on get sharper. */
+  function zoomWantsFull(){
+    const p = viewer.list[viewer.i];
+    if (!p || !p.full) return;
+    const src = fullCopy(p);
+    if (viewer.img.getAttribute('src') === src || fullPending) return;
+    const full = new Image();
+    fullPending = full;
+    const swap = function(){
+      if (fullPending === full) fullPending = null;
+      if (viewer.list[viewer.i] !== p) return;
+      if (zoom.s <= 1) return;                 // pinched back out while it came
+      viewer.img.src = src;
+      revealViewer(p, src);
+    };
+    full.src = src;
+    if (full.decode){
+      full.decode().then(swap, function(){ if (full.complete && full.naturalWidth) swap(); });
+    } else {
+      full.onload = swap;
+    }
+  }
+
   /* Scale about the point the fingers are actually over, so the detail under
      them stays under them. */
   function zoomAbout(px, py, next){
     next = Math.min(ZOOM_MAX, Math.max(1, next));
+    if (next > 1) zoomWantsFull();
     const c = laidCentre();
     const ax = px - c.x, ay = py - c.y;
     zoom.x = ax - (ax - zoom.x) * next / zoom.s;
