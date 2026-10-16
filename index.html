@@ -826,6 +826,26 @@
     inflight = 0;
   }
 
+  /* load means the bytes have arrived, not that the photograph can be drawn:
+     the frame still has to be decoded, and the fade spends its opening on an
+     empty plate while that happens — which is the pop. decode() waits for
+     pixels instead, so a fade starts with something in it. The viewer makes
+     the same argument at more length down in revealViewer. */
+  function whenDrawn(img, done){
+    if (img.decode){
+      /* decode() also rejects when the src moves on under it, and for a file
+         that never arrives at all — lighting a frame with nothing in it helps
+         nobody, so the fallback asks whether there is a picture there. */
+      img.decode().then(done, function(){
+        if (img.complete && img.naturalWidth) done();
+      });
+    } else if (img.complete){
+      done();
+    } else {
+      img.addEventListener('load', done, {once: true});
+    }
+  }
+
   /* Photographs light up in the order they hang, one after another, whatever
      order the files themselves come back in. A picture that has landed waits
      for the ones above it — but only so long: a straggler is let out of the
@@ -843,7 +863,9 @@
     pump();
   }
 
-  /* The file has landed. Whether it shows now is the queue's business. */
+  /* The photograph can be drawn. Whether it shows now is the queue's business:
+     a frame still waits for the ones above it, it just waits with pixels in
+     hand rather than with bytes. */
   function imageReady(img){
     if (!img._turn){ img.classList.add('shown'); return; }
     img._turn.ready = true;
@@ -917,8 +939,10 @@
     const img = frame.querySelector('img');
     queueReveal(img);
     img.addEventListener('load', function(){
+      /* The connection is free as soon as the bytes are here; the queue waits
+         on the decode, which costs nothing on the wire. */
       loadDone(img);
-      imageReady(img);
+      whenDrawn(img, function(){ imageReady(img); });
       picked = formatOf(img.currentSrc) || picked;
       if (!p.w){
         p.w = img.naturalWidth; p.h = img.naturalHeight;
@@ -1077,8 +1101,9 @@
 
     if (pic){
       const img = els.contact.querySelector('img');
-      img.addEventListener('load', function(){ img.classList.add('shown'); });
+      /* Sources first: there is nothing to decode until the img has a src. */
       releaseSources(img, pic.src);
+      whenDrawn(img, function(){ img.classList.add('shown'); });
     }
   }
 
