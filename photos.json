@@ -1480,6 +1480,17 @@
   ],
   "contact": {
     "heading": "Inquiries",
-    "email": "hello@pixelrocket.studio"
+    "email": "hello@pixelrocket.studio",
+    "image": {
+      "src": "photos/contact-720.jpg",
+      "base": "photos/contact",
+      "grid": [
+        720,
+        1279
+      ],
+      "w": 1279,
+      "h": 798,
+      "tone": "#4b6049"
+    }
   }
 }
