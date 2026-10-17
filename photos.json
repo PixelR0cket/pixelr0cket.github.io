@@ -17,6 +17,30 @@
   ],
   "photos": [
     {
+      "src": "photos/wildlife-king-fisher-6-720.jpg",
+      "base": "photos/wildlife-king-fisher-6",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/wildlife-king-fisher-6",
+      "title": "King Fisher 6",
+      "collection": "Wildlife",
+      "w": 1440,
+      "h": 960,
+      "tone": "#7f8c82",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.000625,
+      "iso": 2500,
+      "date": "2026-10-17T08:26:22",
+      "id": "dfa0162ed157",
+      "added": "2026-10-17T14:44:48"
+    },
+    {
       "src": "photos/wildlife-king-fisher-5-720.jpg",
       "base": "photos/wildlife-king-fisher-5",
       "grid": [
