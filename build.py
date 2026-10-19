@@ -25,6 +25,7 @@ Then deploy index.html, photos.json and photos/ — leave originals/ behind.
 """
 
 import hashlib
+import html
 import json
 import os
 import re
@@ -129,6 +130,23 @@ FRONT = "Featured Work"
 OUT = "photos"
 MANIFEST = "photos.json"
 CAMERA_FILE = "camera.txt"   # folder-wide camera details, for a roll of film
+
+# Where the site answers from. A share card is fetched by a machine that has no
+# idea what site the link came from, so the URLs in one cannot be relative.
+# Change this and the cards follow; it is the only place the address is written.
+SITE_URL = "https://photography.pixelrocket.studio"
+# One small page per photograph, each carrying that photograph's share card.
+# A link into the gallery is '…/#swan-at-rest', and a '#' never reaches the
+# server — so the machine building the preview sees only the front page and
+# every photograph in the site shares one card. These pages are the fragment
+# written as a path, which a scraper can actually fetch. See share_page().
+PAGES = "p"
+
+# Everything a run generates is written here and moved into place in one go,
+# once the build has finished. Until that moment the live photos/ is not
+# touched at all — see swap_dir() for what that buys.
+STAGE = OUT
+PAGE_STAGE = PAGES
 
 # Fields you can type by hand. A note beside one photograph may set any of
 # them; camera.txt sets the ones a whole roll shares.
@@ -389,7 +407,9 @@ def grid_copies(img, slug):
             continue          # the original ran out before this size did
         tier = "1x" if n == 0 else "2x"
         for fmt in FORMATS:
-            save_image(copy, os.path.join(OUT, f"{slug}-{copy.width}.{fmt}"), fmt, tier)
+            # Written to the staging folder, named for where it will live: the
+            # manifest below says photos/, because that is where it ends up.
+            save_image(copy, os.path.join(STAGE, f"{slug}-{copy.width}.{fmt}"), fmt, tier)
         widths.append(copy.width)
         largest = copy
     return {
@@ -406,7 +426,7 @@ def grid_copies(img, slug):
 def full_copies(img, slug):
     """The copies the viewer opens, full screen."""
     for fmt in FULL_FORMATS:
-        save_image(img, os.path.join(OUT, FULL, f"{slug}.{fmt}"), fmt, "full")
+        save_image(img, os.path.join(STAGE, FULL, f"{slug}.{fmt}"), fmt, "full")
     return f"{OUT}/{FULL}/{slug}"
 
 
@@ -425,13 +445,147 @@ def contact_image():
         stem, ext = os.path.splitext(entry)
         if stem.lower() == CONTACT_IMAGE and ext.lower() in EXTS:
             print(f"\n  contact page: {entry}")
-            return web_copy(os.path.join(SRC, entry), "contact")
+            try:
+                return web_copy(os.path.join(SRC, entry), "contact")
+            except Exception as err:
+                # The contact portrait is a nicety. It is not worth the roll.
+                print(f"  ! {entry}: {err} — contact page goes without a picture")
+                return None
     return None
 
 
 def slugify(text):
     s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return s or "photo"
+
+
+# ------------------------------------------------------- putting it in place
+
+
+def swap_dir(stage, live):
+    """Move a finished staging folder into place, and take the old one away.
+
+    The build used to empty photos/ as its first act and fill it again as it
+    went, which meant any run that did not reach the end left the site holding
+    a fraction of its photographs — and a run that got nowhere at all, because
+    originals/ was not there, left it holding none. originals/ is not in the
+    repository, so that was every fresh clone.
+
+    Nothing is removed now until a replacement exists. A build that falls over
+    anywhere — a missing folder, a file Pillow cannot open, a full disk — tidies
+    its staging folder away and leaves the deployed photographs untouched.
+    """
+    old = live + ".old"
+    shutil.rmtree(old, ignore_errors=True)
+    if os.path.isdir(live):
+        os.rename(live, old)
+    os.rename(stage, live)
+    shutil.rmtree(old, ignore_errors=True)
+
+
+def recover():
+    """Finish a swap that was interrupted between its two renames."""
+    for live in (OUT, PAGES):
+        old = live + ".old"
+        if not os.path.isdir(live) and os.path.isdir(old):
+            print(f"  ! a previous run stopped mid-swap — putting {live}/ back")
+            os.rename(old, live)
+
+
+def fresh(path):
+    """An empty staging folder, whatever was left behind last time."""
+    shutil.rmtree(path, ignore_errors=True)
+    os.makedirs(path, exist_ok=True)
+
+
+# --------------------------------------------------------------- share cards
+
+# Everything here is a machine's view of one photograph: the card that appears
+# when the link is pasted into a message. People never read this page — the
+# script sends them straight to the photograph in the gallery, and the link
+# below is only there for the rare reader with no script at all.
+SHARE_PAGE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title} — {site}</title>
+<link rel="canonical" href="{deep}">
+<meta name="robots" content="noindex, follow">
+<meta name="description" content="{desc}">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="{site}">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{desc}">
+<meta property="og:url" content="{deep}">
+<meta property="og:image" content="{image}">
+<meta property="og:image:width" content="{w}">
+<meta property="og:image:height" content="{h}">
+<meta property="og:image:alt" content="{title}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{title}">
+<meta name="twitter:description" content="{desc}">
+<meta name="twitter:image" content="{image}">
+<!-- The card above has to be absolute: it is read by a machine somewhere else,
+     which has no idea what site the link came from. Going back to the gallery
+     is the opposite case — it is a step within whatever copy of the site this
+     page was served from, so it is relative, and the page works the same
+     opened locally, on a staging copy or on the live site. -->
+<script>location.replace({here_js});</script>
+</head>
+<body>
+<p><a href="{here}">{title} — {site}</a></p>
+</body>
+</html>
+"""
+
+
+def card_words(photo):
+    """What the card says under the title: the camera, and what it was set to."""
+    bits = []
+    if photo.get("model"):
+        bits.append(" ".join(x for x in (photo.get("make"), photo.get("model")) if x))
+    elif photo.get("make"):
+        bits.append(photo["make"])
+    exposure = []
+    if photo.get("iso") is not None:
+        exposure.append(f"ISO{photo['iso']}")
+    if photo.get("aperture") is not None:
+        exposure.append(f"f/{photo['aperture']}")
+    shutter = photo.get("shutter")
+    if shutter:
+        exposure.append(f"{round(shutter, 1)}s" if shutter >= 1 else f"1/{round(1 / shutter)}s")
+    if exposure:
+        bits.append(" · ".join(exposure))
+    return " — ".join(bits) if bits else f"A photograph from {SITE_TITLE}."
+
+
+def share_pages(photos):
+    """One page per photograph, so a pasted link carries that photograph.
+
+    The card points at the JPEG rather than the AVIF the site actually serves:
+    the machines that build these previews are not browsers, and several of
+    them still cannot read anything newer.
+    """
+    fresh(PAGE_STAGE)
+    for photo in photos:
+        slug = photo["full"].split("/")[-1]
+        title = photo.get("title") or "Photograph"
+        deep = f"{SITE_URL}/#{slug}"
+        here = f"../#{slug}"          # the same photograph, from this page
+        card = SHARE_PAGE.format(
+            title=html.escape(title, quote=True),
+            site=html.escape(SITE_TITLE, quote=True),
+            desc=html.escape(card_words(photo), quote=True),
+            deep=html.escape(deep, quote=True),
+            here=html.escape(here, quote=True),
+            here_js=json.dumps(here),
+            image=html.escape(f"{SITE_URL}/{OUT}/{slug}-{photo['grid'][-1]}.jpg", quote=True),
+            w=photo["w"], h=photo["h"],
+        )
+        with open(os.path.join(PAGE_STAGE, f"{slug}.html"), "w", encoding="utf-8") as fh:
+            fh.write(card)
+    print(f"  {len(photos)} share cards in {PAGES}/")
 
 
 # ---------------------------------------------------------------- main
@@ -463,45 +617,77 @@ def gather():
 
 
 def build():
-    if os.path.isdir(OUT):
-        shutil.rmtree(OUT)
-    os.makedirs(OUT, exist_ok=True)
+    global STAGE, PAGE_STAGE
 
+    # Ask every question that can refuse the build before anything is written,
+    # and before anything already deployed is touched.
+    recover()
     items = gather()
     if not items:
         raise SystemExit(f"No images found under '{SRC}/'.")
 
+    STAGE, PAGE_STAGE = OUT + ".new", PAGES + ".new"
+    fresh(STAGE)
+    try:
+        photos, collections, skipped = lay_out(items)
+    except BaseException:
+        # Including the interrupt from a Ctrl-C: a half-built folder is no use
+        # to anyone, and leaving it would make the next run's job ambiguous.
+        shutil.rmtree(STAGE, ignore_errors=True)
+        raise
+    if not photos:
+        shutil.rmtree(STAGE, ignore_errors=True)
+        raise SystemExit(f"Not one photograph could be read. '{OUT}/' left as it was.")
+    publish(photos, collections, skipped)
+
+
+def lay_out(items):
+    """Every original turned into web copies, and the records to hang them by.
+
+    A photograph that cannot be read is reported and left out. One truncated
+    file used to end the run with a traceback, which — because the manifest is
+    written last — left photos.json describing a set of files that no longer
+    existed. The page drops a frame whose file is missing, so the site went on
+    looking perfectly well while quietly holding fewer photographs.
+    """
     known_by_id, known_by_src = previous_arrivals()
-    collections, photos, used = [], [], set()
+    collections, photos, used, skipped = [], [], set(), []
 
     for collection, path in items:
-        if collection and collection not in collections:
-            collections.append(collection)
-
         stem = os.path.splitext(os.path.basename(path))[0]
 
-        with Image.open(path) as img:
-            exif = read_exif(img)
-            img = ImageOps.exif_transpose(img)          # honour rotation, then drop it
-            if img.mode not in ("RGB", "L"):
-                img = img.convert("RGB")
-            img.thumbnail((LONG_EDGE, LONG_EDGE), Image.LANCZOS)
+        try:
+            with Image.open(path) as img:
+                exif = read_exif(img)
+                img = ImageOps.exif_transpose(img)      # honour rotation, then drop it
+                if img.mode not in ("RGB", "L"):
+                    img = img.convert("RGB")
+                img.thumbnail((LONG_EDGE, LONG_EDGE), Image.LANCZOS)
 
-            base = slugify(f"{collection}-{stem}" if collection else stem)
-            slug, n = base, 2
-            while slug in used:
-                slug, n = f"{base}-{n}", n + 1
-            used.add(slug)
+                base = slugify(f"{collection}-{stem}" if collection else stem)
+                slug, n = base, 2
+                while slug in used:
+                    slug, n = f"{base}-{n}", n + 1
 
-            # Saving a fresh image writes no EXIF: location and serial numbers
-            # never reach the web copy.
-            full_base = full_copies(img, slug)
+                # Saving a fresh image writes no EXIF: location and serial
+                # numbers never reach the web copy.
+                full_base = full_copies(img, slug)
 
-            # The roll hangs smaller copies. A photograph 700px wide on screen
-            # has no use for 2000 pixels, and twenty of them have to arrive
-            # before the page is a page.
-            hung = grid_copies(img, slug)
-            w, h = hung["w"], hung["h"]
+                # The roll hangs smaller copies. A photograph 700px wide on
+                # screen has no use for 2000 pixels, and twenty of them have to
+                # arrive before the page is a page.
+                hung = grid_copies(img, slug)
+                w, h = hung["w"], hung["h"]
+        except Exception as err:
+            print(f"  ! {os.path.relpath(path, SRC)}: {err} — left out")
+            skipped.append(os.path.relpath(path, SRC))
+            continue
+
+        used.add(slug)
+        # Only a photograph that made it earns its folder a tab. items is in
+        # folder order, so the tabs still come out in it.
+        if collection and collection not in collections:
+            collections.append(collection)
 
         # What you typed beside the photograph wins, then whatever the file
         # itself knows, then what the roll declares. Film scans know nothing,
@@ -562,20 +748,42 @@ def build():
     for photo in photos:
         print(f"  added {photo['added'][:16].replace('T', ' ')}   {photo['title'] or '(untitled)'}")
 
+    return photos, collections, skipped
+
+
+def publish(photos, collections, skipped):
+    """The finished build put in place, and nothing moved until it is finished."""
     manifest = {"title": SITE_TITLE, "front": FRONT,
                 "formats": list(FORMATS), "fullFormats": list(FULL_FORMATS),
+                # Where the share cards live, so the page only offers a link
+                # it knows is there. An older photos.json leaves this out and
+                # the page falls back to the plain '#' link.
+                "pages": PAGES,
                 "collections": collections, "photos": photos}
     if CONTACT_EMAIL:
         manifest["contact"] = {"heading": CONTACT_HEADING, "email": CONTACT_EMAIL}
         picture = contact_image()
         if picture:
             manifest["contact"]["image"] = picture
-    with open(MANIFEST, "w", encoding="utf-8") as fh:
+
+    share_pages(photos)
+
+    # The manifest is written beside the live one and moved over it, so a
+    # reader never catches it half-written.
+    draft = MANIFEST + ".new"
+    with open(draft, "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, indent=2, ensure_ascii=False)
 
+    swap_dir(STAGE, OUT)
+    swap_dir(PAGE_STAGE, PAGES)
+    os.replace(draft, MANIFEST)
+
     print(f"\n{len(photos)} photographs across {len(collections)} collection(s).")
-    print(f"Wrote {MANIFEST} and {OUT}/")
-    print("Deploy: index.html, photos.json, photos/  — keep originals/ off the server.")
+    if skipped:
+        print(f"{len(skipped)} left out: {', '.join(skipped)}")
+    print(f"Wrote {MANIFEST}, {OUT}/ and {PAGES}/")
+    print(f"Deploy: index.html, photos.json, photos/, {PAGES}/"
+          "  — keep originals/ off the server.")
 
 
 if __name__ == "__main__":

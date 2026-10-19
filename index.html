@@ -440,6 +440,21 @@
   .viewer-step[hidden]{ display:none; }
   .viewer-prev{ left:14px; }
   .viewer-next{ right:14px; }
+  /* The link was always there — every photograph has had its own address for
+     as long as the viewer has — but the only way to reach it was the address
+     bar, and right-click is held shut over the picture. So it was a link
+     nobody could get at. This says it out loud, and reports back in its own
+     label rather than throwing a notice over the photograph. */
+  .viewer-share{
+    position:absolute; z-index:1;
+    top:24px; right:60px;
+    font:inherit; font-size:12px; letter-spacing:.06em; line-height:1;
+    color:var(--ash); background:none; border:none; cursor:pointer;
+    padding:6px 8px; transition:color .15s ease;
+  }
+  .viewer-share:hover,.viewer-share.done{ color:var(--ink); }
+  .viewer-share:focus{ outline:none; }
+  .viewer-share:focus-visible{ outline:1px solid var(--ash); outline-offset:3px; }
 
   /* Narrower desktops: pull both columns in before anything has to move. */
   @media (max-width:1100px){
@@ -485,6 +500,9 @@
     .viewer-step{ left:auto; }
     .viewer-next{ right:calc(5vw + 52px); }
     .viewer-prev{ right:calc(5vw + 110px); }
+    /* Three targets are already crowding the right corner. Share takes the
+       other one, where no thumb is reaching for anything else. */
+    .viewer-share{ top:14px; left:calc(5vw - 6px); right:auto; }
     .fab{
       position:static; width:auto; display:none;
       margin:22px 0 0;
@@ -549,6 +567,7 @@
 
 <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Photograph" tabindex="-1" hidden>
   <button class="viewer-close" id="viewerClose" aria-label="Close">&times;</button>
+  <button class="viewer-share" id="viewerShare" aria-label="Copy a link to this photograph">Share</button>
   <button class="viewer-step viewer-prev" id="viewerPrev" aria-label="Previous photograph">&#8249;</button>
   <button class="viewer-step viewer-next" id="viewerNext" aria-label="Next photograph">&#8250;</button>
   <div class="viewer-stage">
@@ -663,6 +682,8 @@
   /* The viewer's copies exist in fewer formats than the roll's — see FORMATS
      and FULL_FORMATS in build.py. */
   let fullFormats = ['jpg'];
+  /* Where build.py put the share cards, or '' if this manifest predates them. */
+  let pages = '';
   /* Which format this browser actually chose, learned from the first photograph
      it loads. The viewer opens in the same one rather than guessing. Until the
      roll has taken one the answer is jpg, which every browser reads and none
@@ -1282,6 +1303,7 @@
       stampCopyright();
       formats = data.formats || ['jpg'];
       fullFormats = data.fullFormats || formats;
+      pages = data.pages || '';
       collections = data.collections || [];
       photos = data.photos;
       els.fab.remove();
@@ -1399,6 +1421,7 @@
     mark:  document.getElementById('viewerMark'),
     plate: document.querySelector('.viewer-plate'),
     close: document.getElementById('viewerClose'),
+    share: document.getElementById('viewerShare'),
     prev:  document.getElementById('viewerPrev'),
     next:  document.getElementById('viewerNext'),
     list:  [],
@@ -1416,6 +1439,10 @@
   function inHand(img){
     return !!(img && img.currentSrc && img.complete && img.naturalWidth);
   }
+
+  /* The viewer's own controls, as opposed to the photograph: a gesture that
+     lands on one of these is the button's, not the picture's. */
+  const CHROME = '.viewer-close, .viewer-share, .viewer-step';
 
   /* The full-size copy is the heaviest file on the site. Step through a
      collection faster than they arrive and the browser is left carrying a
@@ -1435,14 +1462,17 @@
      of the picture, whichever runs out first — both read back off the
      stylesheet rather than written down twice, because the cap changes with
      the breakpoints and this would quietly stop agreeing with them. */
-  function drawnWidth(p){
+  function drawnCss(p){
     const glass = getComputedStyle(viewer.root);
     const wide = viewer.root.clientWidth
                - parseFloat(glass.paddingLeft) - parseFloat(glass.paddingRight);
     const tall = parseFloat(getComputedStyle(viewer.img).maxHeight);
     const shape = (p.w && p.h) ? p.w / p.h : 3 / 2;
-    const drawn = (tall > 0) ? Math.min(wide, tall * shape) : wide;
-    return Math.round(drawn * (window.devicePixelRatio || 1));
+    return (tall > 0) ? Math.min(wide, tall * shape) : wide;
+  }
+
+  function drawnWidth(p){
+    return Math.round(drawnCss(p) * (window.devicePixelRatio || 1));
   }
 
   function fullCopy(p){
@@ -1461,6 +1491,13 @@
      a file eight times the weight over eighteen pixels of width. */
   const ENOUGH = 0.87;
 
+  /* The widest the roll's column ever gets — the 702px at the head of SIZES,
+     and the width GRID_WIDTHS in build.py cuts and grades both copies for.
+     Below it the roll's copies are doing the job they were made for; above it
+     they are standing in for a copy that exists. Move the cap up there and
+     this moves with it. */
+  const COLUMN = 702;
+
   /* One copy, and the right one: the smallest that still covers the glass.
      The viewer used to hang the smallest copy there was and then swap the
      full-size one over it a second later, which is why a photograph arrived
@@ -1469,6 +1506,19 @@
      than it holds. */
   function viewCopy(p, from){
     const need = drawnWidth(p) * ENOUGH;
+    /* Past the width of the column, the roll has nothing honest left to offer.
+       Its copies are not merely cut to that column, they are *compressed* for
+       it — see QUALITY in build.py, where the 1440 is held at q54 with colour
+       at half resolution precisely because it is drawn at twice the density
+       in a 702px column, and the pixels hide it.
+       The viewer is a different room. Drawn at 830 or 1200 CSS pixels that
+       same file is being read at something near 1:1, with the economies it
+       was granted on the understanding that nobody would ever see them — and
+       a saturated edge, a red flank against sky, is where they show first.
+       Counting pixels alone could not see this: 1440 covers the glass, so the
+       viewer took it and never asked what it was cut for. The full copy is
+       the one encoded to be looked at, and this is being looked at. */
+    if (p.full && drawnCss(p) > COLUMN) return fullCopy(p);
     /* Something already decoded and big enough costs nothing at all, so it
        wins outright over a better-fitting file that would have to be fetched. */
     if (inHand(from) && from.naturalWidth >= need) return from.currentSrc;
@@ -1510,6 +1560,7 @@
     /* Every photograph opens at its own full size — zoom never carries over
        from the one before it. */
     resetZoom(false);
+    resetShare();
     dropPendingFull();
     /* A fade needs somewhere to start from, and nought has to be a settled
        fact before the next photograph is hung — otherwise the browser folds
@@ -1549,7 +1600,7 @@
      walked straight out into the roll behind. Keep the ring inside. */
   function trapTab(e){
     if (e.key !== 'Tab' || viewer.root.hidden) return;
-    const ring = [viewer.close, viewer.prev, viewer.next].filter(function(el){
+    const ring = [viewer.close, viewer.share, viewer.prev, viewer.next].filter(function(el){
       return el && !el.hidden && el.offsetParent !== null;
     });
     if (!ring.length) return;
@@ -1619,6 +1670,7 @@
 
   function closeViewer(){
     resetZoom(false);
+    resetShare();
     dropPendingFull();
     holdRoll(false);
     viewer.root.hidden = true;
@@ -1662,6 +1714,82 @@
     showViewer(p, null, deep);
     return true;
   }
+
+
+  /* ---------- handing one photograph to someone else ---------- */
+
+  /* Every photograph has had its own address since the viewer learned to open
+     on one. Getting at it was the problem: the address bar is the only place
+     it appears, and the page holds right-click shut over a picture, so the
+     obvious ways to lift a link were all closed. */
+
+  /* A '#' never reaches a server. Paste '…/#red-kite' into a message and the
+     machine that builds the preview fetches the front page, reads the card
+     nailed to it and shows the same photograph for every link in the site.
+     build.py writes one small page per photograph carrying that photograph's
+     card — it redirects anyone who opens it straight back here. The manifest
+     says whether they exist; an older one does not, and the plain fragment is
+     offered instead, which works and simply previews as the site. */
+  function shareLink(p){
+    const id = photoId(p);
+    if (!pages) return new URL('#' + id, location.href).href;
+    return new URL(pages + '/' + encodeURIComponent(id) + '.html', location.href).href;
+  }
+
+  function copyText(text){
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      return navigator.clipboard.writeText(text);
+    }
+    /* Older Safari, and anything not served over https. */
+    return new Promise(function(done, fail){
+      const box = document.createElement('textarea');
+      box.value = text;
+      box.setAttribute('readonly', '');
+      box.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+      document.body.appendChild(box);
+      box.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch(err){}
+      document.body.removeChild(box);
+      if (ok) done(); else fail();
+    });
+  }
+
+  let shareSaid = 0;
+  function sayShared(word){
+    viewer.share.textContent = word;
+    viewer.share.classList.add('done');
+    clearTimeout(shareSaid);
+    shareSaid = setTimeout(resetShare, 2200);
+  }
+
+  function resetShare(){
+    clearTimeout(shareSaid);
+    viewer.share.textContent = 'Share';
+    viewer.share.classList.remove('done');
+  }
+
+  viewer.share.addEventListener('click', function(e){
+    e.stopPropagation();
+    const p = viewer.list[viewer.i];
+    if (!p) return;
+    const url = shareLink(p);
+    /* A phone would rather open its own share sheet — mail, messages,
+       whatever is on it — than put something on a clipboard nobody can see.
+       A pointer means a desktop, where copying is what was wanted. */
+    if (navigator.share && window.matchMedia &&
+        window.matchMedia('(hover:none)').matches){
+      navigator.share({title: p.title || 'Photograph', url: url}).catch(function(){});
+      return;
+    }
+    copyText(url).then(function(){ sayShared('Link copied'); }, function(){
+      /* Nothing left but to show it and let them take it themselves — and
+         where even that is not allowed, say so plainly rather than fail in
+         the console where nobody is looking. */
+      try { window.prompt('Copy this link', url); }
+      catch(err){ sayShared('Copy failed'); }
+    });
+  });
 
 
   /* ---------- zoom, pan, swipe ---------- */
@@ -1752,16 +1880,23 @@
     if (viewer.img.getAttribute('src') === src || fullPending) return;
     const full = new Image();
     fullPending = full;
+    const done = function(){ if (fullPending === full) fullPending = null; };
     const swap = function(){
-      if (fullPending === full) fullPending = null;
+      done();
       if (viewer.list[viewer.i] !== p) return;
       if (zoom.s <= 1) return;                 // pinched back out while it came
       viewer.img.src = src;
       revealViewer(p, src);
     };
+    /* A copy that never arrives has to let go of the slot as well. It used to
+       be held for ever, and since the slot is what stops a second request, one
+       failed fetch meant no amount of pinching would ask again. */
+    full.onerror = done;
     full.src = src;
     if (full.decode){
-      full.decode().then(swap, function(){ if (full.complete && full.naturalWidth) swap(); });
+      full.decode().then(swap, function(){
+        if (full.complete && full.naturalWidth) swap(); else done();
+      });
     } else {
       full.onload = swap;
     }
@@ -1793,7 +1928,7 @@
   }
 
   viewer.root.addEventListener('touchstart', function(e){
-    if (e.target.closest('.viewer-close, .viewer-step')) return;
+    if (e.target.closest(CHROME)) return;
     if (e.touches.length === 2){
       const t = [e.touches[0], e.touches[1]];
       grip = {kind:'pinch', span:pinchSpan(t), from:zoom.s,
@@ -1943,14 +2078,14 @@
   /* A mouse gets the same idea, without the fingers: double click to go in,
      drag to move about, double click to come back out. */
   viewer.root.addEventListener('dblclick', function(e){
-    if (e.target.closest('.viewer-close, .viewer-step')) return;
+    if (e.target.closest(CHROME)) return;
     tapZoom(e.clientX, e.clientY, e.target);
   });
 
   let dragged = false;   /* a drag's mouseup is not a click on the glass */
   viewer.root.addEventListener('mousedown', function(e){
     if (zoom.s === 1 || e.button !== 0) return;
-    if (e.target.closest('.viewer-close, .viewer-step')) return;
+    if (e.target.closest(CHROME)) return;
     e.preventDefault();
     const from = {x:e.clientX, y:e.clientY, tx:zoom.x, ty:zoom.y};
     dragged = false;
@@ -1974,6 +2109,26 @@
 
   /* Showing the photograph is revealViewer's business now: a load listener
      here would light it the moment the bytes landed and undo the wait. */
+  /* A viewer copy that is not on the server — a photograph taken out of
+     originals/ without a rebuild, or a build that stopped before it wrote this
+     one. The roll never asks for photos/full/, so nothing has had occasion to
+     notice until somebody opened this picture; the frame simply sat there in
+     its own average colour, waiting on a file that was never coming. Fall back
+     to the copy the roll is already showing, and if that cannot be had either,
+     say so rather than leave an empty frame open. */
+  viewer.img.addEventListener('error', function(){
+    const p = viewer.list[viewer.i];
+    if (!p || !viewer.img.getAttribute('src')) return;
+    const fallback = (inHand(p.held) && p.held.currentSrc) || p.src;
+    if (fallback && viewer.img.getAttribute('src') !== fallback){
+      viewer.img.src = fallback;
+      revealViewer(p, fallback);
+      return;
+    }
+    viewer.title.textContent = 'This photograph could not be loaded.';
+    viewer.mark.innerHTML = '';
+  });
+
   viewer.close.addEventListener('click', hideViewer);
   viewer.prev.addEventListener('click', function(){ stepViewer(-1); });
   viewer.next.addEventListener('click', function(){ stepViewer(1); });
@@ -1982,7 +2137,7 @@
      click is the tail of a double tap that has just brought it back out. */
   viewer.root.addEventListener('click', function(e){
     if (zoom.s > 1 || dragged || Date.now() - tappedAt < 500) return;
-    if (!e.target.closest('.viewer-stage, .viewer-close, .viewer-step')) hideViewer();
+    if (!e.target.closest('.viewer-stage, ' + CHROME)) hideViewer();
   });
   document.addEventListener('keydown', function(e){
     if (viewer.root.hidden) return;

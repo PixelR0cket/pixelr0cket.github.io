@@ -22,3 +22,11 @@ venv/
 
 # Personal working notes. Never deployed — not to Pages, not to Vercel.
 /site-notes.html
+
+# Staging folders a build writes into before moving them into place. A run that
+# falls over tidies these away itself; one killed outright may leave them.
+/photos.new/
+/photos.old/
+/p.new/
+/p.old/
+/photos.json.new
