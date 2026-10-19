@@ -66,6 +66,22 @@ LONG_EDGE = 3200
 # column on a retina screen.
 GRID_WIDTHS = (720, 1440)
 
+# The viewer's copies. One file was not enough: the viewer draws a photograph
+# anywhere from 350px on a phone to 2400 device pixels on a retina desktop, and
+# a single 3200px copy answered all of it by sending 3200px every time. Against
+# the originals, at the width an ordinary desktop actually draws (900px):
+#
+#     the roll's 1440, q54 4:2:0      75K   SSIM 0.9765   <- what it used to send
+#     1440 at the viewer's grade     112K   SSIM 0.9903
+#     2048                           216K   SSIM 0.9940
+#     3200                           522K   SSIM 0.9959   <- one copy for everyone
+#
+# Most of the distance is bought by the first step and most of the weight by
+# the last. Three widths let the viewer ask for the one that fits: an ordinary
+# desktop takes the 1440 and pays 112K for a picture that is no longer soft,
+# while the 3200 waits for the screens — and the pinches — that can see it.
+FULL_WIDTHS = (1440, 2048, 3200)
+
 # Newest format first: the browser stops at the first <source> it can read.
 #
 # The roll keeps a JPEG at the end of the chain because it is cheap there and
@@ -424,10 +440,24 @@ def grid_copies(img, slug):
 
 
 def full_copies(img, slug):
-    """The copies the viewer opens, full screen."""
-    for fmt in FULL_FORMATS:
-        save_image(img, os.path.join(STAGE, FULL, f"{slug}.{fmt}"), fmt, "full")
-    return f"{OUT}/{FULL}/{slug}"
+    """The copies the viewer opens, and the widths it may choose between.
+
+    The largest is always kept, whatever it came out at — that is the one a
+    pinch reaches for. Below it sit the widths that are meaningfully smaller;
+    one within a few per cent of another buys nothing but a file, which is
+    what an upright photograph would otherwise collect, its long edge being
+    its height.
+    """
+    biggest = img.width
+    wants = [w for w in sorted(FULL_WIDTHS) if w < biggest * 0.85] + [biggest]
+    widths = []
+    for want in wants:
+        copy = to_width(img, want)
+        for fmt in FULL_FORMATS:
+            save_image(copy, os.path.join(STAGE, FULL, f"{slug}-{copy.width}.{fmt}"),
+                       fmt, "full")
+        widths.append(copy.width)
+    return widths
 
 
 def web_copy(path, slug):
@@ -457,6 +487,114 @@ def contact_image():
 def slugify(text):
     s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return s or "photo"
+
+
+# ------------------------------------------------------------------ the cache
+
+# A rebuild used to re-encode all seventy photographs however little had
+# changed — a hundred seconds to add one picture, and a hundred seconds of
+# destructive work every time anything else was adjusted. Nothing about a
+# photograph's web copies depends on anything but the original's own bytes and
+# the settings at the top of this file, so a copy once made is good until one
+# of those changes. Keeping them means a rebuild re-encodes only what is new.
+CACHE = ".build-cache"
+
+
+def settings_id():
+    """A fingerprint of every setting that decides what a copy looks like.
+
+    Change a quality number, a width, a format — anything in here — and every
+    key changes with it, so the cache empties itself rather than quietly
+    serving copies made under the old rules. This is the whole safety of it:
+    there is no way to adjust the encoding and still be handed a stale file.
+    """
+    return hashlib.sha1(json.dumps({
+        "long_edge": LONG_EDGE,
+        "grid": list(GRID_WIDTHS), "full_widths": list(FULL_WIDTHS),
+        "formats": list(FORMATS), "full_formats": list(FULL_FORMATS),
+        "quality": QUALITY, "subsampling": SUBSAMPLING,
+    }, sort_keys=True).encode()).hexdigest()[:12]
+
+
+SETTINGS = settings_id()
+
+
+def cache_key(photo_id):
+    """This original, under these settings. Either part changing is a new key."""
+    return f"{photo_id}-{SETTINGS}"
+
+
+def place(src, dest):
+    """Hardlink where the filesystem allows it, copy where it does not.
+
+    The cache and the staging folder are side by side in the same place, so a
+    copy reused across builds is stored once however many builds reuse it.
+    """
+    os.makedirs(os.path.dirname(dest) or ".", exist_ok=True)
+    try:
+        os.link(src, dest)
+    except OSError:
+        shutil.copy2(src, dest)
+
+
+def cache_files(meta, slug):
+    """Every file this entry holds: its name in the cache, its name in the build."""
+    pairs = []
+    for w in meta["grid"]:
+        for fmt in FORMATS:
+            pairs.append((f"g-{w}.{fmt}", os.path.join(STAGE, f"{slug}-{w}.{fmt}")))
+    for w in meta["fulls"]:
+        for fmt in FULL_FORMATS:
+            pairs.append((f"f-{w}.{fmt}", os.path.join(STAGE, FULL, f"{slug}-{w}.{fmt}")))
+    return pairs
+
+
+def cache_read(key, slug):
+    """Copies already made for this original under these settings, or None.
+
+    An entry missing so much as one of the files it promises is no entry at
+    all: it is passed over and made again, rather than half-filling the build.
+    """
+    home = os.path.join(CACHE, key)
+    try:
+        with open(os.path.join(home, "meta.json"), encoding="utf-8") as fh:
+            meta = json.load(fh)
+        pairs = cache_files(meta, slug)
+        if not all(os.path.isfile(os.path.join(home, name)) for name, _ in pairs):
+            return None
+        for name, dest in pairs:
+            place(os.path.join(home, name), dest)
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+    return meta
+
+
+def cache_write(key, slug, meta):
+    """Keep what this build just made, for the next one. Never fatal."""
+    home = os.path.join(CACHE, key)
+    try:
+        shutil.rmtree(home, ignore_errors=True)
+        os.makedirs(home, exist_ok=True)
+        for name, made in cache_files(meta, slug):
+            place(made, os.path.join(home, name))
+        with open(os.path.join(home, "meta.json"), "w", encoding="utf-8") as fh:
+            json.dump(meta, fh)
+    except OSError as err:
+        print(f"  ! could not keep {slug} for next time: {err}")
+
+
+def cache_prune(keep):
+    """Entries for originals this build did not see, and for settings no longer
+       in force. Only ever called once a build has succeeded, when `keep` is
+       known to be the whole truth about what the site holds."""
+    if not os.path.isdir(CACHE):
+        return 0
+    gone = 0
+    for name in os.listdir(CACHE):
+        if name not in keep:
+            shutil.rmtree(os.path.join(CACHE, name), ignore_errors=True)
+            gone += 1
+    return gone
 
 
 # ------------------------------------------------------- putting it in place
@@ -629,7 +767,7 @@ def build():
     STAGE, PAGE_STAGE = OUT + ".new", PAGES + ".new"
     fresh(STAGE)
     try:
-        photos, collections, skipped = lay_out(items)
+        photos, collections, skipped, keys, reused = lay_out(items)
     except BaseException:
         # Including the interrupt from a Ctrl-C: a half-built folder is no use
         # to anyone, and leaving it would make the next run's job ambiguous.
@@ -638,7 +776,7 @@ def build():
     if not photos:
         shutil.rmtree(STAGE, ignore_errors=True)
         raise SystemExit(f"Not one photograph could be read. '{OUT}/' left as it was.")
-    publish(photos, collections, skipped)
+    publish(photos, collections, skipped, keys, reused)
 
 
 def lay_out(items):
@@ -651,39 +789,62 @@ def lay_out(items):
     looking perfectly well while quietly holding fewer photographs.
     """
     known_by_id, known_by_src = previous_arrivals()
-    collections, photos, used, skipped = [], [], set(), []
+    collections, photos, used, skipped, keys = [], [], set(), [], set()
+    reused = 0
 
     for collection, path in items:
         stem = os.path.splitext(os.path.basename(path))[0]
+        # The name a photograph's files take depends on nothing but its own
+        # name, so it can be settled before the file is opened — and the cache
+        # needs it to know what to call what it hands back.
+        base = slugify(f"{collection}-{stem}" if collection else stem)
+        slug, n = base, 2
+        while slug in used:
+            slug, n = f"{base}-{n}", n + 1
 
         try:
-            with Image.open(path) as img:
-                exif = read_exif(img)
-                img = ImageOps.exif_transpose(img)      # honour rotation, then drop it
-                if img.mode not in ("RGB", "L"):
-                    img = img.convert("RGB")
-                img.thumbnail((LONG_EDGE, LONG_EDGE), Image.LANCZOS)
+            photo_id = file_id(path)
+            key = cache_key(photo_id)
+            ready = cache_read(key, slug)
+            if ready:
+                # The copies are made and in place already. Only the EXIF still
+                # has to come off the original, and that is read from its
+                # header without decoding a single pixel.
+                with Image.open(path) as img:
+                    exif = read_exif(img)
+                hung = {"src": f"{OUT}/{slug}-{ready['grid'][0]}.jpg",
+                        "base": f"{OUT}/{slug}", "grid": ready["grid"],
+                        "w": ready["w"], "h": ready["h"], "tone": ready["tone"]}
+                fulls = ready["fulls"]
+                reused += 1
+            else:
+                with Image.open(path) as img:
+                    exif = read_exif(img)
+                    img = ImageOps.exif_transpose(img)  # honour rotation, then drop it
+                    if img.mode not in ("RGB", "L"):
+                        img = img.convert("RGB")
+                    img.thumbnail((LONG_EDGE, LONG_EDGE), Image.LANCZOS)
 
-                base = slugify(f"{collection}-{stem}" if collection else stem)
-                slug, n = base, 2
-                while slug in used:
-                    slug, n = f"{base}-{n}", n + 1
+                    # Saving a fresh image writes no EXIF: location and serial
+                    # numbers never reach the web copy.
+                    fulls = full_copies(img, slug)
 
-                # Saving a fresh image writes no EXIF: location and serial
-                # numbers never reach the web copy.
-                full_base = full_copies(img, slug)
-
-                # The roll hangs smaller copies. A photograph 700px wide on
-                # screen has no use for 2000 pixels, and twenty of them have to
-                # arrive before the page is a page.
-                hung = grid_copies(img, slug)
-                w, h = hung["w"], hung["h"]
+                    # The roll hangs smaller copies. A photograph 700px wide on
+                    # screen has no use for 2000 pixels, and twenty of them
+                    # have to arrive before the page is a page.
+                    hung = grid_copies(img, slug)
+                cache_write(key, slug, {"grid": hung["grid"], "fulls": fulls,
+                                        "w": hung["w"], "h": hung["h"],
+                                        "tone": hung["tone"]})
+            full_base = f"{OUT}/{FULL}/{slug}"
+            w, h = hung["w"], hung["h"]
         except Exception as err:
             print(f"  ! {os.path.relpath(path, SRC)}: {err} — left out")
             skipped.append(os.path.relpath(path, SRC))
             continue
 
         used.add(slug)
+        keys.add(key)
         # Only a photograph that made it earns its folder a tab. items is in
         # folder order, so the tabs still come out in it.
         if collection and collection not in collections:
@@ -703,6 +864,7 @@ def lay_out(items):
             "base": hung["base"],
             "grid": hung["grid"],
             "full": full_base,
+            "fulls": fulls,
             "title": first(typed(note, "title"), title_from(stem)),
             "collection": collection,
             "w": w,
@@ -725,7 +887,6 @@ def lay_out(items):
 
         # Seen before under either its fingerprint or its filename? Keep the day
         # it arrived. Otherwise it is new today, and belongs at the top.
-        photo_id = file_id(path)
         record["id"] = photo_id
         record["added"] = first(known_by_id.get(photo_id),
                                 known_by_src.get(record["src"]),
@@ -748,10 +909,10 @@ def lay_out(items):
     for photo in photos:
         print(f"  added {photo['added'][:16].replace('T', ' ')}   {photo['title'] or '(untitled)'}")
 
-    return photos, collections, skipped
+    return photos, collections, skipped, keys, reused
 
 
-def publish(photos, collections, skipped):
+def publish(photos, collections, skipped, keys, reused):
     """The finished build put in place, and nothing moved until it is finished."""
     manifest = {"title": SITE_TITLE, "front": FRONT,
                 "formats": list(FORMATS), "fullFormats": list(FULL_FORMATS),
@@ -778,7 +939,13 @@ def publish(photos, collections, skipped):
     swap_dir(PAGE_STAGE, PAGES)
     os.replace(draft, MANIFEST)
 
+    # Only now that the build has succeeded is `keys` the whole truth about
+    # what the site holds, and only then is it safe to throw anything away.
+    stale = cache_prune(keys)
+
     print(f"\n{len(photos)} photographs across {len(collections)} collection(s).")
+    print(f"{reused} reused from the cache, {len(photos) - reused} encoded"
+          + (f", {stale} stale entries dropped" if stale else ""))
     if skipped:
         print(f"{len(skipped)} left out: {', '.join(skipped)}")
     print(f"Wrote {MANIFEST}, {OUT}/ and {PAGES}/")

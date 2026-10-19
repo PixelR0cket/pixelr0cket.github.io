@@ -30,3 +30,6 @@ venv/
 /p.new/
 /p.old/
 /photos.json.new
+
+# Encoded copies kept between builds so a rebuild only does what is new.
+/.build-cache/

@@ -1475,15 +1475,27 @@
     return Math.round(drawnCss(p) * (window.devicePixelRatio || 1));
   }
 
-  function fullCopy(p){
-    /* p.full is a stem: the same photograph sits beside it in each of
-       fullFormats. Ask for the one this browser has already proved it reads,
-       and if the roll fell back to a format the viewer does not keep, take the
-       last one offered — which every browser that can draw this page can read. */
+  /* p.full is a stem, and p.fulls the widths that sit beside it — the same
+     photograph in each of fullFormats at each of those widths. Ask for the
+     format this browser has already proved it reads, and if the roll fell back
+     to one the viewer does not keep, take the last offered, which every
+     browser that can draw this page can read.
+
+     `need` is how many real pixels are wanted; the smallest copy that covers
+     it is the right one. A pinch passes Infinity, because what it wants is
+     whatever detail there is. An older manifest has no widths at all, and
+     there the stem alone is the whole address. */
+  function fullCopy(p, need){
     const ext = fullFormats.indexOf(picked) !== -1
                   ? picked
                   : fullFormats[fullFormats.length - 1];
-    return /\.(avif|webp|jpe?g|png)$/i.test(p.full) ? p.full : p.full + '.' + ext;
+    if (/\.(avif|webp|jpe?g|png)$/i.test(p.full)) return p.full;
+    const sizes = (p.fulls || []).slice().sort(function(a, b){ return a - b; });
+    if (!sizes.length) return p.full + '.' + ext;
+    for (let i = 0; i < sizes.length; i++){
+      if (sizes[i] >= need) return p.full + '-' + sizes[i] + '.' + ext;
+    }
+    return p.full + '-' + sizes[sizes.length - 1] + '.' + ext;
   }
 
   /* Stretching a photograph by an eighth is invisible; stretching it by half
@@ -1518,7 +1530,7 @@
        Counting pixels alone could not see this: 1440 covers the glass, so the
        viewer took it and never asked what it was cut for. The full copy is
        the one encoded to be looked at, and this is being looked at. */
-    if (p.full && drawnCss(p) > COLUMN) return fullCopy(p);
+    if (p.full && drawnCss(p) > COLUMN) return fullCopy(p, need);
     /* Something already decoded and big enough costs nothing at all, so it
        wins outright over a better-fitting file that would have to be fetched. */
     if (inHand(from) && from.naturalWidth >= need) return from.currentSrc;
@@ -1529,7 +1541,7 @@
     }
     /* Nothing the roll keeps is big enough — this is a retina screen with the
        photograph filling it, which is what the full-size copy is for. */
-    if (p.full) return fullCopy(p);
+    if (p.full) return fullCopy(p, need);
     if (inHand(from)) return from.currentSrc;
     if (p.base && grid.length) return p.base + '-' + grid[grid.length - 1] + '.' + picked;
     return p.src;
@@ -1876,7 +1888,9 @@
   function zoomWantsFull(){
     const p = viewer.list[viewer.i];
     if (!p || !p.full) return;
-    const src = fullCopy(p);
+    /* A pinch is asking for detail, so it asks for all there is rather than
+       for what the glass happens to be drawing. */
+    const src = fullCopy(p, Infinity);
     if (viewer.img.getAttribute('src') === src || fullPending) return;
     const full = new Image();
     fullPending = full;

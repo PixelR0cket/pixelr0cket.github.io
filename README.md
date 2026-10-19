@@ -167,11 +167,17 @@ photography-portfolio/          <- this is the git repo root
     swan-at-rest-720.avif       <- the roll's copy, one per width per format
     swan-at-rest-1440.avif         (.webp and .jpg sit beside each one)
     full/
-      swan-at-rest.avif         <- the copy the viewer opens
+      swan-at-rest-1440.avif    <- the copies the viewer opens, one per width
+      swan-at-rest-2048.avif       (.webp beside each one)
+      swan-at-rest-3200.avif
+  p/                            <- generated: one share card per photograph
+    swan-at-rest.html
   photos.json                   <- generated: the manifest index.html reads
   logos/                        <- camera brand marks, deployed
     sony.png
     source/                     <- full-size logo artwork. NEVER deployed.
+  .build-cache/                 <- generated: copies kept between builds.
+                                   NEVER deployed. Safe to delete.
 ```
 
 ## Settings
@@ -181,9 +187,15 @@ Top of `build.py`:
 - `SITE_TITLE` — the masthead
 - `LONG_EDGE` — the viewer's copy, default 3200px
 - `GRID_WIDTHS` — the widths the roll is cut to, default 720 and 1440
+- `FULL_WIDTHS` — the widths the viewer may open, default 1440, 2048 and 3200
 - `FORMATS` / `FULL_FORMATS` — the roll's formats and the viewer's
 - `QUALITY` — quality per copy: `1x`, `2x` and `full`
 - `SUBSAMPLING` — how much colour detail each copy keeps
+- `SITE_URL` — the address the share cards are written with
+
+Change any of these and the next build re-encodes everything, because what
+every cached copy is keyed on includes these settings. Nothing stale survives
+a settings change.
 
 ### About the roll's copies
 
@@ -272,11 +284,68 @@ browser that can draw the page can read WebP, and a full-size JPEG nothing can
 reach would be the heaviest thing on the site. The roll still keeps one, where
 it is cheap.
 
+### About the viewer's three widths
+
+The viewer draws a photograph anywhere from 350px on a phone to 2400 real
+pixels on a retina desktop. One copy cannot answer all of that without sending
+3200px to everybody, so there are three, and the viewer asks for the smallest
+that covers the glass. What a visitor actually downloads on opening a
+photograph, across this site:
+
+| | median | heaviest |
+|---|---|---|
+| phone | 34K | 242K |
+| ordinary desktop | 108K | 881K |
+| retina desktop | 197K | 1.9M |
+| pinched in | 420K | 1.9M |
+
+The roll's copies are never used in the viewer past the width of a column.
+They are not only *cut* for that column, they are graded for it — the 1440 is
+held at q54 with colour at half resolution precisely because it is drawn at
+twice the density there, where the pixels hide it. Opened at 900px on an
+ordinary screen that same file reads at close to 1:1 and the economies show,
+on a saturated edge first.
+
+## Rebuilds
+
+A build encodes only what is new. Every copy is kept in `.build-cache/`, keyed
+on the original's own bytes together with every setting that decides what a
+copy looks like, so:
+
+- nothing changed — a second or two
+- one photograph added — a second or two, plus that one photograph
+- a quality setting changed — everything, which is the point
+
+The cache is pure derived data. Delete it and the next build is simply a slow
+one. It is not deployed, and it costs no extra disk: the copies in `photos/`
+and the copies in the cache are the same bytes on disk, linked twice.
+
+Nothing in `photos/` is removed until a build has finished successfully. A run
+that falls over — a missing `originals/`, a file that will not open, a full
+disk — leaves the deployed photographs exactly as they were, and a photograph
+that cannot be read is reported and left out rather than ending the run.
+
+## Sharing one photograph
+
+Every photograph has its own address, `…/#swan-at-rest`, and the **Share**
+button in the viewer hands it over: the native share sheet on a phone, the
+clipboard anywhere else.
+
+A `#` never reaches a server, though, so a link pasted into a message would
+show the front page's preview whichever photograph it pointed at. `build.py`
+writes one small page per photograph into `p/`, carrying that photograph's own
+preview card; opening one sends you straight back to the photograph in the
+gallery. That is what the Share button copies.
+
+Those cards need absolute URLs, which is what `SITE_URL` at the top of
+`build.py` is for. Move the site and that is the line to change.
+
 ## What is and isn't published
 
-Published: `index.html`, `photos.json`, `photos/`, `logos/`
+Published: `index.html`, `photos.json`, `photos/`, `p/`, `logos/`, `404.html`
 
-Not published: `originals/` and `logos/source/` — kept out by `.gitignore`.
+Not published: `originals/`, `logos/source/` and `.build-cache/` — kept out by
+`.gitignore`.
 
 The generated copies carry no embedded EXIF, so GPS coordinates, camera serial
 numbers and owner fields never reach the web. The metadata shown on the page
