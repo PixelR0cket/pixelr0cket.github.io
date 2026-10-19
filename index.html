@@ -1554,6 +1554,23 @@
      Come back to the same photograph and it is decoded already, so the fade
      starts with something in it and reads the way it was meant to. decode()
      waits for pixels, so every visit is the second one. */
+  /* The box the photograph is about to fill, given to the plate so the space
+     is held while the file is still coming.
+
+     Never more than the photograph can actually fill: a small original is
+     drawn at its own size rather than enlarged, and a box wider than that
+     would stand it in a band of its own colour. */
+  function reservePlate(p){
+    if (!p.w || !p.h){
+      viewer.plate.style.width = '';
+      viewer.plate.style.aspectRatio = '';
+      return;
+    }
+    const cap = (p.fulls || []).reduce(function(a, b){ return Math.max(a, b); }, p.w);
+    viewer.plate.style.width = Math.round(Math.min(drawnCss(p), cap)) + 'px';
+    viewer.plate.style.aspectRatio = p.w + '/' + p.h;
+  }
+
   function revealViewer(p, src){
     whenDrawn(viewer.img, function(){
       if (viewer.list[viewer.i] !== p) return;            // stepped on since
@@ -1590,6 +1607,19 @@
        otherwise. */
     viewer.plate.style.background =
       /^#[0-9a-f]{6}$/i.test(p.tone || '') ? p.tone : '';
+    /* Hold the photograph's place while it is still on the wire.
+       The roll's frames have always done this — an aspect-ratio box standing
+       in the picture's own average colour — but the viewer's plate had no
+       shape of its own: it was sized by the photograph inside it, so until
+       that arrived there was nothing there at all. The plate collapsed to
+       nothing, the element fell back to drawing its alt text, and what you
+       got was the title in a little coloured box with the caption ridden up
+       underneath it.
+       Nobody met this while the viewer opened on a copy the roll had already
+       decoded, because there was no wait to see. Now that it sends for the
+       copy made to be looked at there is a download to sit through, and the
+       sitting has to look like something. */
+    reservePlate(p);
     viewer.img.alt = p.title || '';
     /* Which copy is a question about the screen, and the answer depends on the
        format the roll settled on — so on a cold open it waits the moment it
@@ -1690,6 +1720,8 @@
     document.body.style.top = '';
     window.scrollTo(0, parkedScroll);
     viewer.img.removeAttribute('src');
+    viewer.plate.style.width = '';
+    viewer.plate.style.aspectRatio = '';
     viewer.list = [];
     viewer.i = -1;
     viewerPushed = false;
@@ -1816,6 +1848,13 @@
 
   const ZOOM_MAX = 4;      /* the full copy has detail, but not endless detail */
   const ZOOM_TAP = 2.5;    /* where a double tap lands */
+  /* Nearer to 1 than this is not zoomed at all. A trackpad can put a stray
+     1.01 on the photograph without changing anything anyone can see — and
+     that was enough to count as zoomed: the caption stepped out of the way
+     and every later two-finger scroll moved the picture instead of the page.
+     settleZoom has always known this; the wheel, which never settles, did
+     not. */
+  const ZOOM_NONE = 1.02;
   const SWIPE_MIN = 48;    /* px before a drag counts as 'next photograph' */
   const TAP_GAP = 300;     /* ms between taps for a double tap */
 
@@ -1840,22 +1879,27 @@
      its zoomed extent, lo..hi the glass. Larger than the glass it must cover
      it; smaller it must stay within it — and, on settling, drift home to its
      own centre rather than stay wherever the fingers left it. */
-  function holdAxis(v, c, size, lo, hi, settle){
+  function holdAxis(v, c, size, lo, hi){
     const a = lo + size / 2 - c;   /* v that puts the near edge on lo */
     const b = hi - size / 2 - c;   /* v that puts the far edge on hi */
     if (size >= hi - lo) return Math.min(a, Math.max(b, v));
-    if (settle) v = 0;
-    return Math.max(a, Math.min(b, v));
+    /* Smaller than the glass on this axis: the whole of the photograph is
+       already in view, so there is nothing on this axis to pan to and it
+       stays where it was laid out. It used to be free to roam anywhere the
+       glass would still hold it — which let a photograph be dragged right
+       out of its own frame and left sitting in the margin, beside the
+       caption belonging to it. */
+    return 0;
   }
 
   /* Held inside the glass, so a zoomed photograph can never be dragged off
      into the margin and lost, and never shows the paper behind an edge it
      is big enough to cover. */
-  function holdInFrame(settle){
+  function holdInFrame(){
     const g = viewer.root.getBoundingClientRect();
     const c = laidCentre();
-    zoom.x = holdAxis(zoom.x, c.x, viewer.img.offsetWidth * zoom.s, g.left, g.right, settle);
-    zoom.y = holdAxis(zoom.y, c.y, viewer.img.offsetHeight * zoom.s, g.top, g.bottom, settle);
+    zoom.x = holdAxis(zoom.x, c.x, viewer.img.offsetWidth * zoom.s, g.left, g.right);
+    zoom.y = holdAxis(zoom.y, c.y, viewer.img.offsetHeight * zoom.s, g.top, g.bottom);
   }
 
   function drawZoom(eased){
@@ -1874,8 +1918,8 @@
   /* Fingers lifted, pinch finished: pinched back to nothing, settle rather
      than leave it fractionally off; otherwise ease it home within the glass. */
   function settleZoom(){
-    if (zoom.s <= 1.02){ if (zoom.s !== 1) resetZoom(true); return; }
-    holdInFrame(true);
+    if (zoom.s <= ZOOM_NONE){ if (zoom.s !== 1) resetZoom(true); return; }
+    holdInFrame();
     drawZoom(true);
   }
 
@@ -1926,7 +1970,7 @@
     zoom.x = ax - (ax - zoom.x) * next / zoom.s;
     zoom.y = ay - (ay - zoom.y) * next / zoom.s;
     zoom.s = next;
-    holdInFrame(false);
+    holdInFrame();
   }
 
   /* A double tap or click goes in on the photograph — only the photograph,
@@ -1969,7 +2013,7 @@
       if (Math.abs(dx) > 4 || Math.abs(dy) > 4) grip.slid = true;
       zoom.x = grip.fromX + dx;
       zoom.y = grip.fromY + dy;
-      holdInFrame(false);
+      holdInFrame();
       drawZoom(false);
     } else if (grip.kind === 'swipe' && e.touches.length === 1){
       const dx = e.touches[0].clientX - grip.x;
@@ -2010,7 +2054,7 @@
 
     if (e.touches.length === 1){
       /* One finger lifted out of a pinch — carry on as a pan. */
-      holdInFrame(false);
+      holdInFrame();
       drawZoom(false);
       grip = {kind: zoom.s > 1 ? 'pan' : 'swipe',
               x:e.touches[0].clientX, y:e.touches[0].clientY,
@@ -2033,8 +2077,13 @@
      and a picture zoomed in portrait was left stranded outside its own edges by
      the rotation — hanging off the side with no way to drag it back. */
   window.addEventListener('resize', function(){
-    if (viewer.root.hidden || zoom.s === 1) return;
-    holdInFrame(false);
+    if (viewer.root.hidden) return;
+    /* The glass is a different size now, so the space held for a photograph
+       still arriving has to be too. */
+    const p = viewer.list[viewer.i];
+    if (p) reservePlate(p);
+    if (zoom.s === 1) return;
+    holdInFrame();
     drawZoom(false);
   });
 
@@ -2055,13 +2104,13 @@
       e.preventDefault();
       const dy = Math.max(-40, Math.min(40, e.deltaY));
       const next = zoom.s * Math.exp(-dy / 100);
-      if (next <= 1){ if (zoom.s !== 1) resetZoom(false); return; }
+      if (next <= ZOOM_NONE){ if (zoom.s !== 1) resetZoom(false); return; }
       zoomAbout(e.clientX, e.clientY, next);
     } else if (zoom.s > 1){
       e.preventDefault();
       zoom.x -= e.deltaX;
       zoom.y -= e.deltaY;
-      holdInFrame(false);
+      holdInFrame();
     } else return;
     if (!wheelFrame) wheelFrame = requestAnimationFrame(function(){
       wheelFrame = 0;
@@ -2108,7 +2157,7 @@
       dragged = true;
       zoom.x = from.tx + (ev.clientX - from.x);
       zoom.y = from.ty + (ev.clientY - from.y);
-      holdInFrame(false);
+      holdInFrame();
       drawZoom(false);
     }
     function up(){
