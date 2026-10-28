@@ -13,25 +13,257 @@
   "pages": "p",
   "collections": [
     "Cars",
-    "Nightwork",
-    "Wildlife"
+    "Nature",
+    "Nightwork"
   ],
   "photos": [
     {
-      "src": "photos/wildlife-red-kite-720.jpg",
-      "base": "photos/wildlife-red-kite",
+      "src": "photos/nature-king-fisher-7-720.jpg",
+      "base": "photos/nature-king-fisher-7",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-red-kite",
+      "full": "photos/full/nature-king-fisher-7",
+      "fulls": [
+        1440,
+        2048,
+        2966
+      ],
+      "title": "King Fisher 7",
+      "collection": "Nature",
+      "w": 1440,
+      "h": 959,
+      "tone": "#8b8b7a",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 7.1,
+      "shutter": 0.0008,
+      "iso": 6400,
+      "date": "2026-10-28T10:20:32",
+      "id": "a1533f78b195",
+      "added": "2026-10-28T17:07:25"
+    },
+    {
+      "src": "photos/nature-robin-copy-720.jpg",
+      "base": "photos/nature-robin-copy",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/nature-robin-copy",
+      "fulls": [
+        1440,
+        2048,
+        3200
+      ],
+      "title": "Robin Copy",
+      "collection": "Nature",
+      "w": 1440,
+      "h": 960,
+      "tone": "#474639",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 8,
+      "shutter": 0.0008,
+      "iso": 6400,
+      "date": "2026-10-28T09:40:28",
+      "id": "a70cdf50bb06",
+      "added": "2026-10-28T17:07:25"
+    },
+    {
+      "src": "photos/nature-grey-wagtail-3-720.jpg",
+      "base": "photos/nature-grey-wagtail-3",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/nature-grey-wagtail-3",
+      "fulls": [
+        1440,
+        2048,
+        3200
+      ],
+      "title": "Grey Wagtail 3",
+      "collection": "Nature",
+      "w": 1440,
+      "h": 960,
+      "tone": "#4b5347",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 8,
+      "shutter": 0.0008,
+      "iso": 4000,
+      "date": "2026-10-28T09:38:35",
+      "id": "bf746d2eac06",
+      "added": "2026-10-28T17:07:25"
+    },
+    {
+      "src": "photos/nature-grey-wagtail-2-720.jpg",
+      "base": "photos/nature-grey-wagtail-2",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/nature-grey-wagtail-2",
+      "fulls": [
+        1440,
+        2048,
+        3200
+      ],
+      "title": "Grey Wagtail 2",
+      "collection": "Nature",
+      "w": 1440,
+      "h": 960,
+      "tone": "#3c3c2d",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 8,
+      "shutter": 0.0008,
+      "iso": 6400,
+      "date": "2026-10-28T09:36:44",
+      "id": "8b6badfeb99b",
+      "added": "2026-10-28T17:07:25"
+    },
+    {
+      "src": "photos/nature-grey-wagtail-720.jpg",
+      "base": "photos/nature-grey-wagtail",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/nature-grey-wagtail",
+      "fulls": [
+        1440,
+        2048,
+        3200
+      ],
+      "title": "Grey Wagtail",
+      "collection": "Nature",
+      "w": 1440,
+      "h": 960,
+      "tone": "#61645f",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 8,
+      "shutter": 0.0008,
+      "iso": 4000,
+      "date": "2026-10-28T09:35:46",
+      "id": "dd4daf2a0855",
+      "added": "2026-10-28T17:07:25"
+    },
+    {
+      "src": "photos/nature-grey-heron-in-flight-720.jpg",
+      "base": "photos/nature-grey-heron-in-flight",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/nature-grey-heron-in-flight",
+      "fulls": [
+        1440,
+        2048,
+        3200
+      ],
+      "title": "Grey Heron In Flight",
+      "collection": "Nature",
+      "w": 1440,
+      "h": 960,
+      "tone": "#4d554f",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 8,
+      "shutter": 0.0008,
+      "iso": 6400,
+      "date": "2026-10-28T09:24:33",
+      "id": "267b5e492159",
+      "added": "2026-10-28T17:07:25"
+    },
+    {
+      "src": "photos/nature-kestrel-720.jpg",
+      "base": "photos/nature-kestrel",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/nature-kestrel",
+      "fulls": [
+        1440,
+        2048,
+        3200
+      ],
+      "title": "Kestrel",
+      "collection": "Nature",
+      "w": 1440,
+      "h": 960,
+      "tone": "#28618e",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.0005,
+      "iso": 250,
+      "date": "2026-10-27T15:56:08",
+      "id": "b202be301a6f",
+      "added": "2026-10-28T17:07:25"
+    },
+    {
+      "src": "photos/nature-stonechat-720.jpg",
+      "base": "photos/nature-stonechat",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/nature-stonechat",
+      "fulls": [
+        1440,
+        2048,
+        2940
+      ],
+      "title": "Stonechat",
+      "collection": "Nature",
+      "w": 1440,
+      "h": 960,
+      "tone": "#80705a",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.0005,
+      "iso": 500,
+      "date": "2026-10-27T15:35:25",
+      "id": "ea442317cf43",
+      "added": "2026-10-28T17:07:25"
+    },
+    {
+      "src": "photos/nature-red-kite-720.jpg",
+      "base": "photos/nature-red-kite",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/nature-red-kite",
       "fulls": [
         1440,
         2048,
         3200
       ],
       "title": "Red Kite",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#a0bade",
@@ -47,18 +279,18 @@
       "added": "2026-10-18T13:22:47"
     },
     {
-      "src": "photos/wildlife-grey-heron-in-tree-720.jpg",
-      "base": "photos/wildlife-grey-heron-in-tree",
+      "src": "photos/nature-grey-heron-in-tree-720.jpg",
+      "base": "photos/nature-grey-heron-in-tree",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-grey-heron-in-tree",
+      "full": "photos/full/nature-grey-heron-in-tree",
       "fulls": [
         1524
       ],
       "title": "Grey Heron In Tree",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 1800,
       "tone": "#454121",
@@ -74,20 +306,20 @@
       "added": "2026-10-17T15:03:38"
     },
     {
-      "src": "photos/wildlife-king-fisher-6-720.jpg",
-      "base": "photos/wildlife-king-fisher-6",
+      "src": "photos/nature-king-fisher-6-720.jpg",
+      "base": "photos/nature-king-fisher-6",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-king-fisher-6",
+      "full": "photos/full/nature-king-fisher-6",
       "fulls": [
         1440,
         2048,
         3200
       ],
       "title": "King Fisher 6",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#7f8c82",
@@ -103,20 +335,20 @@
       "added": "2026-10-17T14:44:48"
     },
     {
-      "src": "photos/wildlife-king-fisher-5-720.jpg",
-      "base": "photos/wildlife-king-fisher-5",
+      "src": "photos/nature-king-fisher-5-720.jpg",
+      "base": "photos/nature-king-fisher-5",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-king-fisher-5",
+      "full": "photos/full/nature-king-fisher-5",
       "fulls": [
         1440,
         2048,
         2723
       ],
       "title": "King Fisher 5",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#6b7c7d",
@@ -132,19 +364,19 @@
       "added": "2026-10-17T14:38:14"
     },
     {
-      "src": "photos/wildlife-king-fisher-4-720.jpg",
-      "base": "photos/wildlife-king-fisher-4",
+      "src": "photos/nature-king-fisher-4-720.jpg",
+      "base": "photos/nature-king-fisher-4",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-king-fisher-4",
+      "full": "photos/full/nature-king-fisher-4",
       "fulls": [
         1440,
         2007
       ],
       "title": "King Fisher 4",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 1800,
       "tone": "#8a9283",
@@ -160,20 +392,20 @@
       "added": "2026-10-17T14:38:14"
     },
     {
-      "src": "photos/wildlife-king-fisher-3-720.jpg",
-      "base": "photos/wildlife-king-fisher-3",
+      "src": "photos/nature-king-fisher-3-720.jpg",
+      "base": "photos/nature-king-fisher-3",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-king-fisher-3",
+      "full": "photos/full/nature-king-fisher-3",
       "fulls": [
         1440,
         2048,
         2938
       ],
       "title": "King Fisher 3",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 962,
       "tone": "#838d82",
@@ -189,20 +421,20 @@
       "added": "2026-10-17T14:38:14"
     },
     {
-      "src": "photos/wildlife-king-fisher-1-720.jpg",
-      "base": "photos/wildlife-king-fisher-1",
+      "src": "photos/nature-king-fisher-1-720.jpg",
+      "base": "photos/nature-king-fisher-1",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-king-fisher-1",
+      "full": "photos/full/nature-king-fisher-1",
       "fulls": [
         1440,
         2048,
         2723
       ],
       "title": "King Fisher 1",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#88907d",
@@ -218,19 +450,19 @@
       "added": "2026-10-17T14:38:14"
     },
     {
-      "src": "photos/wildlife-king-fisher-2-720.jpg",
-      "base": "photos/wildlife-king-fisher-2",
+      "src": "photos/nature-king-fisher-2-720.jpg",
+      "base": "photos/nature-king-fisher-2",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-king-fisher-2",
+      "full": "photos/full/nature-king-fisher-2",
       "fulls": [
         1440,
         2132
       ],
       "title": "King Fisher 2",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 1800,
       "tone": "#838c7d",
@@ -246,20 +478,20 @@
       "added": "2026-10-17T14:38:14"
     },
     {
-      "src": "photos/wildlife-meadow-pipit-720.jpg",
-      "base": "photos/wildlife-meadow-pipit",
+      "src": "photos/nature-meadow-pipit-720.jpg",
+      "base": "photos/nature-meadow-pipit",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-meadow-pipit",
+      "full": "photos/full/nature-meadow-pipit",
       "fulls": [
         1440,
         2048,
         3200
       ],
       "title": "Meadow Pipit",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 958,
       "tone": "#746e5a",
@@ -275,49 +507,20 @@
       "added": "2026-10-14T14:00:36"
     },
     {
-      "src": "photos/wildlife-grey-heron-in-flight-720.jpg",
-      "base": "photos/wildlife-grey-heron-in-flight",
+      "src": "photos/nature-grey-heron-720.jpg",
+      "base": "photos/nature-grey-heron",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-grey-heron-in-flight",
-      "fulls": [
-        1440,
-        2048,
-        3200
-      ],
-      "title": "Grey Heron In Flight",
-      "collection": "Wildlife",
-      "w": 1440,
-      "h": 961,
-      "tone": "#333736",
-      "make": "SONY",
-      "model": "ILCE-6700",
-      "lens": "E 70-350mm F4.5-6.3 G OSS",
-      "focal": 350.0,
-      "aperture": 6.3,
-      "shutter": 0.0008,
-      "iso": 400,
-      "date": "2026-10-04T15:20:49",
-      "id": "68c54208d28e",
-      "added": "2026-10-04T19:57:42"
-    },
-    {
-      "src": "photos/wildlife-grey-heron-720.jpg",
-      "base": "photos/wildlife-grey-heron",
-      "grid": [
-        720,
-        1440
-      ],
-      "full": "photos/full/wildlife-grey-heron",
+      "full": "photos/full/nature-grey-heron",
       "fulls": [
         1440,
         2048,
         3200
       ],
       "title": "Grey Heron",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#4a4d3a",
@@ -333,19 +536,19 @@
       "added": "2026-10-04T19:57:42"
     },
     {
-      "src": "photos/wildlife-great-crested-grebe-720.jpg",
-      "base": "photos/wildlife-great-crested-grebe",
+      "src": "photos/nature-great-crested-grebe-720.jpg",
+      "base": "photos/nature-great-crested-grebe",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-great-crested-grebe",
+      "full": "photos/full/nature-great-crested-grebe",
       "fulls": [
         1440,
         1711
       ],
       "title": "Great Crested Grebe",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 2160,
       "tone": "#495463",
@@ -361,20 +564,20 @@
       "added": "2026-10-04T19:57:42"
     },
     {
-      "src": "photos/wildlife-great-cormorant-2-720.jpg",
-      "base": "photos/wildlife-great-cormorant-2",
+      "src": "photos/nature-great-cormorant-2-720.jpg",
+      "base": "photos/nature-great-cormorant-2",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-great-cormorant-2",
+      "full": "photos/full/nature-great-cormorant-2",
       "fulls": [
         1440,
         2048,
         3200
       ],
       "title": "Great Cormorant 2",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#586370",
@@ -390,20 +593,20 @@
       "added": "2026-10-04T19:57:42"
     },
     {
-      "src": "photos/wildlife-great-cormorant-720.jpg",
-      "base": "photos/wildlife-great-cormorant",
+      "src": "photos/nature-great-cormorant-720.jpg",
+      "base": "photos/nature-great-cormorant",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-great-cormorant",
+      "full": "photos/full/nature-great-cormorant",
       "fulls": [
         1440,
         2048,
         3200
       ],
       "title": "Great Cormorant",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 962,
       "tone": "#4a6477",
@@ -419,20 +622,20 @@
       "added": "2026-10-04T19:57:42"
     },
     {
-      "src": "photos/wildlife-dunnock-720.jpg",
-      "base": "photos/wildlife-dunnock",
+      "src": "photos/nature-dunnock-720.jpg",
+      "base": "photos/nature-dunnock",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-dunnock",
+      "full": "photos/full/nature-dunnock",
       "fulls": [
         1440,
         2048,
         3200
       ],
       "title": "Dunnock",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#446535",
@@ -448,20 +651,20 @@
       "added": "2026-10-03T20:05:35"
     },
     {
-      "src": "photos/wildlife-robin-2-720.jpg",
-      "base": "photos/wildlife-robin-2",
+      "src": "photos/nature-robin-2-720.jpg",
+      "base": "photos/nature-robin-2",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-robin-2",
+      "full": "photos/full/nature-robin-2",
       "fulls": [
         1440,
         2048,
         3200
       ],
       "title": "Robin 2",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#524b31",
@@ -477,20 +680,20 @@
       "added": "2026-10-03T20:05:35"
     },
     {
-      "src": "photos/wildlife-long-eared-owl-720.jpg",
-      "base": "photos/wildlife-long-eared-owl",
+      "src": "photos/nature-long-eared-owl-720.jpg",
+      "base": "photos/nature-long-eared-owl",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-long-eared-owl",
+      "full": "photos/full/nature-long-eared-owl",
       "fulls": [
         1440,
         2048,
         2713
       ],
       "title": "Long Eared Owl",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#3c3c32",
@@ -535,19 +738,19 @@
       "added": "2026-09-26T20:30:35"
     },
     {
-      "src": "photos/wildlife-dsc05233-720.jpg",
-      "base": "photos/wildlife-dsc05233",
+      "src": "photos/nature-dsc05233-720.jpg",
+      "base": "photos/nature-dsc05233",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-dsc05233",
+      "full": "photos/full/nature-dsc05233",
       "fulls": [
         1440,
         2048,
         3200
       ],
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#231912",
@@ -564,19 +767,19 @@
       "title": ""
     },
     {
-      "src": "photos/wildlife-dsc05221-720.jpg",
-      "base": "photos/wildlife-dsc05221",
+      "src": "photos/nature-dsc05221-720.jpg",
+      "base": "photos/nature-dsc05221",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-dsc05221",
+      "full": "photos/full/nature-dsc05221",
       "fulls": [
         1440,
         2048,
         3200
       ],
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#5c5d53",
@@ -593,19 +796,19 @@
       "title": ""
     },
     {
-      "src": "photos/wildlife-dsc05216-720.jpg",
-      "base": "photos/wildlife-dsc05216",
+      "src": "photos/nature-dsc05216-720.jpg",
+      "base": "photos/nature-dsc05216",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-dsc05216",
+      "full": "photos/full/nature-dsc05216",
       "fulls": [
         1440,
         2048,
         3200
       ],
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#36352b",
@@ -622,19 +825,19 @@
       "title": ""
     },
     {
-      "src": "photos/wildlife-dsc05123-720.jpg",
-      "base": "photos/wildlife-dsc05123",
+      "src": "photos/nature-dsc05123-720.jpg",
+      "base": "photos/nature-dsc05123",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-dsc05123",
+      "full": "photos/full/nature-dsc05123",
       "fulls": [
         1440,
         2048,
         3200
       ],
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#32332b",
@@ -651,19 +854,19 @@
       "title": ""
     },
     {
-      "src": "photos/wildlife-dsc05102-720.jpg",
-      "base": "photos/wildlife-dsc05102",
+      "src": "photos/nature-dsc05102-720.jpg",
+      "base": "photos/nature-dsc05102",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-dsc05102",
+      "full": "photos/full/nature-dsc05102",
       "fulls": [
         1440,
         2048,
         3200
       ],
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#494b25",
@@ -736,19 +939,19 @@
       "title": ""
     },
     {
-      "src": "photos/wildlife-dsc04796-720.jpg",
-      "base": "photos/wildlife-dsc04796",
+      "src": "photos/nature-dsc04796-720.jpg",
+      "base": "photos/nature-dsc04796",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-dsc04796",
+      "full": "photos/full/nature-dsc04796",
       "fulls": [
         1440,
         2048,
         3200
       ],
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 1059,
       "tone": "#505050",
@@ -962,19 +1165,19 @@
       "added": "2026-09-06T10:32:49"
     },
     {
-      "src": "photos/wildlife-dsc00644-720.jpg",
-      "base": "photos/wildlife-dsc00644",
+      "src": "photos/nature-dsc00644-720.jpg",
+      "base": "photos/nature-dsc00644",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-dsc00644",
+      "full": "photos/full/nature-dsc00644",
       "fulls": [
         1440,
         2048,
         3200
       ],
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 811,
       "tone": "#787f8a",
@@ -991,19 +1194,19 @@
       "title": ""
     },
     {
-      "src": "photos/wildlife-robin-720.jpg",
-      "base": "photos/wildlife-robin",
+      "src": "photos/nature-robin-720.jpg",
+      "base": "photos/nature-robin",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-robin",
+      "full": "photos/full/nature-robin",
       "fulls": [
         1440,
         2143
       ],
       "title": "Robin",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 2150,
       "tone": "#767a7b",
@@ -1019,20 +1222,20 @@
       "added": "2026-09-02T19:00:30"
     },
     {
-      "src": "photos/wildlife-early-bird-720.jpg",
-      "base": "photos/wildlife-early-bird",
+      "src": "photos/nature-early-bird-720.jpg",
+      "base": "photos/nature-early-bird",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-early-bird",
+      "full": "photos/full/nature-early-bird",
       "fulls": [
         1440,
         2048,
         2597
       ],
       "title": "Early Bird",
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#292828",
@@ -1048,19 +1251,19 @@
       "added": "2026-09-02T19:00:30"
     },
     {
-      "src": "photos/wildlife-dsc00725-720.jpg",
-      "base": "photos/wildlife-dsc00725",
+      "src": "photos/nature-dsc00725-720.jpg",
+      "base": "photos/nature-dsc00725",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-dsc00725",
+      "full": "photos/full/nature-dsc00725",
       "fulls": [
         1440,
         2048,
         3200
       ],
-      "collection": "Wildlife",
+      "collection": "Nature",
       "w": 1440,
       "h": 960,
       "tone": "#5e717a",
