@@ -670,10 +670,9 @@
     brand: document.querySelector('.brand')
   };
 
-  /* Two views stand outside the collections: MAIN is the front page — the
-     photographs hung loose, with no collection behind them — and 'All' is
-     everything the site holds, collections included. */
-  let MAIN = 'Featured Work';
+  /* The view the site opens on: everything it holds, collections and all. The
+     collection tabs hang beside it and filter the same page. */
+  const ALL = 'All';
   /* A view that holds no photographs at all. */
   const CONTACT = 'Contact';
 
@@ -711,7 +710,7 @@
     if (awaitingPick.length === 1) setTimeout(function(){ namePicked(''); }, 1500);
   }
   let collections = [];
-  let active = MAIN;
+  let active = ALL;
   let rendered = 0;
   let published = false;
   let contact = null;
@@ -788,9 +787,8 @@
   /* ---------- rendering ---------- */
 
   function visible(){
-    if (active === 'All') return photos;
+    if (active === ALL) return photos;
     if (active === CONTACT) return [];
-    if (active === MAIN) return photos.filter(p => !p.collection);
     return photos.filter(p => p.collection === active);
   }
 
@@ -1190,10 +1188,9 @@
   function paintTabs(){
     /* No collections on a published site means no picture views worth listing:
        just the main scroll, and whatever pages stand beside it. */
-    const list = (published && !collections.length) ? [] : [MAIN, 'All'].concat(collections);
+    const list = (published && !collections.length) ? [] : [ALL].concat(collections);
     let html = list.map(function(c){
-      const n = c === 'All' ? photos.length
-              : c === MAIN ? photos.filter(function(p){ return !p.collection; }).length
+      const n = c === ALL ? photos.length
               : photos.filter(function(p){ return p.collection === c; }).length;
       return '<button class="tab" role="tab" aria-selected="' + (c === active) + '" data-col="' + esc(c) + '">' +
              esc(c) + '<span class="tab-count">' + n + '</span></button>';
@@ -1250,7 +1247,7 @@
     const files = Array.prototype.slice.call(fileList)
       .filter(function(f){ return f.type.indexOf('image/') === 0; });
     if (!files.length) return;
-    const target = (active === 'All' || active === MAIN) ? null : active;
+    const target = (active === ALL || active === CONTACT) ? null : active;
     const reader = await loadExifr();
 
     for (const file of files){
@@ -1295,9 +1292,6 @@
         els.brand.textContent = data.title;
         document.title = data.title;
       }
-      /* build.py names the front page after the folder it comes from, so the
-         tab and the folder on disk cannot drift apart. */
-      if (data.front){ MAIN = data.front; active = MAIN; }
       if (data.contact && data.contact.email){ contact = data.contact; paintContact(); }
       els.brand.removeAttribute('contenteditable');
       stampCopyright();
@@ -1750,9 +1744,9 @@
     const p = photos.filter(function(x){ return photoId(x) === id; })[0];
     if (!p) return false;
     if (visible().indexOf(p) === -1){
-      active = p.collection || MAIN;
+      active = p.collection || ALL;
       repaint();
-      if (visible().indexOf(p) === -1){ active = 'All'; repaint(); }
+      if (visible().indexOf(p) === -1){ active = ALL; repaint(); }
       if (visible().indexOf(p) === -1) return false;
     }
     showViewer(p, null, deep);

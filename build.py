@@ -8,17 +8,18 @@ Folder layout:
       build.py
       index.html
       originals/            <- your full-res exports (NEVER uploaded)
-        Featured Work/          <- the front page, not a tab
+        Wildlife/
           swan-at-dusk.jpg
-        Landscapes/
-        Portraits/
+        Landscape/
+        Portrait/
           ...
       photos/               <- generated: resized web copies
       photos.json           <- generated: the manifest index.html reads
 
-Each subfolder of originals/ becomes an optional collection tab, except the
-one named by FRONT below: that folder is the front page. Loose files at the top
-level belong to no collection either, and join the front page beside it.
+The site opens on 'All' — every photograph it holds, newest arrival first.
+Each subfolder of originals/ becomes a collection tab beside it, hung in the
+order ORDER names below. A file left loose at the top level belongs to no
+collection: it appears in 'All' and nowhere else.
 
 Run:  python3 build.py
 Then deploy index.html, photos.json and photos/ — leave originals/ behind.
@@ -96,7 +97,7 @@ FULL_FORMATS = ("avif", "webp")
 
 # AVIF's scale is not JPEG's, and the three copies of a photograph do not want
 # the same number on it. Measured with SSIM against the untouched original,
-# over the eight photographs the front page actually opens with, at the size
+# over the eight photographs the page actually opens with, at the size
 # each copy is really drawn:
 #
 #     old pipeline, JPEG q82 at 1300px    SSIM 0.9465   1157K the screenful
@@ -140,9 +141,11 @@ SUBSAMPLING = {"1x": "4:4:4", "2x": "4:2:0", "full": "4:4:4"}
 
 SRC = "originals"
 FULL = "full"             # inside photos/: the viewer's copies
-# The front page. A folder by this name is not a collection: its photographs
-# are the ones the site opens on, the same as files left loose in originals/.
-FRONT = "Featured Work"
+# The order the collection tabs hang in, left to right — or top to bottom on a
+# wide screen, where they stand in the sidebar. Name the folders you care about
+# and leave the rest: anything unnamed follows, alphabetically. Nothing is
+# renamed on disk, so reordering the site is a line here and a rebuild.
+ORDER = ["Wildlife", "Landscape", "Portrait", "Cars", "Nightwork"]
 OUT = "photos"
 MANIFEST = "photos.json"
 CAMERA_FILE = "camera.txt"   # folder-wide camera details, for a roll of film
@@ -153,7 +156,7 @@ CAMERA_FILE = "camera.txt"   # folder-wide camera details, for a roll of film
 SITE_URL = "https://photography.pixelrocket.studio"
 # One small page per photograph, each carrying that photograph's share card.
 # A link into the gallery is '…/#swan-at-rest', and a '#' never reaches the
-# server — so the machine building the preview sees only the front page and
+# server — so the machine building the preview sees only the gallery page and
 # every photograph in the site shares one card. These pages are the fragment
 # written as a path, which a scraper can actually fetch. See share_page().
 PAGES = "p"
@@ -729,6 +732,13 @@ def share_pages(photos):
 # ---------------------------------------------------------------- main
 
 
+def in_order(names):
+    """The collections hung in ORDER. A folder ORDER never mentions follows it,
+    in alphabetical order, so a new one appears without having to be named."""
+    named = {name.lower(): i for i, name in enumerate(ORDER)}
+    return sorted(names, key=lambda c: (named.get(c.lower(), len(named)), c.lower()))
+
+
 def gather():
     """Yield (collection_or_None, filepath) pairs, collections in folder order."""
     if not os.path.isdir(SRC):
@@ -740,10 +750,8 @@ def gather():
         if entry.startswith("."):
             continue
         if os.path.isdir(path):
-            # The front-page folder keeps originals/ tidy without earning a tab:
-            # its photographs are filed exactly as loose ones are.
-            collection = None if entry == FRONT else entry
-            bucket = loose if collection is None else foldered
+            collection = entry
+            bucket = foldered
             for name in sorted(os.listdir(path)):
                 if os.path.splitext(name)[1].lower() in EXTS:
                     bucket.append((collection, os.path.join(path, name)))
@@ -845,8 +853,7 @@ def lay_out(items):
 
         used.add(slug)
         keys.add(key)
-        # Only a photograph that made it earns its folder a tab. items is in
-        # folder order, so the tabs still come out in it.
+        # Only a photograph that made it earns its folder a tab.
         if collection and collection not in collections:
             collections.append(collection)
 
@@ -905,6 +912,8 @@ def lay_out(items):
     # Python's sort is stable, so anything undated keeps its filename order.
     photos.sort(key=lambda p: (p.get("added", ""), p.get("date") or ""), reverse=True)
 
+    collections = in_order(collections)
+
     print("\nPage order — most recently added first:")
     for photo in photos:
         print(f"  added {photo['added'][:16].replace('T', ' ')}   {photo['title'] or '(untitled)'}")
@@ -914,7 +923,7 @@ def lay_out(items):
 
 def publish(photos, collections, skipped, keys, reused):
     """The finished build put in place, and nothing moved until it is finished."""
-    manifest = {"title": SITE_TITLE, "front": FRONT,
+    manifest = {"title": SITE_TITLE,
                 "formats": list(FORMATS), "fullFormats": list(FULL_FORMATS),
                 # Where the share cards live, so the page only offers a link
                 # it knows is there. An older photos.json leaves this out and

@@ -96,19 +96,31 @@ scan with no date shows no date. `build.py` says so when a line doesn't land:
 
 ## Collections — only if you want them
 
-You do not need these. A subfolder of `originals/` becomes a tab at the top of
-the page, in folder order, alongside "All". With no subfolders there is no tab
-bar at all, just the scroll.
+The site opens on **All**: everything it holds, newest arrival first. A
+subfolder of `originals/` becomes a tab beside it. With no subfolders there is
+no tab bar at all, just the scroll.
 
 ```
 originals/
-  swan-at-rest.jpg      <- loose: the main scroll, and nothing else
-  Nightwork/            <- a tab at the top of the page
+  swan-at-rest.jpg      <- loose: it appears under All and nowhere else
+  Nightwork/            <- a tab beside All
     ...
 ```
 
-A collection's photographs still appear in the main scroll — the tab filters
-the same page, it is not a separate site.
+A collection's photographs still appear under All — the tab filters the same
+page, it is not a separate site.
+
+### The order the tabs hang in
+
+Named once, at the top of `build.py`:
+
+```python
+ORDER = ["Wildlife", "Landscape", "Portrait", "Cars", "Nightwork"]
+```
+
+A folder `ORDER` does not mention follows the named ones, alphabetically, so a
+new collection appears on its own without having to be added. Nothing is
+renamed on disk to reorder the site: the list is the whole of it.
 
 ## Camera marks
 
@@ -222,7 +234,7 @@ width, and the page is told which widths actually exist.
 
 The three copies do not want the same setting, so `QUALITY` gives each its own.
 The numbers were chosen by measuring SSIM against the untouched originals at
-the size each copy is actually drawn, over the photographs the front page opens
+the size each copy is actually drawn, over the photographs the page opens
 with — not by eye:
 
 | | the old site | now |
@@ -332,7 +344,7 @@ button in the viewer hands it over: the native share sheet on a phone, the
 clipboard anywhere else.
 
 A `#` never reaches a server, though, so a link pasted into a message would
-show the front page's preview whichever photograph it pointed at. `build.py`
+show the gallery page's preview whichever photograph it pointed at. `build.py`
 writes one small page per photograph into `p/`, carrying that photograph's own
 preview card; opening one sends you straight back to the photograph in the
 gallery. That is what the Share button copies.

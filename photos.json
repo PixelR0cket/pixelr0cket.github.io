@@ -1,6 +1,5 @@
 {
   "title": "Keith Merkelt Photography",
-  "front": "Featured Work",
   "formats": [
     "avif",
     "webp",
@@ -12,11 +11,11 @@
   ],
   "pages": "p",
   "collections": [
-    "Cars",
+    "Wildlife",
     "Landscape",
-    "Nightwork",
     "Portrait",
-    "Wildlife"
+    "Cars",
+    "Nightwork"
   ],
   "photos": [
     {
