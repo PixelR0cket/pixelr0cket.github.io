@@ -18,6 +18,34 @@
   ],
   "photos": [
     {
+      "src": "photos/dsc04043-2-720.jpg",
+      "base": "photos/dsc04043-2",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/dsc04043-2",
+      "fulls": [
+        1440,
+        2048,
+        3200
+      ],
+      "w": 1440,
+      "h": 960,
+      "tone": "#7a7a7a",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 99.0,
+      "aperture": 5.6,
+      "shutter": 0.0015625,
+      "iso": 100,
+      "date": "2026-08-15T17:56:49",
+      "id": "aa256a4a9586",
+      "added": "2026-10-29T16:57:18",
+      "title": ""
+    },
+    {
       "src": "photos/angel-720.jpg",
       "base": "photos/angel",
       "grid": [
