@@ -18,6 +18,35 @@
   ],
   "photos": [
     {
+      "src": "photos/nature-dsc04186-720.jpg",
+      "base": "photos/nature-dsc04186",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/nature-dsc04186",
+      "fulls": [
+        1440,
+        2048,
+        2986
+      ],
+      "collection": "Nature",
+      "w": 1440,
+      "h": 960,
+      "tone": "#7896b1",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 76.0,
+      "aperture": 5.6,
+      "shutter": 0.001,
+      "iso": 100,
+      "date": "2026-08-15T18:14:58",
+      "id": "3b7ad1c71803",
+      "added": "2026-10-29T15:01:54",
+      "title": ""
+    },
+    {
       "src": "photos/nature-king-fisher-7-720.jpg",
       "base": "photos/nature-king-fisher-7",
       "grid": [
