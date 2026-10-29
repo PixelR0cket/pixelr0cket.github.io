@@ -1534,34 +1534,6 @@
       "added": "2026-08-24T14:55:12"
     },
     {
-      "src": "photos/angel-720.jpg",
-      "base": "photos/angel",
-      "grid": [
-        720,
-        1440
-      ],
-      "full": "photos/full/angel",
-      "fulls": [
-        1440,
-        2048,
-        3200
-      ],
-      "title": "Angel",
-      "w": 1440,
-      "h": 960,
-      "tone": "#6a8aa0",
-      "make": "SONY",
-      "model": "ILCE-6700",
-      "lens": "E 70-350mm F4.5-6.3 G OSS",
-      "focal": 70.0,
-      "aperture": 5.6,
-      "shutter": 0.00125,
-      "iso": 100,
-      "date": "2026-08-15T18:15:18",
-      "id": "2c5ab6ab6886",
-      "added": "2026-08-24T14:55:12"
-    },
-    {
       "src": "photos/mudeford-4-720.jpg",
       "base": "photos/mudeford-4",
       "grid": [
