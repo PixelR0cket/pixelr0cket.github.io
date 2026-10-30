@@ -747,6 +747,73 @@ def card_words(photo):
     return " — ".join(bits) if bits else f"A photograph from {SITE_TITLE}."
 
 
+# The card a shared link carries is the one address in index.html that this
+# script does not write, and the only one nothing on the page would ever show
+# as broken. It is typed by hand; it has to be absolute, because the machine
+# that builds a link preview is somewhere else and has no idea what site the
+# link came from; and it names a file whose slug build.py is free to rename
+# underneath it — which is precisely what happened when collections arrived and
+# every slug gained its collection as a prefix. The card pointed at a photograph
+# that no longer existed, and because nothing on the page reads that address,
+# the only symptom was out in other people's messages. So every build looks.
+CARD_URL = re.compile(
+    r'<meta\s+(?:property|name)="(og:image|twitter:image)"\s+content="([^"]*)"')
+CARD_DIM = re.compile(
+    r'<meta\s+property="og:image:(width|height)"\s+content="(\d+)"')
+
+
+def check_card(page="index.html"):
+    """Say so if the share card points at nothing, or misreports its size.
+
+    Never fatal. A card is worth a warning twice over, not worth refusing to
+    publish a gallery about.
+    """
+    if not os.path.isfile(page):
+        return
+    with open(page, encoding="utf-8") as fh:
+        html = fh.read()
+
+    root = SITE_URL.rstrip("/") + "/"
+    found = {}
+    for tag, url in CARD_URL.findall(html):
+        found.setdefault(url, []).append(tag)
+    if not found:
+        print(f"  ! {page} carries no share card: a link to the site pastes "
+              f"as a bare blue link.")
+        return
+
+    for url, tags in sorted(found.items()):
+        named = " and ".join(sorted(set(tags)))
+        if not url.startswith(root):
+            print(f"  ! {named}: '{url}' is not an address on {SITE_URL}. A "
+                  f"preview is built elsewhere and cannot resolve a relative "
+                  f"one — write it out in full.")
+            continue
+        path = url[len(root):]
+        if not os.path.isfile(path):
+            print(f"  ! {named}: {path} is not there. Every link to the site "
+                  f"shows a blank card until this names a file that exists.")
+
+    # The dimensions are the card's own promise about the file, and a reader
+    # lays the preview out on them before the picture has arrived.
+    claimed = {k: int(v) for k, v in CARD_DIM.findall(html)}
+    og = next((u for u, t in found.items() if "og:image" in t), None)
+    if not (claimed and og and og.startswith(root)):
+        return
+    path = og[len(root):]
+    if not os.path.isfile(path):
+        return
+    try:
+        with Image.open(path) as img:
+            real = {"width": img.width, "height": img.height}
+    except Exception:
+        return
+    wrong = [k for k in claimed if claimed[k] != real[k]]
+    if wrong:
+        print(f"  ! og:image: {path} is {real['width']}x{real['height']}, but "
+              f"the card claims {claimed.get('width')}x{claimed.get('height')}.")
+
+
 def share_pages(photos):
     """One page per photograph, so a pasted link carries that photograph.
 
@@ -1014,6 +1081,7 @@ def publish(photos, collections, skipped, keys, reused):
             print(f"  {len(floored)} could not fit without going below the floor.")
     if skipped:
         print(f"{len(skipped)} left out: {', '.join(skipped)}")
+    check_card()
     print(f"Wrote {MANIFEST}, {OUT}/ and {PAGES}/")
     print(f"Deploy: index.html, photos.json, robots.txt, photos/, {PAGES}/, "
           "fonts/, logos/  — keep originals/ off the server.")

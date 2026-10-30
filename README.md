@@ -391,6 +391,28 @@ gallery. That is what the Share button copies.
 Those cards need absolute URLs, which is what `SITE_URL` at the top of
 `build.py` is for. Move the site and that is the line to change.
 
+### The share card is checked, not trusted
+
+The picture a link preview shows is set by two lines in the head of
+`index.html`. They are the only addresses on the site `build.py` does not
+write, and they have to be absolute — the machine building a preview is
+somewhere else and has no idea where the link came from — so nothing about the
+page can show you they are wrong. One of them pointed at a deleted photograph
+for months: the gallery looked perfect, and every link anyone shared showed a
+blank square.
+
+So every build checks. It warns, and does not stop, if the card names a file
+that is not there, uses a relative address, misreports the picture's size, or
+is missing altogether:
+
+```
+! og:image and twitter:image: photos/dsc04136-2-1440.jpg is not there.
+  Every link to the site shows a blank card until this names a file that exists.
+```
+
+If you change which photograph leads, change both lines, and the
+`og:image:width` and `og:image:height` beside them.
+
 ## What is and isn't published
 
 Published: `index.html`, `photos.json`, `photos/`, `p/`, `logos/`, `404.html`
