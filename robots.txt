@@ -1,0 +1,24 @@
+# The site is welcome in search. The photographs are not.
+#
+# The line that does most of the work is not here — it is the robots meta tag
+# in index.html, which asks for the page to be indexed and the pictures on it
+# to be left out of image search. This file is the blunter half.
+#
+# photos/full/ holds the copies the viewer opens: 1440 to 3200 pixels wide,
+# encoded to be looked at closely. They are the largest and sharpest files on
+# the site, nothing links to them directly, and no crawler or link preview has
+# any business fetching one. They are closed.
+#
+# The roll's own copies — photos/*-720 and *-1440 — stay open deliberately. A
+# share card points at one, and a scraper that honours this file would show a
+# blank preview instead of a photograph when somebody passes a link on. The
+# same goes for p/, which exists only to carry those cards: shut it and every
+# shared photograph becomes a bare blue link.
+#
+# None of this is protection. It is a request, honoured by the search engines
+# that choose to honour it and ignored by everything else. The page holds
+# right-click shut over a picture in much the same spirit: friction, not a
+# lock.
+
+User-agent: *
+Disallow: /photos/full/

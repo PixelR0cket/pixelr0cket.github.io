@@ -1015,8 +1015,8 @@ def publish(photos, collections, skipped, keys, reused):
     if skipped:
         print(f"{len(skipped)} left out: {', '.join(skipped)}")
     print(f"Wrote {MANIFEST}, {OUT}/ and {PAGES}/")
-    print(f"Deploy: index.html, photos.json, photos/, {PAGES}/, fonts/, logos/"
-          "  — keep originals/ off the server.")
+    print(f"Deploy: index.html, photos.json, robots.txt, photos/, {PAGES}/, "
+          "fonts/, logos/  — keep originals/ off the server.")
 
 
 if __name__ == "__main__":

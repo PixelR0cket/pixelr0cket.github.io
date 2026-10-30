@@ -6,22 +6,39 @@
 <title>Keith Merkelt Photography</title>
 <meta name="description" content="Photographs by Keith Merkelt — birds, cars and night work, shown full frame with the camera and exposure that made them.">
 <link rel="canonical" href="https://photography.pixelrocket.studio/">
+<!-- The site is welcome in search; the photographs are not. This asks for the
+     page to be indexed as usual and for the pictures on it to be left out of
+     image search. It is the half that matters, because the gallery is drawn by
+     script: a crawler that runs it reaches every photograph through
+     photos.json, and robots.txt cannot speak for files it is not stopping.
+     A request, not a lock — anything that disregards it was never going to be
+     stopped by a line in a page. -->
+<meta name="robots" content="noimageindex">
 <!-- Pasted into a message, a portfolio with no card is just a blue link. The
      image is pinned to one deployed photograph rather than guessed at, so it
      is a real file that will still be there; point it somewhere else when the
-     picture you want leading changes. -->
+     picture you want leading changes.
+
+     It is a full address because the machine reading it is somewhere else and
+     has no idea what site the link came from — which is also why nothing here
+     can be checked by looking at the page. This one named a file that had
+     quietly stopped existing: every slug gained its collection as a prefix
+     when collections arrived, and this line was not written by build.py so
+     nothing moved it. The card had been a broken image ever since. If you
+     change it, paste the address into a browser first and make sure it
+     answers. -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Keith Merkelt Photography">
 <meta property="og:title" content="Keith Merkelt Photography">
 <meta property="og:description" content="Photographs by Keith Merkelt — birds, cars and night work, shown full frame with the camera and exposure that made them.">
 <meta property="og:url" content="https://photography.pixelrocket.studio/">
-<meta property="og:image" content="https://photography.pixelrocket.studio/photos/dsc04136-2-1440.jpg">
+<meta property="og:image" content="https://photography.pixelrocket.studio/photos/landscape-dsc04136-2-1440.jpg">
 <meta property="og:image:width" content="1440">
 <meta property="og:image:height" content="960">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Keith Merkelt Photography">
 <meta name="twitter:description" content="Photographs by Keith Merkelt — birds, cars and night work, shown full frame with the camera and exposure that made them.">
-<meta name="twitter:image" content="https://photography.pixelrocket.studio/photos/dsc04136-2-1440.jpg">
+<meta name="twitter:image" content="https://photography.pixelrocket.studio/photos/landscape-dsc04136-2-1440.jpg">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script>
