@@ -180,6 +180,12 @@
   .masthead-top{ display:contents; }
   .brand{
     order:1;
+    /* It is the page's heading now, not a line of display type that happens to
+       sit at the top: the gallery had no heading element at all, so a reader
+       arriving by screen reader was handed a document with no subject. The
+       h1's own margin goes, since the sidebar's spacing is set by the flex
+       column around it. */
+    margin:0;
     /* Hand-lettered, and the only thing on the page not set in type: the
        wordmark signs the pictures, the rest of the sidebar merely labels them. */
     font-family:'Reenie Beanie',ui-rounded,cursive; font-weight:400;
@@ -215,6 +221,9 @@
   .tab{
     appearance:none; background:none; border:none;
     display:block; width:100%; text-align:left;
+    /* A collection is an address now, so these are links. They should not
+       look like them: the sidebar is a list of names, not a run of prose. */
+    text-decoration:none;
     /* Monospaced: the wide, evenly-spaced look is the advance width itself,
        so this wants no added letter-spacing. */
     font-family:'Cousine',ui-monospace,monospace; font-weight:400;
@@ -225,7 +234,7 @@
   }
   .tab:hover{color:var(--ash);}
   /* The collection you are already looking at is the one you cannot click. */
-  .tab[aria-selected="true"]{ color:var(--safelight); cursor:default; }
+  .tab[aria-current]{ color:var(--safelight); cursor:default; }
   .tab-count{ color:var(--ash); margin-left:7px; }
   body.published .tab-count{ display:none; }
   .tab-new{ color:var(--ash); margin-top:2px; }
@@ -241,7 +250,7 @@
     margin-left:var(--col-x); margin-right:var(--col-r); max-width:541px;
     padding:80px 0 40px;
   }
-  .empty h1{
+  .empty h2{
     font-size:22px; font-weight:700; line-height:1.2;
     margin:0 0 12px; letter-spacing:normal;
   }
@@ -536,6 +545,15 @@
       overflow-x:auto; scrollbar-width:none;
     }
     .tabs::-webkit-scrollbar{ display:none; }
+    /* Seven collections make a strip half again as wide as a phone, and its
+       scrollbar is hidden on purpose — so the ones past the edge were not
+       merely out of view, there was nothing to say they existed. The edge
+       fades while there is still something to reach, and stops fading at the
+       end of the strip so the last name is not left dimmed. */
+    .tabs.tabs-more{
+      -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 34px),transparent);
+      mask-image:linear-gradient(to right,#000 calc(100% - 34px),transparent);
+    }
     .tab{ display:inline-block; width:auto; white-space:nowrap; margin:0 20px 0 0; }
     .tab-new{ margin-top:0; }
     .frame-tally{ margin-top:14px; }
@@ -601,15 +619,15 @@
 
 <div class="masthead">
   <div class="masthead-top">
-    <div class="brand" contenteditable="true" spellcheck="false">Keith Merkelt Photography</div>
+    <h1 class="brand" contenteditable="true" spellcheck="false">Keith Merkelt Photography</h1>
     <div class="frame-tally" id="tally">0 frames</div>
     <button class="wall" id="wall" type="button">Auto</button>
   </div>
-  <div class="tabs" id="tabs" role="tablist"></div>
+  <nav class="tabs" id="tabs" aria-label="Collections"></nav>
 </div>
 
 <div class="empty" id="empty">
-  <h1>An empty roll.</h1>
+  <h2>An empty roll.</h2>
   <p>Load in your photographs. Titles come from the filename &mdash; click any title to rewrite it. Exposure and camera data are read from the file itself.</p>
   <button class="btn" id="emptyAdd">Add photographs</button>
 </div>
@@ -851,6 +869,51 @@
   function esc(s){
     return String(s == null ? '' : s).replace(/[&<>"]/g,
       c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
+
+  /* ---------- which view the address names ---------- */
+
+  /* A collection written as an address. 'Night Work' hangs at '#night-work'. */
+  function slugFor(name){
+    return String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  /* Every view that has an address of its own, in the order they are listed. */
+  function views(){
+    const list = [ALL].concat(collections);
+    if (contact) list.push(CONTACT);
+    return list;
+  }
+
+  /* The view a fragment names, or '' if it names something else — which, on
+     this site, means a photograph. The two cannot collide: a photograph's id
+     is its collection and its filename joined, so the shortest one is still
+     longer than the collection's own slug. */
+  function viewFromSlug(slug){
+    const list = views();
+    for (let i = 0; i < list.length; i++){
+      if (slugFor(list[i]) === slug) return list[i];
+    }
+    return '';
+  }
+
+  /* Where a view lives. 'All' is the site itself rather than a corner of it,
+     so it keeps the bare address and leaves nothing behind in the bar. */
+  function urlFor(name){
+    return name === ALL ? (location.pathname + location.search)
+                        : '#' + slugFor(name);
+  }
+
+  /* Show a collection. `record` is true when this is a step somebody took —
+     a click — and false when the address or the Back button is merely being
+     obeyed, which has already moved history itself. */
+  function goToView(name, record){
+    if (active !== name){
+      active = name;
+      window.scrollTo(0, 0);
+      repaint();
+    }
+    if (record) history.pushState({view: slugFor(name)}, '', urlFor(name));
   }
 
   /* ---------- rendering ---------- */
@@ -1261,7 +1324,7 @@
 
     els.contact.innerHTML =
       '<div class="page-inner">' +
-        '<h1 class="page-title page-row">' + esc(contact.heading || CONTACT) + '</h1>' +
+        '<h2 class="page-title page-row">' + esc(contact.heading || CONTACT) + '</h2>' +
         '<p class="page-body page-row">' +
           '<a class="page-link" href="mailto:' + esc(contact.email) + '">' +
             esc(contact.email) +
@@ -1292,33 +1355,57 @@
     requestAnimationFrame(function(){ els.contact.classList.add('in-view'); });
   }
 
+  /* Is there more of the strip than is showing? Only the phone lays the
+     collections out in a row that can run off the edge; on a wide screen they
+     are a column and this is always false, which costs two reads of a dozen
+     elements and keeps the rule in one place rather than two. */
+  function markTabOverflow(){
+    const el = els.tabs;
+    el.classList.toggle('tabs-more',
+      el.scrollWidth - el.clientWidth - el.scrollLeft > 1);
+  }
+
+  els.tabs.addEventListener('scroll', markTabOverflow, {passive: true});
+  window.addEventListener('resize', markTabOverflow);
+
   function paintTabs(){
     /* No collections on a published site means no picture views worth listing:
        just the main scroll, and whatever pages stand beside it. */
     const list = (published && !collections.length) ? [] : [ALL].concat(collections);
+    /* Links, not buttons. They were marked up as ARIA tabs, which promises a
+       keyboard a tablist's behaviour — arrow keys between them, one stop in
+       the tab order, a panel each one owns — and delivered none of it. What
+       they actually are is a list of places on the site, so that is what they
+       say now, and each one has an address a visitor can keep. */
+    const tab = function(c, on, n){
+      return '<a class="tab" href="' + esc(urlFor(c)) + '"' +
+             (on ? ' aria-current="page"' : '') +
+             ' data-col="' + esc(c) + '">' + esc(c) +
+             (n === null ? '' : '<span class="tab-count">' + n + '</span>') + '</a>';
+    };
     let html = list.map(function(c){
       const n = c === ALL ? photos.length
               : photos.filter(function(p){ return p.collection === c; }).length;
-      return '<button class="tab" role="tab" aria-selected="' + (c === active) + '" data-col="' + esc(c) + '">' +
-             esc(c) + '<span class="tab-count">' + n + '</span></button>';
+      return tab(c, c === active, n);
     }).join('');
-    if (contact){
-      html += '<button class="tab" role="tab" aria-selected="' + (active === CONTACT) +
-              '" data-col="' + CONTACT + '">' + CONTACT + '</button>';
-    }
+    if (contact) html += tab(CONTACT, active === CONTACT, null);
     if (!published) html += '<button class="tab tab-new" id="newCol" title="New collection" aria-label="New collection">+ New collection</button>';
     els.tabs.style.display = html ? '' : 'none';
     els.masthead.classList.toggle('no-tabs', !html);
     els.tabs.innerHTML = html;
 
-    els.tabs.querySelectorAll('.tab[data-col]').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        if (active === btn.dataset.col) return;
-        active = btn.dataset.col;
-        window.scrollTo(0, 0);
-        repaint();
+    els.tabs.querySelectorAll('.tab[data-col]').forEach(function(link){
+      link.addEventListener('click', function(e){
+        /* A click held with a modifier belongs to the browser: it means open
+           this somewhere else, and the address in the href is a real one, so
+           letting it through is the whole point of these being links. */
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        if (active === link.dataset.col) return;
+        goToView(link.dataset.col, true);
       });
     });
+    markTabOverflow();
     const nc = document.getElementById('newCol');
     if (nc) nc.addEventListener('click', function(){
       const name = prompt('Name this collection');
@@ -1807,7 +1894,12 @@
   function hideViewer(){
     if (viewer.root.hidden) return;
     if (viewerPushed && !closingFromHistory){ history.back(); return; }
-    if (!closingFromHistory) history.replaceState(null, '', location.pathname + location.search);
+    /* The photograph is leaving the address bar, and what is behind it is the
+       collection still on screen — not a bare page, which would throw away
+       where the visitor is standing. */
+    if (!closingFromHistory){
+      history.replaceState({view: slugFor(active)}, '', urlFor(active));
+    }
     closeViewer();
   }
 
@@ -1833,9 +1925,9 @@
   }
 
   window.addEventListener('popstate', function(e){
-    const id = e.state && e.state.photo;
-    if (id){
-      if (viewer.root.hidden) openById(id, true);
+    const state = e.state || {};
+    if (state.photo){
+      if (viewer.root.hidden) openById(state.photo, true);
       return;
     }
     if (!viewer.root.hidden){
@@ -1843,6 +1935,10 @@
       closeViewer();
       closingFromHistory = false;
     }
+    /* Whatever this entry names is the view now. An entry carrying nothing —
+       the one the site was opened on — is the front of it. */
+    const named = state.view || decodeURIComponent((location.hash || '').replace(/^#/, ''));
+    goToView(viewFromSlug(named) || ALL, false);
   });
 
   /* A photograph named in the address bar opens straight onto it, switching to
@@ -2319,8 +2415,20 @@
   stampCopyright();
   loadManifest().then(function(ok){
     if (!ok){ repaint(); return; }
-    const id = decodeURIComponent((location.hash || '').replace(/^#/, ''));
-    if (id) openById(id, true);
+    const frag = decodeURIComponent((location.hash || '').replace(/^#/, ''));
+    if (!frag) return;
+    /* A fragment names either a collection or one photograph. Collections are
+       checked first: there are a handful of them and the answer is certain,
+       where a photograph has to be hunted through the whole roll. */
+    const view = viewFromSlug(frag);
+    if (view){
+      goToView(view, false);
+      /* The entry the site opened on carries no state of its own, so Back
+         from here would have nothing to go on. */
+      history.replaceState({view: slugFor(view)}, '', urlFor(view));
+      return;
+    }
+    openById(frag, true);
   });
 })();
 </script>

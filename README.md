@@ -110,6 +110,14 @@ originals/
 A collection's photographs still appear under All — the tab filters the same
 page, it is not a separate site.
 
+Each collection has an address of its own, so one can be linked, bookmarked
+or sent to somebody: `/#wildlife`, `/#nightwork`. **All** is the site itself,
+`/`. Back and Forward step between them, and closing a photograph returns you
+to the collection you were looking at rather than to the front page.
+
+These are fragments, so they are not separate pages as far as a search engine
+is concerned — they are for people, not crawlers.
+
 ### The order the tabs hang in
 
 Named once, at the top of `build.py`:
