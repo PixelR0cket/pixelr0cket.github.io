@@ -58,10 +58,57 @@
     window.__themePref = pref;
   })();
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400;0,500;0,700;1,400&family=Cousine:wght@400;700&family=Reenie+Beanie&display=swap" rel="stylesheet">
+<!-- The wordmark is the largest piece of text the page opens with, and the
+     only thing on it set in a hand. Swapping it in late is the one font change
+     anybody notices, so it is asked for here rather than waited for. The other
+     two are discovered a moment later off the same connection, and swap
+     quietly enough at the sizes they are set in. -->
+<link rel="preload" href="fonts/reenie-beanie-400.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+  /* The typefaces, served from this site.
+
+     They used to come from Google: a stylesheet from fonts.googleapis.com,
+     which blocks the first paint, holding the page behind a DNS lookup, a TCP
+     handshake and a TLS negotiation to one host — and then the files
+     themselves behind the same three to a second host, fonts.gstatic.com. Two
+     strangers had to be found and introduced before this page could draw a
+     line of text, and on a phone away from a good signal that is most of a
+     second in which the site is a blank wall. Served from here they arrive on
+     the connection that is already open and already warm.
+
+     What ships is also less than what was being asked for. Karla came as four
+     separate cuts — regular, medium, bold and italic — where one variable file
+     per style covers the whole range; Cousine's bold and Karla's medium were
+     being downloaded and never used by any rule in this sheet; and Reenie
+     Beanie delivered a complete typeface to set a single line, where what is
+     wanted is the letters a title can be written with. Six files and 102K
+     became four and 63K, from one origin instead of two.
+
+     To change a face, or add a weight a rule here actually uses, refetch with
+     the script in the README rather than editing these URLs. */
+  @font-face{
+    font-family:'Karla';
+    src:url('fonts/karla.woff2') format('woff2');
+    /* One file, every weight between: the sheet asks for 400 and 700 and both
+       are cut from this on the spot. */
+    font-weight:400 700; font-style:normal; font-display:swap;
+  }
+  @font-face{
+    font-family:'Karla';
+    src:url('fonts/karla-italic.woff2') format('woff2');
+    font-weight:400 700; font-style:italic; font-display:swap;
+  }
+  @font-face{
+    font-family:'Cousine';
+    src:url('fonts/cousine-400.woff2') format('woff2');
+    font-weight:400; font-style:normal; font-display:swap;
+  }
+  @font-face{
+    font-family:'Reenie Beanie';
+    src:url('fonts/reenie-beanie-400.woff2') format('woff2');
+    font-weight:400; font-style:normal; font-display:swap;
+  }
+
   :root{
     --paper:#ffffff;
     --ink:#222222;
@@ -243,7 +290,19 @@
   /* .roll-split sets display:flex, which would out-shout the hidden attribute. */
   .roll[hidden]{ display:none; }
 
-  .frame{ margin-bottom:var(--step); display:flex; flex-direction:column; }
+  .frame{
+    margin-bottom:var(--step); display:flex; flex-direction:column;
+    /* A frame below the fold is laid out and painted like any other, and the
+       roll never gives one back — scroll to the end of a long collection and
+       the browser is carrying every photograph at once. This hands that
+       judgement back to it: a frame outside the viewport is skipped until it
+       is near, and contain-intrinsic-size remembers how tall it was so the
+       scrollbar does not lurch when it is.
+       The size is a fallback for a frame never yet drawn; every frame's plate
+       carries its own aspect-ratio, so the real height is known either way. */
+    content-visibility:auto;
+    contain-intrinsic-size:auto 520px;
+  }
   .frame:last-child{ margin-bottom:0; }
 
   /* Two columns of pictures, each frame going to whichever column is shorter. */
@@ -589,7 +648,17 @@
 (function(){
   'use strict';
 
-  const BATCH = 8;
+  /* How many frames are hung at a time. fillViewport() tops the roll up until
+     the runway below the fold is covered, so this is also the granularity of
+     the overshoot — it stops on the first batch that clears the runway, and
+     whatever that batch painted past it was fetched for nobody.
+     At eight, a 1440px window committed sixteen photographs and about 1.2MB
+     before anyone had scrolled past the first three, because the first batch
+     fell just short of the runway and the second cleared it twice over. Four
+     fills the same runway in finer steps: the same photographs arrive, the
+     ones below the fold simply are not sent for until the roll is nearer
+     needing them. */
+  const BATCH = 4;
 
   /* How wide a photograph is actually drawn, at every width the stylesheet
      lays out — so the browser can pick the copy it needs instead of the
@@ -1083,10 +1152,19 @@
 
   /* Wide enough for two columns of pictures beside the sidebar. */
   const SPLIT = window.matchMedia('(min-width:900px)');
+  /* The air under each frame in two-column layout, taken from the stylesheet
+     rather than written down a second time here. */
+  const SPLIT_GAP = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue('--split-gap')) || 36;
+
+  /* How tall each column has been hung so far, in CSS pixels, kept as frames
+     are added rather than measured back off the page. */
+  let colH = [0, 0];
 
   function resetRoll(){
     clearLoads();
     clearReveals();
+    colH = [0, 0];
     els.roll.innerHTML = '';
     if (SPLIT.matches){
       els.roll.classList.add('roll-split');
@@ -1097,17 +1175,46 @@
   }
 
   /* Frames arrive one at a time and are never re-flowed, so each one goes to
-     whichever column is currently shorter. Heights are known before the
-     photographs load, because the manifest carries their dimensions. */
-  function nextColumn(){
+     whichever column is currently shorter.
+
+     Which one that is used to be read back off the page — offsetHeight on both
+     columns, for every frame, which makes the browser lay the roll out again
+     eight times a batch. It also stopped being true the moment the frames
+     below the fold were allowed to skip rendering: an undrawn frame reports
+     its fallback height, not its own, and the columns drifted apart.
+     The manifest carries every photograph's shape, so the height a frame will
+     take is known before it is hung. Keeping the running total is both exact
+     and free. */
+  function frameHeight(p, width){
+    const ratio = (p && p.w && p.h) ? p.h / p.w : 2 / 3;
+    return width * ratio + SPLIT_GAP;
+  }
+
+  function nextColumn(p){
     if (!els.roll.classList.contains('roll-split')) return els.roll;
     const cols = els.roll.children;
-    return cols[0].offsetHeight <= cols[1].offsetHeight ? cols[0] : cols[1];
+    const i = colH[0] <= colH[1] ? 0 : 1;
+    colH[i] += frameHeight(p, cols[i].clientWidth || 1);
+    return cols[i];
   }
 
   function paintBatch(){
     const slice = visible().slice(rendered, rendered + BATCH);
-    slice.forEach(function(p){ nextColumn().appendChild(buildFrame(p)); });
+    slice.forEach(function(p){
+      const col = nextColumn(p);
+      const frame = buildFrame(p);
+      /* The height to hold open while this frame is skipped. The stylesheet
+         carries a fallback, but a fallback is a guess: a frame that is really
+         1050px of upright photograph would be stood in by 520px until it came
+         near, and the page would grow under the scrollbar as it did. The shape
+         is in the manifest, so the exact height can be reserved from the start
+         and nothing moves. */
+      if (p.w && p.h){
+        frame.style.containIntrinsicSize =
+          'auto ' + Math.round(frameHeight(p, col.clientWidth || 702) - SPLIT_GAP) + 'px';
+      }
+      col.appendChild(frame);
+    });
     rendered += slice.length;
     retally();
   }

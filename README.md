@@ -122,6 +122,34 @@ A folder `ORDER` does not mention follows the named ones, alphabetically, so a
 new collection appears on its own without having to be added. Nothing is
 renamed on disk to reorder the site: the list is the whole of it.
 
+## Typefaces
+
+They live in `fonts/` and are served from this site. Nothing is fetched from
+Google at runtime, so the page is not held behind a stylesheet from one host
+and font files from a second before it can draw a line of text — and no
+visitor is announced to a third party for reading it.
+
+Three faces: Karla for text, Cousine for the sidebar, Reenie Beanie for the
+wordmark. Karla ships as one variable file per style covering every weight
+between 400 and 700, rather than a separate cut for each. Reenie Beanie sets
+one line on the whole site, so it ships cut down to the letters a title can be
+written with — 8K instead of 18K.
+
+To change a face, or add a weight, edit the list at the top of `fetch-fonts.py`
+and run it:
+
+```bash
+python3 fetch-fonts.py
+```
+
+It rewrites `fonts/`. Then check the `@font-face` block at the head of
+`index.html` still names what landed there, and commit both. `build.py` does
+not run this and does not need to — the files are committed like any other
+part of the site.
+
+Only ask for a weight some rule actually uses. Cousine's bold and Karla's
+medium were being downloaded for years by a page that never set either.
+
 ## Camera marks
 
 Each frame is signed with the camera that took it. If the make has a logo in
@@ -188,6 +216,9 @@ photography-portfolio/          <- this is the git repo root
   logos/                        <- camera brand marks, deployed
     sony.png
     source/                     <- full-size logo artwork. NEVER deployed.
+  fonts/                        <- the typefaces, deployed
+    karla.woff2
+  fetch-fonts.py                <- refills fonts/. Run by hand, rarely.
   .build-cache/                 <- generated: copies kept between builds.
                                    NEVER deployed. Safe to delete.
 ```

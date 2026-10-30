@@ -139,6 +139,32 @@ QUALITY = {
 # The viewer's copy gets full colour because it is the one being looked at.
 SUBSAMPLING = {"1x": "4:4:4", "2x": "4:2:0", "full": "4:4:4"}
 
+# The weight one copy of the roll may reach before quality has to give way.
+#
+# A quality number is not a promise about size: it is a promise about how much
+# of the original is thrown away, and what that costs in bytes depends entirely
+# on how much detail the photograph holds. A clean horizon at q54 comes out at
+# 30K. A heron in a tree — every leaf a separate edge, nothing for the encoder
+# to predict — comes out at 336K for the same number, and the roll pays it on
+# every visit before anyone has scrolled. Measured over this site: three
+# photographs out of seventy-eight carried a fifth of the whole roll's weight.
+#
+# So the quality is a starting point and these are the ceiling. Past one, the
+# copy is encoded again a step lower, and again, until it fits — or until
+# FLOOR, past which a photograph is being damaged to save bytes and the weight
+# is simply accepted and reported. The caps sit near each format's 90th
+# percentile, so an ordinary photograph never meets them.
+#
+# The viewer's copies are deliberately not capped. Weight is the whole point of
+# a copy that only arrives when somebody has leaned in to look.
+BUDGET = {
+    "1x": {"avif":  95_000, "webp":  95_000, "jpg": 150_000},
+    "2x": {"avif": 170_000, "webp": 200_000, "jpg": 320_000},
+}
+# Below these a photograph starts to show what was done to it.
+FLOOR = {"avif": 42, "webp": 62, "jpg": 70}
+STEP = 6
+
 SRC = "originals"
 FULL = "full"             # inside photos/: the viewer's copies
 # The order the collection tabs hang in, left to right — or top to bottom on a
@@ -389,8 +415,14 @@ ENCODER = {
 JPEG_SUBSAMPLING = {"4:4:4": 0, "4:2:2": 1, "4:2:0": 2}
 
 
+# What the budget cost, so a build says so rather than quietly softening
+# photographs. Collected here and printed once at the end.
+TRIMS = []
+
+
 def save_image(img, path, fmt, tier):
-    """One copy, in one format, at the quality that tier is worth.
+    """One copy, in one format, at the quality that tier is worth — and no
+    heavier than BUDGET allows.
 
     Writes no EXIF: location and serial numbers never reach the web copies.
     """
@@ -402,7 +434,20 @@ def save_image(img, path, fmt, tier):
     elif fmt == "jpg":
         opts["subsampling"] = JPEG_SUBSAMPLING[sub]
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    img.save(path, kind, quality=QUALITY[tier][fmt], **opts)
+
+    started = quality = QUALITY[tier][fmt]
+    cap = BUDGET.get(tier, {}).get(fmt)
+    floor = min(FLOOR.get(fmt, quality), quality)
+    while True:
+        img.save(path, kind, quality=quality, **opts)
+        size = os.path.getsize(path)
+        if cap is None or size <= cap or quality <= floor:
+            break
+        quality = max(floor, quality - STEP)
+    if quality != started:
+        TRIMS.append((os.path.basename(path), started, quality, size,
+                      quality <= floor and size > (cap or 0)))
+    return size
 
 
 def to_width(img, width):
@@ -516,6 +561,7 @@ def settings_id():
         "grid": list(GRID_WIDTHS), "full_widths": list(FULL_WIDTHS),
         "formats": list(FORMATS), "full_formats": list(FULL_FORMATS),
         "quality": QUALITY, "subsampling": SUBSAMPLING,
+        "budget": BUDGET, "floor": FLOOR, "step": STEP,
     }, sort_keys=True).encode()).hexdigest()[:12]
 
 
@@ -955,10 +1001,21 @@ def publish(photos, collections, skipped, keys, reused):
     print(f"\n{len(photos)} photographs across {len(collections)} collection(s).")
     print(f"{reused} reused from the cache, {len(photos) - reused} encoded"
           + (f", {stale} stale entries dropped" if stale else ""))
+
+    # A photograph the budget leaned on is worth saying out loud: it is the one
+    # place a build quietly changes how a picture looks.
+    if TRIMS:
+        floored = [t for t in TRIMS if t[4]]
+        print(f"\n{len(TRIMS)} copies held to budget:")
+        for name, was, now, size, hit_floor in sorted(TRIMS):
+            note = "  (floor — kept heavy)" if hit_floor else ""
+            print(f"  {name:44} q{was}->q{now}  {size // 1024}K{note}")
+        if floored:
+            print(f"  {len(floored)} could not fit without going below the floor.")
     if skipped:
         print(f"{len(skipped)} left out: {', '.join(skipped)}")
     print(f"Wrote {MANIFEST}, {OUT}/ and {PAGES}/")
-    print(f"Deploy: index.html, photos.json, photos/, {PAGES}/"
+    print(f"Deploy: index.html, photos.json, photos/, {PAGES}/, fonts/, logos/"
           "  — keep originals/ off the server.")
 
 
