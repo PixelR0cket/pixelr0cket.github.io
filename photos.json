@@ -19,6 +19,35 @@
   ],
   "photos": [
     {
+      "src": "photos/wildlife-dsc06077-4-720.jpg",
+      "base": "photos/wildlife-dsc06077-4",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/wildlife-dsc06077-4",
+      "fulls": [
+        1440,
+        2048,
+        3200
+      ],
+      "collection": "Wildlife",
+      "w": 1440,
+      "h": 960,
+      "tone": "#37362c",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.0008,
+      "iso": 500,
+      "date": "2026-10-04T15:20:44",
+      "id": "a2ef635016ad",
+      "added": "2026-11-08T13:20:37",
+      "title": ""
+    },
+    {
       "src": "photos/wildlife-dsc08113-720.jpg",
       "base": "photos/wildlife-dsc08113",
       "grid": [
@@ -807,51 +836,23 @@
       "full": "photos/full/wildlife-great-crested-grebe",
       "fulls": [
         1440,
-        1711
+        2048,
+        3200
       ],
       "title": "Great Crested Grebe",
       "collection": "Wildlife",
       "w": 1440,
-      "h": 2160,
-      "tone": "#495463",
-      "make": "SONY",
-      "model": "ILCE-6700",
-      "lens": "E 70-350mm F4.5-6.3 G OSS",
-      "focal": 350.0,
-      "aperture": 6.3,
-      "shutter": 0.0008,
-      "iso": 160,
-      "date": "2026-10-04T12:20:07",
-      "id": "c371f973c324",
-      "added": "2026-10-04T19:57:42"
-    },
-    {
-      "src": "photos/wildlife-great-cormorant-2-720.jpg",
-      "base": "photos/wildlife-great-cormorant-2",
-      "grid": [
-        720,
-        1440
-      ],
-      "full": "photos/full/wildlife-great-cormorant-2",
-      "fulls": [
-        1440,
-        2048,
-        3200
-      ],
-      "title": "Great Cormorant 2",
-      "collection": "Wildlife",
-      "w": 1440,
       "h": 960,
-      "tone": "#586370",
+      "tone": "#3a4e65",
       "make": "SONY",
       "model": "ILCE-6700",
       "lens": "E 70-350mm F4.5-6.3 G OSS",
       "focal": 350.0,
       "aperture": 6.3,
       "shutter": 0.0008,
-      "iso": 160,
-      "date": "2026-10-04T12:18:13",
-      "id": "a2a5fdf8562b",
+      "iso": 200,
+      "date": "2026-10-04T12:21:36",
+      "id": "0a525323c01f",
       "added": "2026-10-04T19:57:42"
     },
     {
@@ -870,8 +871,8 @@
       "title": "Great Cormorant",
       "collection": "Wildlife",
       "w": 1440,
-      "h": 962,
-      "tone": "#4a6477",
+      "h": 960,
+      "tone": "#4a5865",
       "make": "SONY",
       "model": "ILCE-6700",
       "lens": "E 70-350mm F4.5-6.3 G OSS",
@@ -880,7 +881,7 @@
       "shutter": 0.0008,
       "iso": 160,
       "date": "2026-10-04T12:18:13",
-      "id": "0a4837ef7d0b",
+      "id": "02104f9e85a7",
       "added": "2026-10-04T19:57:42"
     },
     {
