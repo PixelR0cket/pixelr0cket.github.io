@@ -19,6 +19,35 @@
   ],
   "photos": [
     {
+      "src": "photos/wildlife-pied-wagtail-720.jpg",
+      "base": "photos/wildlife-pied-wagtail",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/wildlife-pied-wagtail",
+      "fulls": [
+        1440,
+        2048,
+        2851
+      ],
+      "title": "Pied Wagtail",
+      "collection": "Wildlife",
+      "w": 1440,
+      "h": 960,
+      "tone": "#4e644a",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.0015625,
+      "iso": 1250,
+      "date": "2026-11-14T15:13:26",
+      "id": "c23897a09219",
+      "added": "2026-11-14T18:27:43"
+    },
+    {
       "src": "photos/wildlife-dsc08284-2-720.jpg",
       "base": "photos/wildlife-dsc08284-2",
       "grid": [
