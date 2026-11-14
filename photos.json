@@ -19,6 +19,35 @@
   ],
   "photos": [
     {
+      "src": "photos/wildlife-dsc08284-2-720.jpg",
+      "base": "photos/wildlife-dsc08284-2",
+      "grid": [
+        720,
+        1440
+      ],
+      "full": "photos/full/wildlife-dsc08284-2",
+      "fulls": [
+        1440,
+        2048,
+        3200
+      ],
+      "collection": "Wildlife",
+      "w": 1440,
+      "h": 960,
+      "tone": "#879294",
+      "make": "SONY",
+      "model": "ILCE-6700",
+      "lens": "E 70-350mm F4.5-6.3 G OSS",
+      "focal": 350.0,
+      "aperture": 6.3,
+      "shutter": 0.001,
+      "iso": 1250,
+      "date": "2026-11-14T16:17:59",
+      "id": "c677b1ae6129",
+      "added": "2026-11-14T18:11:32",
+      "title": ""
+    },
+    {
       "src": "photos/wildlife-dsc06077-4-720.jpg",
       "base": "photos/wildlife-dsc06077-4",
       "grid": [
@@ -943,19 +972,19 @@
       "added": "2026-10-03T20:05:35"
     },
     {
-      "src": "photos/wildlife-long-eared-owl-720.jpg",
-      "base": "photos/wildlife-long-eared-owl",
+      "src": "photos/wildlife-short-eared-owl-720.jpg",
+      "base": "photos/wildlife-short-eared-owl",
       "grid": [
         720,
         1440
       ],
-      "full": "photos/full/wildlife-long-eared-owl",
+      "full": "photos/full/wildlife-short-eared-owl",
       "fulls": [
         1440,
         2048,
         2713
       ],
-      "title": "Long Eared Owl",
+      "title": "Short Eared Owl",
       "collection": "Wildlife",
       "w": 1440,
       "h": 960,
